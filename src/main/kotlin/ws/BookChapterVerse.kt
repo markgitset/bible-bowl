@@ -2,7 +2,7 @@ package net.markdrew.biblebowl.ws
 
 data class BookChapter(val book: Int, val chapter: Int)
 
-data class BookChapterVerse(val book: Int, val chapter: Int, val verse: Int) {
+data class BookChapterVerse(val book: Int, val chapter: Int, val verse: Int) : Comparable<BookChapterVerse> {
 
     companion object {
 
@@ -12,9 +12,13 @@ data class BookChapterVerse(val book: Int, val chapter: Int, val verse: Int) {
 
     }
 
+    fun bookName(): String = BOOKS_LIST[book]
+    
     fun toRefNum(): Int = "%02d%03d%03d".format(book, chapter, verse).toInt()
 
     fun sameBook(bcv: BookChapterVerse): Boolean = bcv.book == book
+
+    override fun compareTo(other: BookChapterVerse): Int = toRefNum().compareTo(other.toRefNum())
 
 }
 
@@ -25,3 +29,72 @@ fun main(args: Array<String>) {
 }
 
 data class VerseWithText(val canonicalRef: String, val text: String)
+
+val BOOKS_LIST = listOf(
+    "Genesis",
+    "Exodus",
+    "Leviticus",
+    "Numbers",
+    "Deuteronomy",
+    "Joshua",
+    "Judges",
+    "Ruth",
+    "1 Samuel",
+    "2 Samuel",
+    "1 Kings",
+    "2 Kings",
+    "1 Chronicles",
+    "2 Chronicles",
+    "Ezra",
+    "Nehemiah",
+    "Esther",
+    "Job",
+    "Psalms",
+    "Proverbs",
+    "Ecclesiastes",
+    "Song of Solomon",
+    "Isaiah",
+    "Jeremiah",
+    "Lamentations",
+    "Ezekiel",
+    "Daniel",
+    "Hosea",
+    "Joel",
+    "Amos",
+    "Obadiah",
+    "Jonah",
+    "Micah",
+    "Nahum",
+    "Habakkuk",
+    "Zephaniah",
+    "Haggai",
+    "Zechariah",
+    "Malachi",
+    "Matthew",
+    "Mark",
+    "Luke",
+    "John",
+    "Acts",
+    "Romans",
+    "1 Corinthians",
+    "2 Corinthians",
+    "Galatians",
+    "Ephesians",
+    "Philippians",
+    "Colossians",
+    "1 Thessalonians",
+    "2 Thessalonians",
+    "1 Timothy",
+    "2 Timothy",
+    "Titus",
+    "Philemon",
+    "Hebrews",
+    "James",
+    "1 Peter",
+    "2 Peter",
+    "1 John",
+    "2 John",
+    "3 John",
+    "Jude",
+    "Revelation"
+)

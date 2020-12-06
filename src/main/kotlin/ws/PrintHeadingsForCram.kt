@@ -5,6 +5,8 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
+import java.io.PrintWriter
+import java.util.*
 
 
 // Application keys must be included with each API request in an Authorization header.
@@ -22,55 +24,96 @@ fun main(args: Array<String>) {
 
     val service: EsvService = retrofit.create(EsvService::class.java)
 
-    val verse1Ref: String = args[0]
-    val verse1Passage: PassageText = passageText(service, verse1Ref)
-    val verse1: BookChapterVerse = BookChapterVerse.fromRefNum(verse1Passage.parsed.first().first())
+    val bookName: String = args[0] // simple book abbrev will work (e.g., "rev" for Revelation)
+    val headingIndex: SortedMap<BookChapterVerse, String> = service.buildHeadingsIndex(bookName)
 
-    val headingMap: MutableList<Pair<String, String>> = mutableListOf()
+    val indexFile = File("output", args.getOrNull(1) ?: "$bookName-headings-index.tsv")
+    printIndex(indexFile.printWriter(), headingIndex)
+    //printIndex(PrintWriter(System.out), headingIndex)
+    println("Wrote data to: $indexFile")
 
-    // TODO doesn't currently detect headings that cross chapters
-    var nextChapterRange: IntRange? = verse1Passage.passageMeta.first().chapterStart.toRange()
-    while (nextChapterRange != null && verse1.sameBook(BookChapterVerse.fromRefNum(nextChapterRange.first))) {
-//        Thread.sleep(3_000) // to work around throttling
-        val passage: PassageText = passageText(service, "${nextChapterRange.first}-${nextChapterRange.last}")
-        val chapter: String = BookChapterVerse.fromRefNum(passage.parsed.first().first()).chapter.toString()
+    val headingsFile = File("output", args.getOrNull(1) ?: "$bookName-headings.tsv")
+    printHeadings(headingsFile.printWriter(), headingIndex)
+    //printHeadings(PrintWriter(System.out), headingIndex)
+    println("Wrote data to: $headingsFile")
 
-        val first: String = passage.passages.first()
-        val lines: List<String> = first.lineSequence().toList()
-        val filterNot: List<String> = lines
-                .filterNot { it.isBlank() || it[0] == ' ' }
-                .filterNot { it.startsWith("_________") }
-        val elements: List<Pair<String, String>> = filterNot.map { it to chapter }
-        headingMap.addAll(elements)
-////        verseMap.addAll(formatChapter(passages))
-        nextChapterRange = passage.passageMeta.first().nextChapter?.toRange()
-////        nextChapterRange = null
-    }
-
-    val outFile = File(args.getOrNull(1) ?: "$verse1Ref-headings.tsv")
-    outFile.printWriter().use {
-        headingMap.forEach { (heading, chapter) -> it.println("$heading\t$chapter") }
-    }
-    headingMap.forEach { (heading, chapter) -> println("$heading\t$chapter") }
-    println("Wrote data to: $outFile")
 }
 
-private fun formatChapter(passages: PassageText): List<Pair<String, String>> =
-    passages.passageMeta.zip(passages.passages) { ref, verse ->
-        ref.canonical to normalizeVerse(verse)
+private fun printIndex(printWriter: PrintWriter, headingIndex: SortedMap<BookChapterVerse, String>) {
+    printWriter.use { pw ->
+        headingIndex.forEach { (bcv, heading) -> pw.println("${bcv.chapter}:${bcv.verse}\t$heading") }
+    }
+}
+
+private fun printHeadings(printWriter: PrintWriter, headingIndex: Map<BookChapterVerse, String>) {
+    printWriter.use { pw ->
+        headingIndex.toSortedMap().toList()
+            .groupBy({ (_, heading) -> heading }, { (bcv, _) -> bcv.chapter }) // headings to chapters
+            .mapValues { (_, chapterList) -> chapterList.distinct() } // headings to distinct chapters list
+            .forEach { (heading, chapters) -> pw.println("$heading\t${chapters.joinToString(" & ")}") }
+    }
+}
+
+/**
+ * @param bookName simple book abbrev will work (e.g., "rev" for Revelation)
+ */
+private fun EsvService.buildHeadingsIndex(bookName: String): SortedMap<BookChapterVerse, String> {
+    val initPassage: Passage = passageText(bookName)
+    val chapterRange: IntRange = initPassage.meta.startsInChapterRange()
+    var chapterPassage: Passage? =
+        if (initPassage.range == chapterRange) initPassage
+        else passageFromRange(chapterRange)
+
+    val headingIndex: SortedMap<BookChapterVerse, String> = sortedMapOf()
+
+    do {
+        if (chapterPassage == null) break
+        val verse1: BookChapterVerse = chapterPassage.firstVerse()
+        processChapterText(verse1, chapterPassage.text, headingIndex)
+        chapterPassage = nextChapter(chapterPassage)
+    } while (chapterPassage != null && verse1.sameBook(BookChapterVerse.fromRefNum(chapterPassage.range.first)))
+
+    return headingIndex
+}
+
+private fun EsvService.nextChapter(chapterPassage: Passage): Passage? =
+    chapterPassage.nextChapterRange()?.let { nextChapterRange ->
+        passageFromRange(nextChapterRange)
     }
 
-private fun normalizeVerse(verseText: String): String =
-        verseText.replace("\\s+".toRegex(), " ").trim()
+private fun Passage.firstVerse(): BookChapterVerse =
+    BookChapterVerse.fromRefNum(range.first())
 
-/*
- * Builds an IntRange from the first two values of a List<Int>
- */
-private fun List<Int>.toRange(): IntRange = IntRange(this[0], this[1])
+private fun Passage.nextChapterRange(): IntRange? =
+    meta.nextChapterRange()
 
-private fun passageText(service: EsvService, query: String): PassageText {
+private fun EsvService.passageFromRange(range: IntRange): Passage =
+    this.passageText("${range.first}-${range.last}")
+
+private fun processChapterText(
+    firstVerseOfChapter: BookChapterVerse,
+    chapterText: String,
+    headingIndex: SortedMap<BookChapterVerse, String>
+) {
+    var currentHeading = if (headingIndex.isNotEmpty()) headingIndex[headingIndex.lastKey()] else null
+    val lines: List<String> = chapterText.lineSequence().toList()
+    for (i in lines.indices) {
+        val line = lines[i].trim()
+        if (line.isEmpty()) continue
+        if (line.trim().matches("""_+""".toRegex())) {
+            currentHeading = lines[i + 1].trim()
+        }
+        """\[(\d+)] """.toRegex().findAll(line).forEach { match ->
+            val verse: Int = match.groupValues[1].toInt()
+            assert(currentHeading != null)
+            headingIndex[firstVerseOfChapter.copy(verse = verse)] = currentHeading!!
+        }
+    }
+}
+
+private fun EsvService.passageText(query: String): Passage {
     println("query = $query")
-    val call: Call<PassageText> = service.text(query,
+    val call: Call<PassageText> = text(query,
             includePassageReferences = false,
             includeVerseNumbers = true,
             includeFootnotes = false,
@@ -80,5 +123,5 @@ private fun passageText(service: EsvService, query: String): PassageText {
             includeHeadingHorizontalLines = true,
             includeHeadings = true)
     val response: Response<PassageText> = call.execute()
-    return response.body() ?: throw Exception(response.errorBody()?.string())
+    return response.body()?.single() ?: throw Exception(response.errorBody()?.string())
 }

@@ -2,6 +2,10 @@ package net.markdrew.biblebowl.ws
 
 import com.google.gson.annotations.SerializedName
 
+/*
+ * Builds an IntRange from the first two values of a List<Int>
+ */
+fun List<Int>.toIntRange(): IntRange = this[0]..this[1]
 
 data class PassageMeta(val canonical: String,
                        @SerializedName("chapter_start") val chapterStart: List<Int>,
@@ -9,13 +13,31 @@ data class PassageMeta(val canonical: String,
                        @SerializedName("prev_verse") val prevVerse: Int?,
                        @SerializedName("next_verse") val nextVerse: Int?,
                        @SerializedName("prev_chapter") val prevChapter: List<Int>?,
-                       @SerializedName("next_chapter") val nextChapter: List<Int>?)
+                       @SerializedName("next_chapter") val nextChapter: List<Int>?) {
+
+    fun startsInChapterRange(): IntRange = chapterStart.toIntRange()
+    fun endsInChapterRange(): IntRange = chapterEnd.toIntRange()
+    fun prevChapterRange(): IntRange? = prevChapter?.toIntRange()
+    fun nextChapterRange(): IntRange? = nextChapter?.toIntRange()
+}
+
+data class Passage(val canonical: String, val range: IntRange, val meta: PassageMeta, val text: String)
 
 data class PassageText(val query: String,
                        val canonical: String,
                        val parsed: List<List<Int>>,
                        @SerializedName("passage_meta") val passageMeta: List<PassageMeta>,
-                       val passages: List<String>)
+                       val passages: List<String>) {
+
+    fun parsedRanges(): List<IntRange> = parsed.map { it.toIntRange() }
+
+    fun toList(): List<Passage> = canonical.split("; ").mapIndexed { i, canon ->
+        Passage(canon, parsedRanges()[i], passageMeta[i], passages[i])
+    }
+
+    fun single() = toList().single()
+
+}
 
 // Example response:
 /*

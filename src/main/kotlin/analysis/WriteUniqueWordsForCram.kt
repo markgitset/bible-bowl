@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
     uniqueWordsFile.writer(Charsets.UTF_8).use { writer ->
         wordRefs.values.filter { it.size == 1 }.flatten().forEach { (reference, word) ->
             val highlightedVerse = highlightVerse(word, verseMap.getValue(reference))
-            writer.appendln("$word  <b>${shortenReference(reference)}</b> - $highlightedVerse")
+            writer.appendLine("$word  <b>${shortenReference(reference)}</b> - $highlightedVerse")
         }
     }
 
