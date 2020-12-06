@@ -1,0 +1,12 @@
+/.idea
+/.gradle
+/build
+/out
+/tmp
+/*.gz
+/*.tsv
+/*.iml
+/*.tex
+/*.pdf
+/*.log
+/*.aux
