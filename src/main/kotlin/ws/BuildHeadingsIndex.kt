@@ -1,11 +1,14 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.model.BookChapterVerse
+import net.markdrew.biblebowl.model.toBookChapterVerse
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
 import java.io.PrintWriter
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
 
 
@@ -19,7 +22,6 @@ fun main(args: Array<String>) {
     val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.esv.org/")
             .addConverterFactory(GsonConverterFactory.create())
-//            .addCallAdapterFactory()
             .build()
 
     val service: EsvService = retrofit.create(EsvService::class.java)
@@ -27,21 +29,17 @@ fun main(args: Array<String>) {
     val bookName: String = args[0] // simple book abbrev will work (e.g., "rev" for Revelation)
     val headingIndex: SortedMap<BookChapterVerse, String> = service.buildHeadingsIndex(bookName)
 
-    val indexFile = File("output", args.getOrNull(1) ?: "$bookName-headings-index.tsv")
-    printIndex(indexFile.printWriter(), headingIndex)
+    val outDir: Path = Paths.get("output").resolve(bookName)
+    val outPath = outDir.resolve(args.getOrNull(1) ?: "$bookName-index-headings.tsv")
+    printIndex(outPath.toFile().printWriter(), headingIndex)
     //printIndex(PrintWriter(System.out), headingIndex)
-    println("Wrote data to: $indexFile")
-
-    val headingsFile = File("output", args.getOrNull(1) ?: "$bookName-headings.tsv")
-    printHeadings(headingsFile.printWriter(), headingIndex)
-    //printHeadings(PrintWriter(System.out), headingIndex)
-    println("Wrote data to: $headingsFile")
+    println("Wrote data to: $outPath")
 
 }
 
 private fun printIndex(printWriter: PrintWriter, headingIndex: SortedMap<BookChapterVerse, String>) {
     printWriter.use { pw ->
-        headingIndex.forEach { (bcv, heading) -> pw.println("${bcv.chapter}:${bcv.verse}\t$heading") }
+        headingIndex.forEach { (bcv, heading) -> pw.println("${bcv.toRefNum()}\t$heading") }
     }
 }
 
@@ -71,7 +69,7 @@ private fun EsvService.buildHeadingsIndex(bookName: String): SortedMap<BookChapt
         val verse1: BookChapterVerse = chapterPassage.firstVerse()
         processChapterText(verse1, chapterPassage.text, headingIndex)
         chapterPassage = nextChapter(chapterPassage)
-    } while (chapterPassage != null && verse1.sameBook(BookChapterVerse.fromRefNum(chapterPassage.range.first)))
+    } while (chapterPassage != null && verse1.sameBook(chapterPassage.range.first.toBookChapterVerse()))
 
     return headingIndex
 }

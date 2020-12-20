@@ -1,8 +1,8 @@
 package net.markdrew.biblebowl.generate
 
-import analysis.*
+import net.markdrew.biblebowl.analysis.readVersesIndex
+import net.markdrew.biblebowl.model.ReferencedVerse
 import java.io.File
-import java.lang.Appendable
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -12,7 +12,7 @@ fun main(args: Array<String>) {
     val date = LocalDate.now()
     val versesFile = File(args.getOrNull(0) ?: "rev-verses.tsv")
 
-    val versesToFind: List<ReferencedVerse> = readVerses(versesFile)
+    val versesToFind: List<ReferencedVerse> = readVersesIndex(versesFile)
         .versesThroughChapter(throughChapter)
         .generateVersesToFind()
     val toFile = File("${date}-$book-find-the-verse-1-$throughChapter.tex")
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 }
 
 fun List<ReferencedVerse>.versesThroughChapter(lastChapterToInclude: Int = Int.MAX_VALUE): List<ReferencedVerse> =
-    takeWhile { !it.reference.endsWith(" ${lastChapterToInclude + 1}:1") }
+    takeWhile { it.reference.chapter <= lastChapterToInclude }
 
 fun List<ReferencedVerse>.generateVersesToFind(numToFind: Int = 40): List<ReferencedVerse> =
     shuffled().take(numToFind)

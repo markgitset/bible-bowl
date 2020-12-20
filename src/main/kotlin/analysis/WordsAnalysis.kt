@@ -1,16 +1,41 @@
-package analysis
+package net.markdrew.biblebowl.analysis
 
+import net.markdrew.biblebowl.model.BookChapterVerse
+import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.ReferencedWord
+import net.markdrew.biblebowl.model.toBookChapterVerse
 import java.io.File
 
 /**
- * Read verses from TSV file of (verse)TAB(reference) to a Map<ref,verse>
+ * Read headings from TSV file of (reference)TAB(heading) to a Map<ref,heading>
  */
-fun readVerses(versesFile: File): List<ReferencedVerse> = versesFile.readLines(Charsets.UTF_8).map { line ->
-    val (verse, ref) = line.split('\t', limit = 2)
-    ReferencedVerse(ref, verse)
+fun readHeadingsIndex(bookName: String): Map<BookChapterVerse, String> =
+    readHeadingsIndex(File("output/$bookName/$bookName-index-headings.tsv"))
+    
+/**
+ * Read headings from TSV file of (reference)TAB(heading) to a Map<ref,heading>
+ */
+fun readHeadingsIndex(headingsFile: File): Map<BookChapterVerse, String> = headingsFile.readLines(Charsets.UTF_8)
+    .map { line ->
+        val (ref, heading) = line.split('\t', limit = 2)
+        ref.toInt().toBookChapterVerse() to heading
+    }.toMap()
+
+/**
+ * Read verses from TSV file of (reference)TAB(verse) to a List<ReferencedVerse>
+ */
+fun readVersesIndex(bookName: String): List<ReferencedVerse> =
+    readVersesIndex(File("output/$bookName/$bookName-index-verses.tsv"))
+
+/**
+ * Read verses from TSV file of (reference)TAB(verse) to a List<ReferencedVerse>
+ */
+fun readVersesIndex(versesFile: File): List<ReferencedVerse> = versesFile.readLines(Charsets.UTF_8).map { line ->
+    val (ref, verse) = line.split('\t', limit = 2)
+    ReferencedVerse(ref.toInt().toBookChapterVerse(), verse)
 }
 
-fun List<ReferencedVerse>.toVerseMap(): Map<String, String> = this.map { (ref, verse) -> ref to verse }.toMap()
+fun List<ReferencedVerse>.toVerseMap(): Map<BookChapterVerse, String> = this.map { (ref, verse) -> ref to verse }.toMap()
 
 fun verseToWordList(refVerse: ReferencedVerse): List<ReferencedWord> =
         refVerse.verse.split(*" \t\r\n.‘!“”:;?()—".toCharArray())   // split around various punctuation

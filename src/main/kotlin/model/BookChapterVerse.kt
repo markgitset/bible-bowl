@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.ws
+package net.markdrew.biblebowl.model
 
 data class BookChapter(val book: Int, val chapter: Int)
 
@@ -12,7 +12,7 @@ data class BookChapterVerse(val book: Int, val chapter: Int, val verse: Int) : C
 
     }
 
-    fun bookName(): String = BOOKS_LIST[book]
+    fun bookName(): String = BOOKS_LIST[book - 1]
     
     fun toRefNum(): Int = "%02d%03d%03d".format(book, chapter, verse).toInt()
 
@@ -20,7 +20,11 @@ data class BookChapterVerse(val book: Int, val chapter: Int, val verse: Int) : C
 
     override fun compareTo(other: BookChapterVerse): Int = toRefNum().compareTo(other.toRefNum())
 
+    fun toFullString(): String = "${bookName()} $chapter:$verse"
+    fun toChapterAndVerseString(): String = "$chapter:$verse"
 }
+
+fun Int.toBookChapterVerse(): BookChapterVerse = BookChapterVerse.fromRefNum(this)
 
 fun main(args: Array<String>) {
     val bcv: BookChapterVerse = BookChapterVerse.fromRefNum(66013001)
