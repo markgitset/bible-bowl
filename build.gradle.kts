@@ -10,16 +10,18 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 application {
-    mainClassName = "net.markdrew.biblebowl.MainKt"
+    mainClass.set("net.markdrew.biblebowl.MainKt")
 }
 
 dependencies {
-    compile(kotlin("stdlib"))
-    compile("com.squareup.retrofit2:retrofit:2.3.0")
-    compile("com.squareup.retrofit2:converter-gson:2.3.0")
-    compile("org.crosswire:jsword:2.1-SNAPSHOT")
-    compile("ch.qos.logback:logback-classic:1.2.3")
-    compile("io.github.microutils:kotlin-logging:1.5.4")
+    implementation(kotlin("stdlib"))
+    implementation("com.squareup.retrofit2:retrofit:2.3.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.3.0")
+    implementation("org.crosswire:jsword:2.1-SNAPSHOT")
+    implementation("ch.qos.logback:logback-classic:1.2.3")
+    implementation("io.github.microutils:kotlin-logging:1.5.4")
+    implementation("org.apache.lucene:lucene-analyzers-common:8.7.0")
+    implementation("net.markdrew:chupacabra-core:1.0-beta")
 }
 
 repositories {
