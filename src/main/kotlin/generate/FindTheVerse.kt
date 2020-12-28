@@ -1,23 +1,26 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.analysis.readVersesIndex
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.BookData
 import java.io.File
+import java.nio.file.Paths
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
-fun main(args: Array<String>) {
-    val book = "Revelation"
+fun main() {
+    val book = Book.REV
     val throughChapter = 12
     val date = LocalDate.now()
-    val versesFile = File(args.getOrNull(0) ?: "rev-verses.tsv")
 
-    val versesToFind: List<ReferencedVerse> = readVersesIndex(versesFile)
+    val bookName = book.name.toLowerCase()
+    val bookData = BookData.readData(Paths.get("output"), book)
+    val versesToFind: List<ReferencedVerse> = bookData.verseList()
         .versesThroughChapter(throughChapter)
         .generateVersesToFind()
-    val toFile = File("${date}-$book-find-the-verse-1-$throughChapter.tex")
+    val toFile = File("output/$bookName/${date}-${book.fullName}-find-the-verse-1-$throughChapter.tex")
     toFile.writer().use { writer ->
-        versesToFind.toLatex(writer, book, throughChapter, date)
+        versesToFind.toLatex(writer, book.fullName, throughChapter, date)
     }
 
     println("Wrote $toFile")

@@ -1,22 +1,27 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.analysis.readHeadingsIndex
-import net.markdrew.biblebowl.analysis.readVersesIndex
-import net.markdrew.biblebowl.model.BookChapterVerse
-import net.markdrew.biblebowl.model.ReferencedVerse
-import java.io.File
+import net.markdrew.biblebowl.cram.CardWriter
+import net.markdrew.biblebowl.cram.normalizeWhitespace
+import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.biblebowl.model.BookData
+import java.nio.file.Paths
 
 
 fun main(args: Array<String>) {
 
     println("Bible Bowl!")
-    val bookName: String = args[0]
-    val verses: List<ReferencedVerse> = readVersesIndex(bookName)
-    val headings: Map<BookChapterVerse, String> = readHeadingsIndex(bookName)
+    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val bookName = book.name.toLowerCase()
+    val bookData = BookData.readData(Paths.get("output"), book)
 
-    val cramFile = File("output/$bookName", args.getOrNull(1) ?: "$bookName-cram-verses.tsv")
-    cramFile.printWriter().use {
-        verses.forEach { (ref, verse) -> it.println("$verse\t${headings[ref]}<br/>${ref.toFullString()}") }
+    val cramFile = Paths.get("output/$bookName").resolve("$bookName-cram-verses.tsv")
+    CardWriter(cramFile).use {
+        bookData.verses.forEach { (range, verseRefNum) ->
+            val verseText = normalizeWhitespace(bookData.text.substring(range))
+            it.write(verseText,
+                "${bookData.headings.valueEnclosing(range)}<br/>${verseRefNum.toVerseRef().toFullString()}")
+        }
     }
     println("Wrote data to: $cramFile")
 }

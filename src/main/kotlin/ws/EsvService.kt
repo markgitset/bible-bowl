@@ -1,6 +1,8 @@
 package net.markdrew.biblebowl.ws
 
 import retrofit2.Call
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.Query
@@ -65,5 +67,14 @@ interface EsvService {
              @Query("indent-declares") indentDeclares: Int = 40,
              @Query("indent-psalm-doxology") indentPsalmDoxology: Int = 30,
              @Query("line-length") lineLength: Int = 0): Call<PassageText>
+
+    companion object {
+
+        fun create(): EsvService = Retrofit.Builder()
+            .baseUrl("https://api.esv.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build().create(EsvService::class.java)
+
+    }
 
 }

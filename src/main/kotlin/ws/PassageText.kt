@@ -21,7 +21,28 @@ data class PassageMeta(val canonical: String,
     fun nextChapterRange(): IntRange? = nextChapter?.toIntRange()
 }
 
-data class Passage(val canonical: String, val range: IntRange, val meta: PassageMeta, val text: String)
+data class Verse(val number: Int, val text: String)
+
+data class Section(val heading: String, val paragraphs: List<String>) {
+//    fun verses(prevVerse: Int): List<List<Verse>> = paragraphs.map { para ->
+//        val find: MatchResult? = """\[\d+\] """.toRegex().find(para)
+//        if (find == null) return listOf(Verse(prevVerse, para))
+//        val verseList = mutableListOf<Verse>()
+//        if (find.range.first > 0) verseList.add(Verse(prevVerse, para.slice(0 until find.range.first)))
+//        while (find != null) {
+//
+//        }
+//        verseList
+//    }
+
+}
+
+data class Passage(val canonical: String, val range: IntRange, val meta: PassageMeta, val text: String) {
+    fun sections(): List<Section> = text.split("""^_+$""".toRegex(RegexOption.MULTILINE)).map { textChunk ->
+        val paragraphs = textChunk.split("\n\n", "\n\n\n")
+        Section(heading = paragraphs.first(), paragraphs = paragraphs.drop(1))
+    }
+}
 
 data class PassageText(val query: String,
                        val canonical: String,

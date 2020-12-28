@@ -1,13 +1,14 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.analysis.readHeadingsIndex
-import net.markdrew.biblebowl.analysis.readVersesIndex
 import net.markdrew.biblebowl.analysis.verseToWordList
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
-import net.markdrew.biblebowl.model.BookChapterVerse
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.VerseRef
+import net.markdrew.biblebowl.model.BookData
 import java.io.File
+import java.nio.file.Paths
 
 /**
  * Combines two [Card] lists such that no front values are duplicated--if duplicates are found, the last one
@@ -21,8 +22,8 @@ fun distinctCards(vararg cardLists: List<Card>): Collection<Card> = cardLists.as
  * Build list of one-section word cards (where the sections could be chapters or headings)
  */
 private fun oneSectionWordCards(sectionType: String,
-                                wordIndex: Map<String, List<BookChapterVerse>>,
-                                refToSection: (BookChapterVerse) -> String): List<Card> =
+                                wordIndex: Map<String, List<VerseRef>>,
+                                refToSection: (VerseRef) -> String): List<Card> =
     wordIndex
         .filterValues { refs -> refs.size > 1 } // remove one-time words
         .filterValues { refs -> refs.map(refToSection).distinct().count() == 1 } // only entries all in same section
@@ -37,8 +38,10 @@ private fun oneSectionWordCards(sectionType: String,
         }
 
 fun main(args: Array<String>) {
-    val bookName = args.getOrNull(0) ?: "rev"
-    val referencedVerses: List<ReferencedVerse> = readVersesIndex(bookName)
+    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val bookName = book.name.toLowerCase()
+    val bookData = BookData.readData(Paths.get("output"), book)
+    val referencedVerses: List<ReferencedVerse> = bookData.verseList()
     val wordIndex = referencedVerses.flatMap { verseToWordList(it) }.groupBy(
         { (_, word) -> word.toLowerCase() },
         { (ref, _) -> ref }
@@ -48,8 +51,11 @@ fun main(args: Array<String>) {
     val oneChapterWordCards: List<Card> = oneSectionWordCards("chapter", wordIndex) { it.chapter.toString() }
 
     // build one-heading words
-    val headingsIndex: Map<BookChapterVerse, String> = readHeadingsIndex(bookName)
-    val oneHeadingWordCards: List<Card> = oneSectionWordCards("heading", wordIndex) { headingsIndex.getValue(it) }
+//    val headingsIndex: Map<VerseRef, String> = readHeadingsIndex(bookName, "")
+    val oneHeadingWordCards: List<Card> = oneSectionWordCards("heading", wordIndex) {
+        bookData.headings.valueEnclosing(bookData.verseIndex.getValue(it.toRefNum()))!!
+//        headingsIndex.getValue(it)
+    }
 
     // combine the two sets of cards
     val fewTimeWordCards: Collection<Card> = distinctCards(oneChapterWordCards, oneHeadingWordCards)

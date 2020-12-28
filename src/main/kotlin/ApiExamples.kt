@@ -54,7 +54,7 @@ class ApiExamples {
         val book = getBook(bookInitials) ?: return ""
 
         val key = book.getKey(reference)
-        val data = BookData(book, key)
+        val data: BookData = BookData(book, key)
         return OSISUtil.getCanonicalText(data.osisFragment)
     }
 

@@ -1,46 +1,44 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.analysis.readHeadingsIndex
-import net.markdrew.biblebowl.model.BookChapterVerse
-import java.io.File
-import java.io.PrintWriter
+import net.markdrew.biblebowl.cram.CardWriter
+import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.BookData
+import java.nio.file.Path
+import java.nio.file.Paths
 
-
-// Application keys must be included with each API request in an Authorization header.
-// Authorization: Token 20e9b0330b3824603c4e2696c75d51c92529babc
 
 fun main(args: Array<String>) {
     println("Bible Bowl!")
-    val bookName: String = args[0] // simple book abbrev will work (e.g., "rev" for Revelation)
-    val headingsFile = File("output/$bookName", args.getOrNull(1) ?: "$bookName-index-headings.tsv")
-    val headingsMap: Map<BookChapterVerse, String> = readHeadingsIndex(headingsFile)
+    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val bookName = book.name.toLowerCase()
+    val bookData = BookData.readData(Paths.get("output"), book)
 
-    val cramHeadingsFile = File("output/$bookName", "$bookName-cram-headings.tsv")
-    printHeadings(cramHeadingsFile.printWriter(), headingsMap)
-    //printHeadings(PrintWriter(System.out), headingIndex)
-    println("Wrote data to: $cramHeadingsFile")
+    val cramHeadingsPath = Paths.get("output/$bookName").resolve("$bookName-cram-headings.tsv")
 
-    val cramReverseHeadingsFile = File("output/$bookName", "$bookName-cram-reverse-headings.tsv")
-    printReverseHeadings(cramReverseHeadingsFile.printWriter(), headingsMap)
+    printHeadings(cramHeadingsPath, bookData)
     //printHeadings(PrintWriter(System.out), headingIndex)
-    println("Wrote data to: $cramReverseHeadingsFile")
+    println("Wrote data to: $cramHeadingsPath")
+
+    val cramReverseHeadingsPath = Paths.get("output/$bookName").resolve("$bookName-cram-reverse-headings.tsv")
+    printReverseHeadings(cramReverseHeadingsPath, bookData)
+    //printHeadings(PrintWriter(System.out), headingIndex)
+    println("Wrote data to: $cramReverseHeadingsPath")
 }
 
-private fun printHeadings(printWriter: PrintWriter, headingIndex: Map<BookChapterVerse, String>) {
-    printWriter.use { pw ->
-        headingIndex.toSortedMap().toList()
-            .groupBy({ (_, heading) -> heading }, { (bcv, _) -> bcv.chapter }) // headings to chapters
-            .mapValues { (_, chapterList) -> chapterList.distinct() } // headings to distinct chapters list
-            .forEach { (heading, chapters) -> pw.println("$heading\t${chapters.joinToString(" & ")}") }
+private fun printHeadings(cramHeadingsPath: Path, bookData: BookData) {
+    CardWriter(cramHeadingsPath).use { writer ->
+        bookData.headings.map { (headingRange, heading) ->
+            val chapters: List<Int> = bookData.chapters.valuesIntersectedBy(headingRange)
+            writer.write(heading, chapters.joinToString(" & "))
+        }
     }
 }
 
-private fun printReverseHeadings(printWriter: PrintWriter, headingIndex: Map<BookChapterVerse, String>) {
-    printWriter.use { pw ->
-        headingIndex.toSortedMap().toList().map { (ref, heading) ->
-            ref.chapter to heading
-        }.distinct()
-            .groupBy({ (chapter, _) -> chapter }, { (_, heading) -> heading }) // headings to chapters
-            .forEach { (chapter, headings) -> pw.println("$chapter\t${headings.joinToString("<br/>")}") }
+private fun printReverseHeadings(cramHeadingsPath: Path, bookData: BookData) {
+    CardWriter(cramHeadingsPath).use { writer ->
+        bookData.chapters.map { (chapterRange, chapter) ->
+            val headings: List<String> = bookData.headings.valuesIntersectedBy(chapterRange)
+            writer.write("Chapter $chapter", headings.joinToString("<br/>"))
+        }
     }
 }

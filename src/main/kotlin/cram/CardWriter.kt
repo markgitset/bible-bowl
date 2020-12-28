@@ -5,6 +5,7 @@ import java.io.Closeable
 import java.io.File
 import java.io.Writer
 import java.nio.charset.Charset
+import java.nio.file.Path
 
 class CardWriter(private val writer: Writer = stdout(), private val delimiter: Char = DEFAULT_DELIMITER) : Closeable {
 
@@ -12,10 +13,14 @@ class CardWriter(private val writer: Writer = stdout(), private val delimiter: C
                 delimiter: Char = DEFAULT_DELIMITER,
                 charset: Charset = Charsets.UTF_8) : this(file.writer(charset), delimiter)
 
-    fun write(front: String, back: String, hint: String? = null) {
-        writer.append(front).append(delimiter)
-        writer.append(back)
-        hint?.let { writer.append(delimiter).append(it) }
+    constructor(path: Path,
+                delimiter: Char = DEFAULT_DELIMITER,
+                charset: Charset = Charsets.UTF_8) : this(path.toFile(), delimiter, charset)
+
+    fun write(front: Any, back: Any, hint: Any? = null) {
+        writer.append(front.toString()).append(delimiter)
+        writer.append(back.toString())
+        hint?.let { writer.append(delimiter).append(it.toString()) }
         writer.appendLine()
     }
 

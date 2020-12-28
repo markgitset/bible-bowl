@@ -6,7 +6,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 // Application keys must be included with each API request in an Authorization header.
-// Authorization: Token 20e9b0330b3824603c4e2696c75d51c92529babc
 
 fun main(args: Array<String>) {
 
@@ -20,22 +19,24 @@ fun main(args: Array<String>) {
 
     val service: EsvService = retrofit.create(EsvService::class.java)
 
-    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
+//    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
+//    val call: Call<PassageText> = service.text("Jud-Rev1:12",
+    val call: Call<PassageText> = service.text("Rev1-Rev2:2",
             includePassageReferences = false,
             includeFootnotes = false,
             includeFootnoteBody = false,
             includeShortCopyright = false,
-            includePassageHorizontalLines = true,
+            includePassageHorizontalLines = false,
             includeHeadingHorizontalLines = true,
-            horizontalLineLength = 40,
+//            horizontalLineLength = 55,
             includeHeadings = true,
             indentParagraphs = 0,
-            indentPoetry = false,
-            indentPoetryLines = 0,
-            indentDeclares = 0,
-            indentPsalmDoxology = 0,
-            lineLength = 40)
+//            indentPoetry = true,
+//            indentPoetryLines = 4,
+//            indentDeclares = 40,
+//            indentPsalmDoxology = 30,
+            lineLength = 0)
     val passage: PassageText? = call.execute().body()
-    println(passage)
+    passage?.passages?.forEach { println(it) }
 
 }
