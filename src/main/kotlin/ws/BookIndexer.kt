@@ -61,7 +61,7 @@ class BookIndexer(val book: Book) {
             paragraphs.add(paragraphStart until buffer.length)
             buffer.appendLine()
         }
-        chapters[chapterStart until buffer.length] = currentChapter
+        chapters[chapterStart until buffer.trimEnd().length] = currentChapter
     }
 
     fun endHeading() {
@@ -74,6 +74,7 @@ class BookIndexer(val book: Book) {
         buffer.append(text)
         verses[verseStart until buffer.trimEnd().length] = VerseRef(book, currentChapter, verseNum).toRefNum()
     }
+
     fun continueVerse(text: String) {
         buffer.append(text)
         val (currentVerseRange, verseRef) = verses.lastEntry() ?: return // null if no entries yet

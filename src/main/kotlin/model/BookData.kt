@@ -72,6 +72,24 @@ class BookData(val book: Book,
         }
     }
 
+    /**
+     * Returns a name/description of the smallest, named range (verse, heading, or chapter) that encloses the given
+     * range.  E.g., given a single would return a verse reference string, or given a few verses in the same chapter
+     * heading, would return that chapter heading.
+     */
+    fun smallestNamedRange(range: IntRange): String? {
+        val verseRefNum: Int? = verses.valueEnclosing(range)
+        if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerseString()
+
+        val chapter: Int? = chapters.valueEnclosing(range)
+        val heading: String? = headings.valueEnclosing(range)
+        if (heading != null) return "Chapter $chapter: $heading"
+
+        if (chapter != null) return "Chapter $chapter"
+
+        return null
+    }
+
     fun verseList(): List<ReferencedVerse> =
         verses.entries.map { (range, verseRefNum) -> ReferencedVerse(verseRefNum.toVerseRef(), text.substring(range)) }
 
