@@ -35,6 +35,7 @@ fun main(args: Array<String>) {
 private fun printMatches(pattern: String, bookData: BookData) {
     pattern.toRegex().findAll(bookData.text).forEach {
         val r = it.range
-        println("%15s %15s    %s".format(r, it.value, normalizeWhitespace(bookData.text.substring(r.first-10..r.last+10))))
+        val context: String = normalizeWhitespace(bookData.text.substring(r.first - 10..r.last + 10))
+        println("%15s %15s    %s".format(r, it.value, context))
     }
 }

@@ -1,12 +1,8 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.analysis.verseToWordList
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.ReferencedVerse
-import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.*
 import java.io.File
 import java.nio.file.Paths
 
@@ -21,40 +17,35 @@ fun distinctCards(vararg cardLists: List<Card>): Collection<Card> = cardLists.as
 /**
  * Build list of one-section word cards (where the sections could be chapters or headings)
  */
-private fun oneSectionWordCards(sectionType: String,
-                                wordIndex: Map<String, List<VerseRef>>,
-                                refToSection: (VerseRef) -> String): List<Card> =
-    wordIndex
-        .filterValues { refs -> refs.size > 1 } // remove one-time words
-        .filterValues { refs -> refs.map(refToSection).distinct().count() == 1 } // only entries all in same section
-        .map { (word, refs) ->
-            val section: String = refToSection(refs.first())
-            println("""%20s occurs %2d times in $sectionType:  %s""".format(""""$word"""", refs.size, section))
-            Card(word, listOf(
-                sectionType.toUpperCase(),
-                section,
-                "(${refs.size} times: " + refs.joinToString { "${it.chapter}:${it.verse}" } + ")"
-            ).joinToString("<br/>"))
+private fun oneSectionWordCards(bookData: BookData,
+                                rangeToSection: (IntRange) -> String): List<Card> =
+    bookData.wordIndex
+        .filterValues { ranges -> ranges.size > 1 } // remove one-time words
+        .filterValues { ranges ->
+            ranges.map(rangeToSection).distinct().count() == 1  // only entries all in same section
+        }.map { (word, ranges) ->
+            val section: String = rangeToSection(ranges.first())
+            println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, section))
+            val verseListString = ranges.joinToString {
+                bookData.verses.valueEnclosing(it)?.toVerseRef()?.toChapterAndVerseString() ?: throw Exception()
+            }
+            val cardBack = listOf(section, "(${ranges.size} times: $verseListString)").joinToString("<br/>")
+            Card(word, cardBack)
         }
 
 fun main(args: Array<String>) {
     val book: Book = Book.parse(args.getOrNull(0), Book.REV)
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
-    val referencedVerses: List<ReferencedVerse> = bookData.verseList()
-    val wordIndex = referencedVerses.flatMap { verseToWordList(it) }.groupBy(
-        { (_, word) -> word.toLowerCase() },
-        { (ref, _) -> ref }
-    )
 
     // build one-chapter words
-    val oneChapterWordCards: List<Card> = oneSectionWordCards("chapter", wordIndex) { it.chapter.toString() }
+    val oneChapterWordCards: List<Card> = oneSectionWordCards(bookData) { range ->
+        "Chapter " + (bookData.chapters.valueEnclosing(range)?.toString() ?: throw Exception())
+    }
 
     // build one-heading words
-//    val headingsIndex: Map<VerseRef, String> = readHeadingsIndex(bookName, "")
-    val oneHeadingWordCards: List<Card> = oneSectionWordCards("heading", wordIndex) {
-        bookData.headings.valueEnclosing(bookData.verseIndex.getValue(it.toRefNum()))!!
-//        headingsIndex.getValue(it)
+    val oneHeadingWordCards: List<Card> = oneSectionWordCards(bookData) { range ->
+        "Heading: " + (bookData.headings.valueEnclosing(range) ?: throw Exception())
     }
 
     // combine the two sets of cards

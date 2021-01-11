@@ -6,8 +6,6 @@ import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.toDisjointRangeSet
 import java.io.PrintWriter
 import java.nio.file.Path
-import java.text.BreakIterator
-import java.util.*
 
 class BookData(val book: Book,
                val text: String,
@@ -16,39 +14,22 @@ class BookData(val book: Book,
                val chapters: DisjointRangeMap<Int>,
                val paragraphs: DisjointRangeSet) {
 
-    val verseIndex: Map<Int, IntRange> by lazy { verses.entries.map { (range, refNum) -> refNum to range }.toMap() }
-
-    val sentences: DisjointRangeSet by lazy { breakSentences() }
-
-    private fun breakSentences(): DisjointRangeSet {
-        val boundary: BreakIterator = BreakIterator.getSentenceInstance(Locale.US)
-        boundary.setText(text)
-        var start = boundary.first()
-        var end = boundary.next()
-        val sents = DisjointRangeSet()
-        while (end != BreakIterator.DONE) {
-            val range = trimWhitespace(text, start until end)
-            sents.add(range)
-            start = end
-            end = boundary.next()
-        }
-        return sents
+    val verseIndex: Map<Int, IntRange> by lazy {
+        verses.entries.map { (range, refNum) -> refNum to range }.toMap()
     }
 
-    private fun forwardToNonWhitespace(text: String, startAt: Int): Int {
-        var result = startAt
-        while (text[result].isWhitespace()) result++
-        return result
+    val chapterIndex: Map<Int, IntRange> by lazy {
+        chapters.entries.map { (range, chapterNum) -> chapterNum to range }.toMap()
     }
 
-    private fun backToNonWhitespace(text: String, endAt: Int): Int {
-        var result = endAt
-        while (text[result - 1].isWhitespace()) result--
-        return result
+    val wordIndex: Map<String, List<IntRange>> by lazy {
+        words.groupBy { wordRange -> text.substring(wordRange).toLowerCase() }
     }
 
-    private fun trimWhitespace(text: String, range: IntRange): IntRange {
-        return forwardToNonWhitespace(text, range.first) until backToNonWhitespace(text, range.last + 1)
+    val sentences: DisjointRangeSet by lazy { identifySentences(text) }
+
+    val words: DisjointRangeSet by lazy {
+        """\d{1,3}(?:,\d{3})+|\w+(?:[’']s)?""".toRegex().findAll(text).map { it.range }.toDisjointRangeSet()
     }
 
     fun writeData(outPath: Path) {

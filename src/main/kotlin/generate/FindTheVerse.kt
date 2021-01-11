@@ -3,27 +3,53 @@ package net.markdrew.biblebowl.generate
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.chupacabra.core.DisjointRangeSet
+import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
 fun main() {
-    val book = Book.REV
-    val throughChapter = 12
-    val date = LocalDate.now()
+//    val nSamples = 10
+    (16..22).forEach {
+        writeFindTheVerse(Book.REV, throughChapter = it)
+    }
+}
 
+private fun writeFindTheVerse(
+    book: Book = Book.REV,
+    throughChapter: Int? = null,
+    exampleNum: Int? = null,
+    date: LocalDate = LocalDate.now(),
+) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
-    val versesToFind: List<ReferencedVerse> = bookData.verseList()
-        .versesThroughChapter(throughChapter)
-        .generateVersesToFind()
-    val toFile = File("output/$bookName/${date}-${book.fullName}-find-the-verse-1-$throughChapter.tex")
-    toFile.writer().use { writer ->
-        versesToFind.toLatex(writer, book.fullName, throughChapter, date)
+    val lastChapter: Int = throughChapter ?: bookData.chapters.lastEntry().value
+    val throughChapterRange: IntRange? = bookData.chapterIndex[lastChapter]
+    requireNotNull(throughChapterRange) { "$lastChapter is not a valid chapter in ${book.fullName}!" }
+    val versesToFind: List<ReferencedVerse> = bookData.sentences.enclosedBy(0..throughChapterRange.last)
+        .maskedBy(DisjointRangeSet(bookData.verses.keys))
+        .filter { it.length() >= 15 }
+        .shuffled().take(40)
+        .map {
+            ReferencedVerse(
+                bookData.verses.valuesIntersectedBy(it).single().toVerseRef(),
+                bookData.text.substring(it)
+            )
+        }
+
+    var fileName = date.toString()
+    if (exampleNum != null) fileName += "-$exampleNum"
+    fileName += "-${book.fullName}-find-the-verse"
+    if (throughChapter != null) fileName += "-through-ch-$throughChapter"
+
+    File("output/$bookName/$fileName.tex").writer().use { writer ->
+        versesToFind.toLatex(writer, book.fullName, lastChapter, date)
     }
 
-    println("Wrote $toFile")
+    println("Wrote ${File("output/$bookName/$fileName.tex")}")
 }
 
 fun List<ReferencedVerse>.versesThroughChapter(lastChapterToInclude: Int = Int.MAX_VALUE): List<ReferencedVerse> =
@@ -65,7 +91,7 @@ fun List<ReferencedVerse>.toLatex(appendable: Appendable,
         \begin{enumerate}
     """.trimIndent())
     this.forEach {
-        appendable.appendLine("    \\item ${it.reference}")
+        appendable.appendLine("    \\item ${it.reference.toFullString()}")
     }
     appendable.appendLine("""
         \end{enumerate}
