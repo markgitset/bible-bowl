@@ -24,7 +24,7 @@ data class VerseRef(val book: Book, val chapter: Int, val verse: Int) : Comparab
     override fun compareTo(other: VerseRef): Int = toRefNum().compareTo(other.toRefNum())
 
     fun toFullString(): String = "${bookName()} $chapter:$verse"
-    fun toChapterAndVerseString(): String = "$chapter:$verse"
+    fun toChapterAndVerse(): String = "$chapter:$verse"
 //    fun toTextPosition(): TextPosition =
 }
 

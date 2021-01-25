@@ -1,7 +1,6 @@
 package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.cram.CardWriter
-import net.markdrew.biblebowl.cram.normalizeWhitespace
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.biblebowl.model.BookData
@@ -18,7 +17,7 @@ fun main(args: Array<String>) {
     val cramFile = Paths.get("output/$bookName").resolve("$bookName-cram-verses.tsv")
     CardWriter(cramFile).use {
         bookData.verses.forEach { (range, verseRefNum) ->
-            val verseText = normalizeWhitespace(bookData.text.substring(range))
+            val verseText = bookData.text.substring(range).normalizeWS()
             it.write(verseText,
                 "${bookData.headings.valueEnclosing(range)}<br/>${verseRefNum.toVerseRef().toFullString()}")
         }

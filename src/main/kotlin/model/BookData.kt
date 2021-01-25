@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.model
 
+import net.markdrew.biblebowl.generate.Excerpt
+import net.markdrew.biblebowl.generate.excerpt
 import net.markdrew.biblebowl.model.AnalysisUnit.*
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
@@ -25,6 +27,11 @@ class BookData(val book: Book,
     val wordIndex: Map<String, List<IntRange>> by lazy {
         words.groupBy { wordRange -> text.substring(wordRange).toLowerCase() }
     }
+
+    /**
+     * Sentences (or sentence parts) that are guaranteed to NOT span more than one verse
+     */
+    val oneVerseSentParts: DisjointRangeMap<Int> by lazy { verses.maskedBy(sentences) }
 
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
@@ -79,7 +86,7 @@ class BookData(val book: Book,
      */
     fun smallestNamedRange(range: IntRange): String? {
         val verseRefNum: Int? = verses.valueEnclosing(range)
-        if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerseString()
+        if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerse()
 
         val chapter: Int? = chapters.valueEnclosing(range)
         val heading: String? = headings.valueEnclosing(range)
@@ -90,10 +97,21 @@ class BookData(val book: Book,
         return null
     }
 
+    fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
+    fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
+
+    fun excerpt(range: IntRange) = text.excerpt(range)
+
+    fun enclosingSingleVerseSentence(range: IntRange): IntRange? = oneVerseSentParts.keyEnclosing(range)
+    fun singleVerseSentenceContext(range: IntRange): Excerpt? =
+        enclosingSingleVerseSentence(range)?.let { excerpt(it) }
+
     fun verseList(): List<ReferencedVerse> =
         verses.entries.map { (range, verseRefNum) -> ReferencedVerse(verseRefNum.toVerseRef(), text.substring(range)) }
 
     fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.toRefNum()))
+    fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
+
 
     companion object {
 

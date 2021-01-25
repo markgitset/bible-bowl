@@ -4,7 +4,7 @@ import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.text.BreakIterator
 import java.util.*
 
-public fun identifySentences(text: String): DisjointRangeSet {
+fun identifySentences(text: String): DisjointRangeSet {
     val boundary: BreakIterator = BreakIterator.getSentenceInstance(Locale.US)
     boundary.setText(text)
     var start = boundary.first()

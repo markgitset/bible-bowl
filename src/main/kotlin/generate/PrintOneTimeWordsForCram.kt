@@ -1,7 +1,6 @@
 package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.cram.CardWriter
-import net.markdrew.biblebowl.cram.normalizeWhitespace
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.toVerseRef
@@ -26,7 +25,7 @@ fun main(args: Array<String>) {
                 val (verseRange, verseRefNum) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
                 val verseText: String = bookData.text.substring(verseRange)
                 val word = bookData.text.substring(wordRange)
-                val highlightedVerse = highlightVerse(word, normalizeWhitespace(verseText))
+                val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
                 val heading = bookData.headings.valueEnclosing(wordRange)
                 val verseRefString = verseRefNum.toVerseRef().toFullString()
                 val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"

@@ -48,7 +48,7 @@ private fun oneSectionWordCards(bookData: BookData,
             val (sectionRange, section) = sectionMap.entryEnclosing(ranges.first()) ?: throw Exception()
             println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
             val verseListString = ranges.joinToString {
-                bookData.verses.valueEnclosing(it)?.toVerseRef()?.toChapterAndVerseString() ?: throw Exception()
+                bookData.verses.valueEnclosing(it)?.toVerseRef()?.toChapterAndVerse() ?: throw Exception()
             }
             val cardBack = listOf(sectionPrefix + section,
                                   "(${ranges.size} times: $verseListString)").joinToString("<br/>")

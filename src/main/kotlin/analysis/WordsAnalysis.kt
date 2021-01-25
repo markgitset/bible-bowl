@@ -27,7 +27,7 @@ private fun printWordIndex(bookData: BookData, stopWords: Set<String>) {
         .entries.sortedBy { it.key }
         .forEach { (word, rangeList) ->
             rangeList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { wordRange ->
-                bookData.verses.valueEnclosing(wordRange)?.toVerseRef()?.toChapterAndVerseString() ?: "ERR"
+                bookData.verses.valueEnclosing(wordRange)?.toVerseRef()?.toChapterAndVerse() ?: "ERR"
             }
         }
 }
@@ -35,9 +35,10 @@ private fun printWordIndex(bookData: BookData, stopWords: Set<String>) {
 private fun printWordFrequencies(bookData: BookData) {
     val text = bookData.text
     val groupBy: Map<String, Int> = bookData.words
-        .filterNot { stopWords.contains(text.substring(it).toLowerCase()) }
-        .groupingBy { text.substring(it).toLowerCase() }.eachCount()
-        .filterValues { it > 1 }
+        .map { it: IntRange -> text.substring(it).toLowerCase() }
+        .filterNot { it: String -> stopWords.contains(it) }
+        .groupingBy { it: String -> it }.eachCount()
+        .filterValues { it: Int -> it > 1 }
     groupBy.asSequence().sortedBy { it.value }.forEach { (word, count) ->
         println("%12s = %5d".format(word, count))
     }

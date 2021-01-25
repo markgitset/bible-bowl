@@ -4,12 +4,12 @@ import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.toVerseRef
-import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import kotlin.random.Random
 
 fun main() {
 //    val nSamples = 10
@@ -29,16 +29,10 @@ private fun writeFindTheVerse(
     val lastChapter: Int = throughChapter ?: bookData.chapters.lastEntry().value
     val throughChapterRange: IntRange? = bookData.chapterIndex[lastChapter]
     requireNotNull(throughChapterRange) { "$lastChapter is not a valid chapter in ${book.fullName}!" }
-    val versesToFind: List<ReferencedVerse> = bookData.sentences.enclosedBy(0..throughChapterRange.last)
-        .maskedBy(DisjointRangeSet(bookData.verses.keys))
-        .filter { it.length() >= 15 }
-        .shuffled().take(40)
-        .map {
-            ReferencedVerse(
-                bookData.verses.valuesIntersectedBy(it).single().toVerseRef(),
-                bookData.text.substring(it)
-            )
-        }
+    val versesToFind: List<ReferencedVerse> = bookData.oneVerseSentParts.enclosedBy(0..throughChapterRange.last)
+        .filterKeys { it.length() >= 15 }
+        .entries.shuffled().take(40)
+        .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
     var fileName = date.toString()
     if (exampleNum != null) fileName += "-$exampleNum"
@@ -52,11 +46,28 @@ private fun writeFindTheVerse(
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
 }
 
-fun List<ReferencedVerse>.versesThroughChapter(lastChapterToInclude: Int = Int.MAX_VALUE): List<ReferencedVerse> =
-    takeWhile { it.reference.chapter <= lastChapterToInclude }
+//fun List<ReferencedVerse>.versesThroughChapter(lastChapterToInclude: Int = Int.MAX_VALUE): List<ReferencedVerse> =
+//    takeWhile { it.reference.chapter <= lastChapterToInclude }
+//
+//fun List<ReferencedVerse>.generateVersesToFind(numToFind: Int = 40): List<ReferencedVerse> =
+//    shuffled().take(numToFind)
 
-fun List<ReferencedVerse>.generateVersesToFind(numToFind: Int = 40): List<ReferencedVerse> =
-    shuffled().take(numToFind)
+private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
+
+fun removeUnmatchedCharPairs(str: String): String =
+    charPairs.fold(str) { s, pair -> removeUnmatchedCharPair(s, pair) }
+
+fun removeUnmatchedCharPair(s: String, charPair: String): String {
+    if (s.isBlank()) return s
+    require(charPair.length == 2)
+    val startCount = s.count { it == charPair[0] }
+    val endCount = s.count { it == charPair[1] }
+    if (startCount > endCount && s.first() == charPair[0])
+        return s.drop(1)
+    if (startCount < endCount && s.last() == charPair[1])
+        return s.dropLast(1)
+    return s
+}
 
 fun List<ReferencedVerse>.toLatex(appendable: Appendable,
                                   book: String,
@@ -80,7 +91,7 @@ fun List<ReferencedVerse>.toLatex(appendable: Appendable,
         \begin{enumerate}
      """.trimIndent())
     this.forEach {
-        appendable.appendLine("    \\item ${it.verse}")
+        appendable.appendLine("    \\item ${removeUnmatchedCharPairs(it.verse.normalizeWS())}")
     }
     appendable.appendLine("""
         \end{enumerate}
