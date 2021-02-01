@@ -2,7 +2,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
-import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.biblebowl.model.VerseRef
 import java.nio.file.Paths
 
 
@@ -11,35 +11,42 @@ val stopWords: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "i
     "him", "them", "her", "not", "had", "has", "its", "your", "then", "but", "those", "no", "as", "what", "this",
     "by", "my", "so", "into", "or", "when", "came", "an", "these", "which", "there", "been", "am", "at", "nor", "shall",
     "let", "do", "she", "if", "also", "our", "about", "may", "where", "because", "o", "would", "whose", "here", "how",
-    "could", "does")
+    "could", "does", "me", "says", "said")
 
 fun main() {
     // word frequencies
     val bookData = BookData.readData(Paths.get("output"), Book.REV)
-    printWordFrequencies(bookData)
-    printWordIndex(bookData, stopWords)
+    val wordIndex: List<WordIndexEntry> = buildWordIndex(bookData, stopWords, frequencyRange = 2..Int.MAX_VALUE)
+    printWordFrequencies(wordIndex)
+    printWordIndex(wordIndex)
 }
 
-private fun printWordIndex(bookData: BookData, stopWords: Set<String>) {
-    bookData.wordIndex
-        .filterKeys { it !in stopWords }
-        .filterValues { it.size in 2..5 } // 2- to 5-time words
-        .entries.sortedBy { it.key }
-        .forEach { (word, rangeList) ->
-            rangeList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { wordRange ->
-                bookData.verses.valueEnclosing(wordRange)?.toVerseRef()?.toChapterAndVerse() ?: "ERR"
-            }
+data class IndexEntry<K>(val key: K, val refs: List<VerseRef>)
+
+typealias WordIndexEntry = IndexEntry<String>
+
+private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
+    buildWordIndex
+        .sortedBy { it.key }
+        .forEach { (word, verseList) ->
+            verseList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { it.toChapterAndVerse() }
         }
 }
 
-private fun printWordFrequencies(bookData: BookData) {
-    val text = bookData.text
-    val groupBy: Map<String, Int> = bookData.words
-        .map { it: IntRange -> text.substring(it).toLowerCase() }
-        .filterNot { it: String -> stopWords.contains(it) }
-        .groupingBy { it: String -> it }.eachCount()
-        .filterValues { it: Int -> it > 1 }
-    groupBy.asSequence().sortedBy { it.value }.forEach { (word, count) ->
-        println("%12s = %5d".format(word, count))
+private fun buildWordIndex(bookData: BookData,
+                           stopWords: Set<String> = setOf(),
+                           frequencyRange: IntRange? = null): List<WordIndexEntry> =
+    bookData.wordIndex
+        .filter { (word, ranges) ->
+            word !in stopWords && frequencyRange?.contains(ranges.size) ?: true
+        }.map { (word, ranges) ->
+            WordIndexEntry(word, ranges.map { wordRange ->
+                bookData.verseEnclosing(wordRange) ?: throw Exception("Couldn't find verse enclosing $wordRange!")
+            })
+        }
+
+fun printWordFrequencies(indexEntries: List<IndexEntry<*>>) {
+    indexEntries.sortedBy { it.refs.size }.forEach { (key, refs) ->
+        println("%45s = %5d".format(key, refs.size))
     }
 }
