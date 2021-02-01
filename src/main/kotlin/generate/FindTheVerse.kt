@@ -9,7 +9,6 @@ import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 fun main() {
 //    val nSamples = 10
@@ -23,6 +22,7 @@ private fun writeFindTheVerse(
     throughChapter: Int? = null,
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
+    minCharLength: Int = 15,
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
@@ -30,7 +30,7 @@ private fun writeFindTheVerse(
     val throughChapterRange: IntRange? = bookData.chapterIndex[lastChapter]
     requireNotNull(throughChapterRange) { "$lastChapter is not a valid chapter in ${book.fullName}!" }
     val versesToFind: List<ReferencedVerse> = bookData.oneVerseSentParts.enclosedBy(0..throughChapterRange.last)
-        .filterKeys { it.length() >= 15 }
+        .filterKeys { it.length() >= minCharLength }
         .entries.shuffled().take(40)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
