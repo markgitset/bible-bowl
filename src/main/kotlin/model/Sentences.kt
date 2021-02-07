@@ -19,19 +19,35 @@ fun identifySentences(text: String): DisjointRangeSet {
     return sentences
 }
 
-private fun forwardToNonWhitespace(text: String, startAt: Int): Int {
+fun forwardToNonWhitespace(text: String, startAt: Int): Int {
     var result = startAt
     while (text[result].isWhitespace()) result++
     return result
 }
 
-private fun backToNonWhitespace(text: String, endAt: Int): Int {
+fun backToNonWhitespace(text: String, endAt: Int): Int {
     var result = endAt
     while (text[result - 1].isWhitespace()) result--
     return result
 }
 
-private fun trimWhitespace(text: String, range: IntRange): IntRange {
+fun trimWhitespace(text: String, range: IntRange): IntRange {
     return forwardToNonWhitespace(text, range.first) until backToNonWhitespace(text, range.last + 1)
+}
+
+fun forwardToNot(text: String, startAt: Int, predicate: (Char) -> Boolean): Int {
+    var result = startAt
+    while (predicate(text[result])) result++
+    return result
+}
+
+fun backToNot(text: String, endAt: Int, predicate: (Char) -> Boolean): Int {
+    var result = endAt
+    while (predicate(text[result - 1])) result--
+    return result
+}
+
+fun trim(text: String, range: IntRange, predicate: (Char) -> Boolean): IntRange {
+    return forwardToNot(text, range.first, predicate) until backToNot(text, range.last + 1, predicate)
 }
 

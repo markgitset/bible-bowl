@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
@@ -14,9 +15,9 @@ fun main() {
     }
 }
 
-private data class Question(val question: String, val answer: String)
+data class Question(val question: String, val answer: String)
 
-private fun multiChoice(qAndA: Question, chaptersInBook: Int, nChoices: Int = 5): MultiChoiceQuestion {
+fun multiChoice(qAndA: Question, chaptersInBook: Int, nChoices: Int = 5): MultiChoiceQuestion {
     val chapter = qAndA.answer.toInt()
     val minChapter = maxOf(1, chapter - 4)
     val maxChapter = minOf(chaptersInBook, chapter + 4)
@@ -25,7 +26,7 @@ private fun multiChoice(qAndA: Question, chaptersInBook: Int, nChoices: Int = 5)
     return MultiChoiceQuestion(qAndA, choices, 4)
 }
 
-private data class MultiChoiceQuestion(val question: Question, val choices: List<String>, val noneIndex: Int) {
+data class MultiChoiceQuestion(val question: Question, val choices: List<String>, val noneIndex: Int) {
     val correctChoice: Int = choices.indexOf(question.answer).let { if (it < 0) noneIndex else it }
 }
 
@@ -38,30 +39,49 @@ private fun writeRound5Events(
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
-    val lastChapter: Int = throughChapter ?: bookData.chapters.lastEntry().value
-    val throughChapterRange: IntRange? = bookData.chapterIndex[lastChapter]
-    requireNotNull(throughChapterRange) { "$lastChapter is not a valid chapter in ${book.fullName}!" }
-    val headingsToFind: List<MultiChoiceQuestion> = bookData.headings.enclosedBy(0..throughChapterRange.last)
+
+    val maxChapter: Int = bookData.chapters.lastEntry().value
+    val lastIncludedChapter: Int? = throughChapter?.let {
+        require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${book.fullName}!" }
+        if (it == maxChapter) null else it
+    }
+
+    var cluePool: DisjointRangeMap<String> = bookData.headings
+    if (lastIncludedChapter != null) {
+        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
+        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
+    }
+
+    val headingsToFind: List<MultiChoiceQuestion> = cluePool
         .entries.shuffled().take(numQuestions)
         .map { (range, heading) ->
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
-        }.map { multiChoice(it, lastChapter) }
+        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter) }
 
     var fileName = date.toString()
     if (exampleNum != null) fileName += "-$exampleNum"
     fileName += "-${book.fullName}-events"
-    if (throughChapter != null) fileName += "-through-ch-$throughChapter"
+    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        headingsToFind.toLatex(writer, book.fullName, lastChapter)
+        toLatexKnowTheChapter(
+            headingsToFind, writer, book, lastIncludedChapter, minutes = 10, round = 5, clueType = "events"
+        )
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
 }
 
-private fun List<MultiChoiceQuestion>.toLatex(appendable: Appendable,
-                                  book: String,
-                                  throughChapter: Int) {
+fun toLatexKnowTheChapter(
+    questions: List<MultiChoiceQuestion>, appendable: Appendable,
+    book: Book,
+    throughChapter: Int?,
+    minutes: Int,
+    round: Int,
+    clueType: String,
+    title: String = "Know The Chapter - ${clueType.capitalize()}"
+) {
+    val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass{exam}
         \usepackage{nopageno}
@@ -74,16 +94,16 @@ private fun List<MultiChoiceQuestion>.toLatex(appendable: Appendable,
         
         \begin{document}
         
-        \section*{Round 5: In What Chapter--Events (Closed Bible, 10 min)}
-        
-        Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in $book
-        (through chapter $throughChapter) in which each of the following events is found.
+        \section*{$title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
+
+        Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
+        each of the following ${clueType.toLowerCase()} is found in ${book.fullName}$limitedTo.
         
         \vspace{0.1in}
         
         \begin{questions}
     """.trimIndent())
-    this.forEach { multiChoice ->
+    questions.forEach { multiChoice ->
         appendable.appendLine("\\question ${multiChoice.question.question}").appendLine()
         appendable.appendLine("\\begin{oneparchoices}")
         for (choice in multiChoice.choices) appendable.appendLine("\\choice $choice")
@@ -94,11 +114,11 @@ private fun List<MultiChoiceQuestion>.toLatex(appendable: Appendable,
         
         \newpage
         
-        \section*{ANSWERS Round 5: In What Chapter--Events}
+        \section*{ANSWERS ${book.fullName} Round $round: $title}
         \begin{multicols}{2}
         \begin{enumerate}
     """.trimIndent())
-    this.forEach {
+    questions.forEach {
         appendable.appendLine("    \\item ${'A' + it.correctChoice}")
     }
     appendable.appendLine("""

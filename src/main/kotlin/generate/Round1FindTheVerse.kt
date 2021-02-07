@@ -50,7 +50,7 @@ private fun writeFindTheVerse(
     if (throughChapter != null) fileName += "-through-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        versesToFind.toLatex(writer, book.fullName, lastIncludedChapter)
+        versesToFind.toLatexKnowTheChapter(writer, book.fullName, lastIncludedChapter)
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
@@ -73,10 +73,10 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
     return s
 }
 
-fun List<ReferencedVerse>.toLatex(appendable: Appendable,
-                                  book: String,
-                                  throughChapter: Int?) {
-    val bookDesc = book + throughChapter?.let { " (chapters 1-$it)" }.orEmpty()
+fun List<ReferencedVerse>.toLatexKnowTheChapter(appendable: Appendable,
+                                                book: String,
+                                                throughChapter: Int?) {
+    val bookDesc = book + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
         \usepackage[utf8]{inputenc}
