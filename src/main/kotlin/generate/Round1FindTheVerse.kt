@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 
 fun main() {
 //    val nSamples = 10
-    (16..22).forEach {
+    (22..22).forEach {
         writeFindTheVerse(Book.REV, throughChapter = it)
     }
 }
@@ -26,10 +26,20 @@ private fun writeFindTheVerse(
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
-    val lastChapter: Int = throughChapter ?: bookData.chapters.lastEntry().value
-    val throughChapterRange: IntRange? = bookData.chapterIndex[lastChapter]
-    requireNotNull(throughChapterRange) { "$lastChapter is not a valid chapter in ${book.fullName}!" }
-    val versesToFind: List<ReferencedVerse> = bookData.oneVerseSentParts.enclosedBy(0..throughChapterRange.last)
+
+    val lastIncludedChapter: Int? = throughChapter?.let {
+        val maxChapter = bookData.chapters.lastEntry().value
+        require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${book.fullName}!" }
+        if (it == maxChapter) null else it
+    }
+
+    var cluePool = bookData.oneVerseSentParts
+    if (lastIncludedChapter != null) {
+        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
+        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
+    }
+
+    val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
         .entries.shuffled().take(40)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
@@ -40,17 +50,11 @@ private fun writeFindTheVerse(
     if (throughChapter != null) fileName += "-through-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        versesToFind.toLatex(writer, book.fullName, lastChapter, date)
+        versesToFind.toLatex(writer, book.fullName, lastIncludedChapter)
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
 }
-
-//fun List<ReferencedVerse>.versesThroughChapter(lastChapterToInclude: Int = Int.MAX_VALUE): List<ReferencedVerse> =
-//    takeWhile { it.reference.chapter <= lastChapterToInclude }
-//
-//fun List<ReferencedVerse>.generateVersesToFind(numToFind: Int = 40): List<ReferencedVerse> =
-//    shuffled().take(numToFind)
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
 
@@ -71,32 +75,41 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
 
 fun List<ReferencedVerse>.toLatex(appendable: Appendable,
                                   book: String,
-                                  throughChapter: Int,
-                                  date: LocalDate = LocalDate.now()) {
+                                  throughChapter: Int?) {
+    val bookDesc = book + throughChapter?.let { " (chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
-     
         \usepackage[utf8]{inputenc}
-        \usepackage[margin=0.75in]{geometry}
-        \usepackage{blindtext}
+        \usepackage[letterpaper, left=0.75in, right=0.75in, top=1in, bottom=1in]{geometry}
         \usepackage{multicol}
         \usepackage[T1]{fontenc}
-        
-        \title{$book 1-$throughChapter - Find the Verse - $date}
+        \usepackage{longtable}
+        \usepackage{array}
+        \renewcommand{\arraystretch}{1.5}
+        \newcounter{rowcount}
+        \setcounter{rowcount}{0}
         
         \begin{document}
-        \maketitle
-        ${this.size} verses, ${(this.size * 25.0/40).roundToInt()} minutes, Open Bible
-        \section*{Verses}
-        \begin{enumerate}
-     """.trimIndent())
+        
+        \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
+        
+        \section*{Find The Verse \textnormal{(Open Bible, ${(this.size * 25.0/40).roundToInt()} minutes)}\hfill Round 1}
+        Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
+        
+        \begin{center}
+        \begin{longtable}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}p{5.5in}||m{0.3in}|m{0.3in}|}
+            \multicolumn{1}{c}{}&\multicolumn{2}{c}{ANSWER}\\
+            \multicolumn{1}{c}{}&\multicolumn{1}{c}{Chapter}&\multicolumn{1}{c}{Verse}\\
+            \hline
+    """.trimIndent())
     this.forEach {
-        appendable.appendLine("    \\item ${removeUnmatchedCharPairs(it.verse.normalizeWS())}")
+        appendable.appendLine("""    ${removeUnmatchedCharPairs(it.verse.normalizeWS())} & & \\""")
+        appendable.appendLine("""    \hline""")
     }
     appendable.appendLine("""
-        \end{enumerate}
-
-        \newpage
+        \end{longtable}
+        \end{center}
+        \clearpage
         \section*{Answers}
         \begin{multicols}{2}
         \begin{enumerate}

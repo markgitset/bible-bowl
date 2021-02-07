@@ -1,12 +1,14 @@
 package net.markdrew.biblebowl.analysis
 
+import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.enclose
 import java.nio.file.Paths
 import java.util.*
 
-typealias PhraseIndexEntry = IndexEntry<List<String>>
+typealias PhraseIndexEntry = IndexEntry<List<String>, VerseRef>
 
 fun <E> List<E>.indexOfSublist(subList: List<E>): Int = Collections.indexOfSubList(this, subList)
 
@@ -17,13 +19,13 @@ fun main() {
     var phraseIndex: MutableList<PhraseIndexEntry>
 
     println(23)
-    phraseIndex = buildPhraseIndex(bookData, nWords = 23, stopWords = stopWords).toMutableList()
+    phraseIndex = buildPhraseIndex(bookData, nWords = 23, stopWords = STOP_WORDS).toMutableList()
 //    printPhraseFrequencies(phraseIndex)
 
     for (i in (22 downTo 2)) {
         println(i)
-        val phraseIndex2 = buildPhraseIndex(bookData, nWords = i, stopWords = stopWords).filter { entry ->
-            phraseIndex.none { it.key.indexOfSublist(entry.key) >= 0 && it.refs.size == entry.refs.size }
+        val phraseIndex2 = buildPhraseIndex(bookData, nWords = i, stopWords = STOP_WORDS).filter { entry ->
+            phraseIndex.none { it.key.indexOfSublist(entry.key) >= 0 && it.values.size == entry.values.size }
         }
         phraseIndex.addAll(phraseIndex2)
 //        printPhraseFrequencies(phraseIndex)

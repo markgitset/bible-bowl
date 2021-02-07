@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
@@ -18,9 +19,7 @@ fun main(args: Array<String>) {
 
     val uniqueWordsFile = File("output/$bookName", "$bookName-cram-one-time-words.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
-        bookData.words
-            .groupBy { bookData.text.substring(it).toLowerCase() }
-            .filterValues { it.size == 1 }.values.flatten()
+        oneTimeWords(bookData)
             .forEach { wordRange ->
                 val (verseRange, verseRefNum) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
                 val verseText: String = bookData.text.substring(verseRange)
