@@ -6,14 +6,14 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 fun main() {
-//    val nSamples = 10
-    (22..22).forEach {
-        writeRound5Events(Book.REV, throughChapter = it)
-    }
+    writeRound5Events(Book.REV, numQuestions = Int.MAX_VALUE)
 }
+
+private const val ROUND_5_PACE = 40.0 / 10.0 // questions/minute
 
 data class Question(val question: String, val answer: String)
 
@@ -64,22 +64,23 @@ private fun writeRound5Events(
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        toLatexKnowTheChapter(
-            headingsToFind, writer, book, lastIncludedChapter, minutes = 10, round = 5, clueType = "events"
+        toLatexInWhatChapter(
+            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE
         )
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
 }
 
-fun toLatexKnowTheChapter(
+fun toLatexInWhatChapter(
     questions: List<MultiChoiceQuestion>, appendable: Appendable,
     book: Book,
     throughChapter: Int?,
-    minutes: Int,
     round: Int,
     clueType: String,
-    title: String = "Know The Chapter - ${clueType.capitalize()}"
+    pace: Double,
+    title: String = "In What Chapter - ${clueType.capitalize()}",
+    minutes: Int = (questions.size/pace).roundToInt(),
 ) {
     val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
@@ -88,7 +89,7 @@ fun toLatexKnowTheChapter(
         \usepackage[utf8]{inputenc}
         \setlength{\parindent}{0in}
         \usepackage{multicol}
-        \usepackage[letterpaper, left=1.25in, right=1.25in, top=0.5in, bottom=0.5in]{geometry}
+        \usepackage[letterpaper, left=1.25in, right=1.25in, top=0.25in, bottom=0.25in]{geometry}
         \usepackage{xpatch}
         \xpatchcmd{\oneparchoices}{\penalty -50\hskip 1em plus 1em\relax}{\hfill}{}{}
         

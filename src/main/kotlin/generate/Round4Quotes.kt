@@ -14,6 +14,8 @@ fun main() {
     }
 }
 
+private const val ROUND_4_PACE = 40.0 / 15.0 // questions/minute
+
 private fun writeRound4Quotes(
     book: Book = Book.REV,
     throughChapter: Int? = null,
@@ -55,8 +57,8 @@ private fun writeRound4Quotes(
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        toLatexKnowTheChapter(
-            quotesToFind, writer, book, lastIncludedChapter, minutes = 15, round = 4, clueType = "quotes"
+        toLatexInWhatChapter(
+            quotesToFind, writer, book, lastIncludedChapter, round = 4, clueType = "quotes", ROUND_4_PACE
         )
     }
 

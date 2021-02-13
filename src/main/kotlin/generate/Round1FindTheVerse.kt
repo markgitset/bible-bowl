@@ -10,11 +10,10 @@ import java.nio.file.Paths
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
+private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
+
 fun main() {
-//    val nSamples = 10
-    (22..22).forEach {
-        writeFindTheVerse(Book.REV, throughChapter = it)
-    }
+    writeFindTheVerse(Book.REV, throughChapter = 20, numOfVersesToFind = 20)
 }
 
 private fun writeFindTheVerse(
@@ -23,6 +22,7 @@ private fun writeFindTheVerse(
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
     minCharLength: Int = 15,
+    numOfVersesToFind: Int = 40,
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
@@ -41,16 +41,16 @@ private fun writeFindTheVerse(
 
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
-        .entries.shuffled().take(40)
+        .entries.shuffled().take(numOfVersesToFind)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
     var fileName = date.toString()
     if (exampleNum != null) fileName += "-$exampleNum"
     fileName += "-${book.fullName}-find-the-verse"
-    if (throughChapter != null) fileName += "-through-ch-$throughChapter"
+    if (throughChapter != null) fileName += "-to-ch-$throughChapter"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        versesToFind.toLatexKnowTheChapter(writer, book.fullName, lastIncludedChapter)
+        versesToFind.toLatexInWhatChapter(writer, book.fullName, lastIncludedChapter)
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
@@ -73,9 +73,9 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
     return s
 }
 
-fun List<ReferencedVerse>.toLatexKnowTheChapter(appendable: Appendable,
-                                                book: String,
-                                                throughChapter: Int?) {
+fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
+                                               book: String,
+                                               throughChapter: Int?) {
     val bookDesc = book + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
@@ -93,7 +93,7 @@ fun List<ReferencedVerse>.toLatexKnowTheChapter(appendable: Appendable,
         
         \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
         
-        \section*{Find The Verse \textnormal{(Open Bible, ${(this.size * 25.0/40).roundToInt()} minutes)}\hfill Round 1}
+        \section*{Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).roundToInt()} minutes)}\hfill Round 1}
         Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
         
         \begin{center}
