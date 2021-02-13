@@ -15,7 +15,7 @@ fun main() {
 }
 
 private fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
-    ref.item.toChapterAndVerse() + (if (ref.count > 1) "(\\times ${ref.count})" else "")
+    ref.item.toChapterAndVerse() + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
 
 private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
     val bookName = book.name.toLowerCase()
