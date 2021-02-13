@@ -11,60 +11,53 @@ import java.util.*
 typealias PhraseIndexEntry = IndexEntry<List<String>, VerseRef>
 
 fun <E> List<E>.indexOfSublist(subList: List<E>): Int = Collections.indexOfSubList(this, subList)
+fun <E> List<E>.containsSublist(subList: List<E>): Boolean = this.indexOfSublist(subList) >= 0
 
 fun main() {
-    // word frequencies
+    // phrase frequencies
     val bookData = BookData.readData(Paths.get("output"), Book.REV)
-    val maxPhraseLength = 25
-    var phraseIndex: MutableList<PhraseIndexEntry>
+    val phrasesIndex = buildPhrasesIndex(bookData, maxPhraseLength = 23)
+    printPhraseFrequencies(phrasesIndex)
+}
 
-    println(23)
-    phraseIndex = buildPhraseIndex(bookData, nWords = 23, stopWords = STOP_WORDS).toMutableList()
-//    printPhraseFrequencies(phraseIndex)
+/**
+ * Returns true if this phrase subsumes the [other] phrase. Alternatively, if the words of the [other] phrase are a
+ * sublist of this phrase and it's found in the same number of places as this phrase.
+ */
+private fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
+    this.key.containsSublist(other.key) && this.values.size == other.values.size
 
-    for (i in (22 downTo 2)) {
-        println(i)
-        val phraseIndex2 = buildPhraseIndex(bookData, nWords = i, stopWords = STOP_WORDS).filter { entry ->
-            phraseIndex.none { it.key.indexOfSublist(entry.key) >= 0 && it.values.size == entry.values.size }
+fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> {
+    val phrasesIndex = mutableListOf<PhraseIndexEntry>()
+    for (nWords in maxPhraseLength downTo 2) {
+        val nGramIndex = buildNGramIndex(bookData, nWords, stopWords = STOP_WORDS).filter { nGram ->
+            phrasesIndex.none { phraseEntry -> phraseEntry.subsumes(nGram) }
         }
-        phraseIndex.addAll(phraseIndex2)
-//        printPhraseFrequencies(phraseIndex)
+        phrasesIndex.addAll(nGramIndex)
     }
-    printPhraseFrequencies(phraseIndex)
-
+    return phrasesIndex
 }
 
-private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
-    buildWordIndex
-        .sortedBy { it.key }
-        .forEach { (word, verseList) ->
-            verseList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { it.toChapterAndVerse() }
-        }
-}
-
-private fun buildPhraseIndex(bookData: BookData,
-                             nWords: Int,
-                             stopWords: Set<String> = setOf(),
-                             frequencyRange: IntRange = 2..Int.MAX_VALUE,
-                             minGoWords: Int = 2): List<PhraseIndexEntry> {
+fun buildNGramIndex(bookData: BookData,
+                    nWords: Int,
+                    stopWords: Set<String> = setOf(),
+                    frequencyRange: IntRange = 2..Int.MAX_VALUE,
+                    minGoWords: Int = 2): List<PhraseIndexEntry> {
     val windowed: Sequence<Pair<List<String>, IntRange>> = bookData.words.asSequence()
         .map { bookData.excerpt(it) }
         .windowed(nWords) { excerpts ->
             val words = excerpts.map { it.excerptText.toLowerCase() }
             if (words.count { it !in stopWords } < minGoWords) null
-            else
-                words to
-                    excerpts.map { it.excerptRange }.reduce { r1, r2 -> r1.enclose(r2) }
+            else words to excerpts.map { it.excerptRange }.reduce { r1, r2 -> r1.enclose(r2) }
         }.filterNotNull()
     val index: Map<List<String>, List<IntRange>> = windowed.groupBy({ it.first }, { it.second })
-    return index
-        .filter { (phrase, ranges) ->
-            /*phrase !in stopWords &&*/ frequencyRange.contains(ranges.size)
-        }.map { (phrase, ranges) ->
-            PhraseIndexEntry(phrase, ranges.map { phraseRange ->
-                bookData.verseEnclosing(phraseRange.first..phraseRange.first) ?: throw Exception("Couldn't find verse enclosing $phraseRange!")
-            })
-        }
+    return index.filter { (phrase, ranges) ->
+        /*phrase !in stopWords &&*/ frequencyRange.contains(ranges.size)
+    }.map { (phrase, ranges) ->
+        PhraseIndexEntry(phrase, ranges.map { phraseRange ->
+            bookData.verseEnclosing(phraseRange.first..phraseRange.first) ?: throw Exception("Couldn't find verse enclosing $phraseRange!")
+        })
+    }
 }
 
 private fun printPhraseFrequencies(indexEntries: List<PhraseIndexEntry>) {
