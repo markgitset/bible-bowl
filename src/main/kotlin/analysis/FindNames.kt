@@ -9,8 +9,6 @@ import net.markdrew.chupacabra.core.rangeFirstLastComparator
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    val NUMBER_WORDS = setOf("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty")
 
     println("Bible Bowl!")
     val book: Book = Book.parse(args.getOrNull(0), Book.REV)
@@ -18,13 +16,13 @@ fun main(args: Array<String>) {
     val bookData = BookData.readData(Paths.get("output"), book)
 
 
-    val numberExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
-    printFrequencies(numberExcerpts)
-    printMatches(numberExcerpts, bookData)
+    val nameExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
+    printFrequencies(nameExcerpts)
+    printMatches(nameExcerpts, bookData)
 
     val cramNameBlanksPath = Paths.get("output/$bookName").resolve("$bookName-cram-name-blanks.tsv")
     CardWriter(cramNameBlanksPath).use {
-        it.write(toCards(numberExcerpts, bookData))
+        it.write(toCards(nameExcerpts, bookData))
     }
 
 }

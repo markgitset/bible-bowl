@@ -22,6 +22,11 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.5.4")
     implementation("org.apache.lucene:lucene-analyzers-common:8.7.0")
     implementation("net.markdrew:chupacabra-core:1.0-beta")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
+}
+
+tasks.named<Test>("test") {
+    useJUnitPlatform()
 }
 
 repositories {

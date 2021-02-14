@@ -15,6 +15,7 @@ fun <K, V> writeIndex(writer: Writer,
     if (indexPreface != null) writer.appendLine(indexPreface).appendLine()
     writer.appendLine("""
         \begin{multicols}{$columns}
+        \raggedright
         \begin{hangparas}{.25in}{1}
         
     """.trimIndent())
@@ -24,6 +25,7 @@ fun <K, V> writeIndex(writer: Writer,
     }
     writer.appendLine("""
         \end{hangparas}
+        \raggedright
         \end{multicols}
     """.trimIndent())
 }

@@ -13,7 +13,11 @@ val NUMBER_PATTERN = """\b(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|four|fif|six|
 val MULTI_NUMBER_PATTERN = """$NUMBER_PATTERN(?:(?:\-| | of |)$NUMBER_PATTERN)?"""
 val NUMERAL_PATTERN = """\d{1,3}(?:,\d\d\d)*"""
 
-val COMBINED_NUMBER_PATTERN = "$MULTI_NUMBER_PATTERN|$NUMERAL_PATTERN"
+val BASE_FRACTIONS = """(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)s?"""
+val FRACTIONS = """(?:$MULTI_NUMBER_PATTERN\s+and\s+(a|$MULTI_NUMBER_PATTERN)\s+$BASE_FRACTIONS|""" +
+        """$BASE_FRACTIONS(?=\s+(?:of|an?)\b))"""
+
+val COMBINED_NUMBER_PATTERN = "$MULTI_NUMBER_PATTERN|$NUMERAL_PATTERN|$FRACTIONS"
 val NUMBER_REGEX = COMBINED_NUMBER_PATTERN.toRegex()
 
 fun main(args: Array<String>) {
@@ -27,7 +31,7 @@ fun main(args: Array<String>) {
 
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(bookData.text)
-//    printMatches(findNumbers(bookData.text), bookData)
+    printMatches(findNumbers(bookData.text), bookData)
 
     val cramNumberBlanksPath = Paths.get("output/$bookName").resolve("$bookName-cram-number-blanks.tsv")
     CardWriter(cramNumberBlanksPath).use {
@@ -58,6 +62,6 @@ private fun printMatches(numberExcerpts: Sequence<Excerpt>, bookData: BookData) 
         val sentRange: Excerpt? = bookData.sentenceContext(numRange)
         val sentenceString: String = sentRange?.formatRange(numRange, blankOut())?.normalizeWS().orEmpty()
         val ref: VerseRef? = bookData.verseEnclosing(numRange)
-        println("%3d  %15s %15s    %s".format(i, ref?.toChapterAndVerse(), numString, sentenceString))
+        println("%3d  %7s %20s    %s".format(i, ref?.toChapterAndVerse(), numString, sentenceString))
     }
 }

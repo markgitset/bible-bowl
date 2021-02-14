@@ -24,8 +24,17 @@ fun main() {
  * Returns true if this phrase subsumes the [other] phrase. Alternatively, if the words of the [other] phrase are a
  * sublist of this phrase and it's found in the same number of places as this phrase.
  */
-private fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
-    this.key.containsSublist(other.key) && this.values.size == other.values.size
+internal fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
+    // if the words of the other phrase are a sublist of this phrase (other is shorter) AND
+    this.key.containsSublist(other.key) &&
+            // it's found in the same number of places as this phrase OR
+            this.values.size == other.values.size ||
+    // if the words of this phrase are a sublist of the other phrase (other is longer) AND
+    other.key.containsSublist(this.key) &&
+            // this phrase is only lacking stopwords from the other phrase AND
+            other.key.toSet().subtract(this.key).all { it in STOP_WORDS } &&
+            // it's found in a superset of the other phrase's places
+            other.values.toSet().subtract(this.values).isEmpty()
 
 fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> {
     val phrasesIndex = mutableListOf<PhraseIndexEntry>()
@@ -35,7 +44,8 @@ fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseInde
         }
         phrasesIndex.addAll(nGramIndex)
     }
-    return phrasesIndex
+    // TODO fix this, but need to filter again here because now we're allowing shorter phrases to "subsume" longer ones
+    return phrasesIndex.filter { entry -> phrasesIndex.none { it != entry && it.subsumes(entry) } }
 }
 
 fun buildNGramIndex(bookData: BookData,
