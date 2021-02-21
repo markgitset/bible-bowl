@@ -6,7 +6,6 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
-import kotlin.math.roundToInt
 import kotlin.random.Random
 
 fun main() {
@@ -17,13 +16,14 @@ private const val ROUND_5_PACE = 40.0 / 10.0 // questions/minute
 
 data class Question(val question: String, val answer: String)
 
-fun multiChoice(qAndA: Question, chaptersInBook: Int, nChoices: Int = 5): MultiChoiceQuestion {
+fun multiChoice(qAndA: Question, chaptersInBook: Int, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
     val chapter = qAndA.answer.toInt()
-    val minChapter = maxOf(1, chapter - 4)
-    val maxChapter = minOf(chaptersInBook, chapter + 4)
-    val startOffset: Int = Random.nextInt(maxChapter - minChapter - 2)
-    val choices = (0 until 4).map { (minChapter + startOffset + it).toString() } + "none of these"
-    return MultiChoiceQuestion(qAndA, choices, 4)
+    val nExplicitChoices = nChoices - 1
+    val minChapter = maxOf(1, chapter - nExplicitChoices)
+    val maxChapter = minOf(chaptersInBook, chapter + nExplicitChoices)
+    val startOffset: Int = random.nextInt(maxChapter - minChapter - 2)
+    val choices = (0 until nExplicitChoices).map { (minChapter + startOffset + it).toString() } + "none of these"
+    return MultiChoiceQuestion(qAndA, choices, nExplicitChoices)
 }
 
 data class MultiChoiceQuestion(val question: Question, val choices: List<String>, val noneIndex: Int) {
@@ -36,6 +36,7 @@ private fun writeRound5Events(
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
     numQuestions: Int = 40,
+    random: Random = Random
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
@@ -53,10 +54,10 @@ private fun writeRound5Events(
     }
 
     val headingsToFind: List<MultiChoiceQuestion> = cluePool
-        .entries.shuffled().take(numQuestions)
+        .entries.shuffled(random).take(numQuestions)
         .map { (range, heading) ->
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
-        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter) }
+        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, random) }
 
     var fileName = date.toString()
     if (exampleNum != null) fileName += "-$exampleNum"
@@ -80,7 +81,7 @@ fun toLatexInWhatChapter(
     clueType: String,
     pace: Double,
     title: String = "In What Chapter - ${clueType.capitalize()}",
-    minutes: Int = (questions.size/pace).roundToInt(),
+    minutes: Int = (questions.size / pace + 0.01).toInt(),
 ) {
     val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
@@ -89,7 +90,7 @@ fun toLatexInWhatChapter(
         \usepackage[utf8]{inputenc}
         \setlength{\parindent}{0in}
         \usepackage{multicol}
-        \usepackage[letterpaper, left=1.25in, right=1.25in, top=0.25in, bottom=0.25in]{geometry}
+        \usepackage[letterpaper, left=0.75in, right=0.75in, top=0.25in, bottom=0.25in]{geometry}
         \usepackage{xpatch}
         \xpatchcmd{\oneparchoices}{\penalty -50\hskip 1em plus 1em\relax}{\hfill}{}{}
         

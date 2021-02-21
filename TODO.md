@@ -8,7 +8,7 @@
 1. Add chapter headings to back of fill-in-blank cards
 1. Auto-compile latex to PDF
 1. Build command-line interfaces for these utilities
-1. Auto-produce text (with highlighting?!)
+1. Auto-produce text (with highlighting/underlining?!)
 1. ~~Trim phrase entries that only differ by a leading/trailing stopword~~
 1. ~~Build human-oriented phrase indices for reference while studying~~
 1. ~~Handle numbers like "three and a half" and fractions~~

@@ -6,12 +6,11 @@ import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
 import java.time.LocalDate
+import kotlin.random.Random
 
 fun main() {
 //    val nSamples = 10
-    (22..22).forEach {
-        writeRound4Quotes(Book.REV, throughChapter = it)
-    }
+    writeRound4Quotes(Book.REV, numQuestions = 35)
 }
 
 private const val ROUND_4_PACE = 40.0 / 15.0 // questions/minute
@@ -22,6 +21,7 @@ private fun writeRound4Quotes(
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
     numQuestions: Int = 40,
+    random: Random = Random
 ) {
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
@@ -42,14 +42,14 @@ private fun writeRound4Quotes(
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
-    val filteredCluePool = cluePool.entries.filter { (r, _) -> r.length() >= 15 }
+    val filteredCluePool: Map<IntRange, Int> = cluePool.filterKeys { it.length() >= 15 }
     println("Final clue pools size is ${filteredCluePool.size}")
 
-    val quotesToFind: List<MultiChoiceQuestion> = filteredCluePool
-        .shuffled().take(numQuestions)
+    val quotesToFind: List<MultiChoiceQuestion> = filteredCluePool.entries
+        .shuffled(random).take(numQuestions)
         .map { (range, chapter) ->
             Question("""“${bookData.text.substring(range)}”""", chapter.toString())
-        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter) }
+        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, random) }
 
     var fileName = date.toString()
     if (exampleNum != null) fileName += "-$exampleNum"

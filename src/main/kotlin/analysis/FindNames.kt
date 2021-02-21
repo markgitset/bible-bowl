@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.cram.FillInTheBlank
@@ -29,6 +30,21 @@ fun main(args: Array<String>) {
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
     "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember")
+
+fun buildNamesIndex(bookData: BookData,
+                    frequencyRange: IntRange? = null,
+                    vararg exceptNames: String): List<WordIndexEntry> =
+    bookData.words.map { bookData.excerpt(it).disown() }
+        .groupBy { it.excerptText.toLowerCase() }
+        .filterKeys { it !in STOP_NAMES && it !in exceptNames}
+        .filterValues { excerpts ->
+            excerpts.none { excerpt ->
+                excerpt.excerptText.first().let { it.isLowerCase() || it.isDigit() }
+            }
+        }.values.map { excerpts ->
+            val key = excerpts.first().excerptText
+            WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
+        }
 
 public fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt> {
     return bookData.words.map { bookData.excerpt(it).disown() }

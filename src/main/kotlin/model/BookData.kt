@@ -100,7 +100,15 @@ class BookData(val book: Book,
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
 
-    fun excerpt(range: IntRange) = text.excerpt(range)
+    fun excerpt(range: IntRange): Excerpt = text.excerpt(range)
+
+    fun wordCount(range: IntRange): Int = words.enclosedBy(range).size
+
+    fun splitLong(textRange: IntRange, maxLengthGoal: Int = 22): List<IntRange> {
+        if (wordCount(textRange) <= maxLengthGoal) return listOf(textRange)
+        TODO()
+        return listOf(textRange)
+    }
 
     fun enclosingSingleVerseSentence(range: IntRange): IntRange? = oneVerseSentParts.keyEnclosing(range)
     fun singleVerseSentenceContext(range: IntRange): Excerpt? =
