@@ -2,6 +2,7 @@
 
 1. Function to break long passages (> 22 words) at conjunctions (for, e.g., round 4)
 1. Compute/use TF-IDF scores
+1. Word stemming
 1. Compute word co-occurrence stats
 1. Generate power round one-time word ordering questions (by grouping related one-time words)
 1. Ensure find-the-verse clues are unique in the book

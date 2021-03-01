@@ -1,11 +1,19 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+//repositories {
+//    jcenter()
+//    mavenCentral()
+//}
+
 plugins {
     application
     kotlin("jvm") version "1.4.30"
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
         jvmTarget = "12"
+        useIR = true
     }
 }
 
@@ -22,6 +30,11 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging:1.5.4")
     implementation("org.apache.lucene:lucene-analyzers-common:8.7.0")
     implementation("net.markdrew:chupacabra-core:1.0-beta")
+    implementation("org.apache.opennlp:opennlp-tools:1.9.3")
+    implementation("org.apache.lucene:lucene-core:8.8.1")
+    implementation("com.robrua.nlp:easy-bert:1.0.3")
+    implementation("com.robrua.nlp.models:easy-bert-uncased-L-12-H-768-A-12:1.0.0") // com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12
+    implementation("com.robrua.nlp.models:easy-bert-cased-L-12-H-768-A-12:1.0.0") // com/robrua/nlp/easy-bert/bert-cased-L-12-H-768-A-12
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")
 }
 
