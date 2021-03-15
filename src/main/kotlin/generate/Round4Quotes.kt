@@ -21,8 +21,9 @@ private fun writeRound4Quotes(
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
     numQuestions: Int = 40,
-    random: Random = Random
+    randomSeed: Int = Random.nextInt()
 ) {
+    val random = Random(randomSeed)
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
@@ -32,17 +33,7 @@ private fun writeRound4Quotes(
         if (it == maxChapter) null else it
     }
 
-    var cluePool: DisjointRangeMap<Int> = DisjointRangeMap(bookData.chapters
-        .maskedBy(identifySingleQuotes(bookData.text).gcdAlignment(identifyDoubleQuotes(bookData.text)))
-        .maskedBy(bookData.sentences)
-        .mapKeys { (range, _) ->
-            trim(bookData.text, range) { c -> c in " :,‘’“”\n"}
-        }.filterNot { (range, _) -> range.isEmpty() })
-    if (lastIncludedChapter != null) {
-        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
-        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
-    }
-    val filteredCluePool: Map<IntRange, Int> = cluePool.filterKeys { it.length() >= 15 }
+    val filteredCluePool: Map<IntRange, Int> = round4CluePool(bookData, lastIncludedChapter)
     println("Final clue pools size is ${filteredCluePool.size}")
 
     val quotesToFind: List<MultiChoiceQuestion> = filteredCluePool.entries
@@ -55,12 +46,27 @@ private fun writeRound4Quotes(
     if (exampleNum != null) fileName += "-$exampleNum"
     fileName += "-${book.fullName}-quotes"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
+    fileName += "-$randomSeed"
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
         toLatexInWhatChapter(
-            quotesToFind, writer, book, lastIncludedChapter, round = 4, clueType = "quotes", ROUND_4_PACE
+            quotesToFind, writer, book, lastIncludedChapter, round = 4, clueType = "quotes", ROUND_4_PACE, randomSeed
         )
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
+}
+
+private fun round4CluePool(bookData: BookData, lastIncludedChapter: Int?): Map<IntRange, Int> {
+    var cluePool: DisjointRangeMap<Int> = DisjointRangeMap(bookData.chapters
+            .maskedBy(identifySingleQuotes(bookData.text).gcdAlignment(identifyDoubleQuotes(bookData.text)))
+            .maskedBy(bookData.sentences)
+            .mapKeys { (range, _) ->
+                trim(bookData.text, range) { c -> c in " :,‘’“”\n" }
+            }.filterNot { (range, _) -> range.isEmpty() })
+    if (lastIncludedChapter != null) {
+        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
+        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
+    }
+    return cluePool.filterKeys { it.length() >= 15 }
 }

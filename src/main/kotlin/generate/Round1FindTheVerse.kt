@@ -7,22 +7,25 @@ import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
-import java.time.LocalDate
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
 
 fun main() {
-    writeFindTheVerse(Book.REV, numOfVersesToFind = 20)
+    for (i in 1..10) {
+        writeFindTheVerse(Book.REV, randomSeed = i)
+    }
 }
 
 private fun writeFindTheVerse(
     book: Book = Book.REV,
     throughChapter: Int? = null,
-    exampleNum: Int? = null,
-    date: LocalDate = LocalDate.now(),
+    randomSeed: Int = Random.nextInt(1..9_999),
     minCharLength: Int = 15,
     numOfVersesToFind: Int = 40,
 ) {
+    val random = Random(randomSeed)
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
@@ -40,16 +43,15 @@ private fun writeFindTheVerse(
 
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
-        .entries.shuffled().take(numOfVersesToFind)
+        .entries.shuffled(random).take(numOfVersesToFind)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
-    var fileName = date.toString()
-    if (exampleNum != null) fileName += "-$exampleNum"
-    fileName += "-${book.fullName}-find-the-verse"
+    var fileName = "${book.name.toLowerCase()}-find-the-verse"
     if (throughChapter != null) fileName += "-to-ch-$throughChapter"
+    fileName += "-%04d".format(randomSeed)
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
-        versesToFind.toLatexInWhatChapter(writer, book.fullName, lastIncludedChapter)
+        versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
     }
 
     println("Wrote ${File("output/$bookName/$fileName.tex")}")
@@ -74,7 +76,9 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
 
 fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
                                                book: String,
+                                               randomSeed: Int,
                                                throughChapter: Int?) {
+    val seedString = "%04d".format(randomSeed)
     val bookDesc = book + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
@@ -92,7 +96,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         
         \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
         
-        \section*{Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
+        \section*{\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
         Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
         
         \begin{center}
@@ -109,7 +113,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \end{longtable}
         \end{center}
         \clearpage
-        \section*{Answers}
+        \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
         \begin{multicols}{2}
         \begin{enumerate}
     """.trimIndent())

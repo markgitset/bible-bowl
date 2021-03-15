@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.cram.FillInTheBlank
@@ -42,6 +43,13 @@ fun main(args: Array<String>) {
 
 public fun findNumbers(text: String): Sequence<Excerpt> =
     NUMBER_REGEX.findAll(text).map { Excerpt(it.value, it.range) }
+
+public fun buildNumbersIndex(bookData: BookData): List<WordIndexEntry> =
+    NUMBER_REGEX.findAll(bookData.text).map { Excerpt(it.value, it.range) }
+        .groupBy { it.excerptText.toLowerCase() }
+        .map { (key, excerpts) ->
+            WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
+        }
 
 private fun toCards(numberExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {
     return numberExcerpts.groupBy { excerpt -> Pair(

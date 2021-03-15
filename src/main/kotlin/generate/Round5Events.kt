@@ -5,11 +5,13 @@ import net.markdrew.biblebowl.model.BookData
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
-import java.time.LocalDate
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 fun main() {
-    writeRound5Events(Book.REV, numQuestions = Int.MAX_VALUE)
+    for (i in 1..10) {
+        writeRound5Events(Book.REV, randomSeed = i)
+    }
 }
 
 private const val ROUND_5_PACE = 40.0 / 10.0 // questions/minute
@@ -33,11 +35,10 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<String>
 private fun writeRound5Events(
     book: Book = Book.REV,
     throughChapter: Int? = null,
-    exampleNum: Int? = null,
-    date: LocalDate = LocalDate.now(),
     numQuestions: Int = 40,
-    random: Random = Random
+    randomSeed: Int = Random.nextInt(1..9_999)
 ) {
+    val random = Random(randomSeed)
     val bookName = book.name.toLowerCase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
@@ -59,14 +60,13 @@ private fun writeRound5Events(
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
         }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, random) }
 
-    var fileName = date.toString()
-    if (exampleNum != null) fileName += "-$exampleNum"
-    fileName += "-${book.fullName}-events"
+    var fileName = "${book.name.toLowerCase()}-events"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
+    fileName += "-%04d".format(randomSeed)
 
     File("output/$bookName/$fileName.tex").writer().use { writer ->
         toLatexInWhatChapter(
-            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE
+            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
         )
     }
 
@@ -80,9 +80,11 @@ fun toLatexInWhatChapter(
     round: Int,
     clueType: String,
     pace: Double,
+    randomSeed: Int,
     title: String = "In What Chapter - ${clueType.capitalize()}",
     minutes: Int = (questions.size / pace + 0.01).toInt(),
 ) {
+    val seedString = "%04d".format(randomSeed)
     val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass{exam}
@@ -90,13 +92,13 @@ fun toLatexInWhatChapter(
         \usepackage[utf8]{inputenc}
         \setlength{\parindent}{0in}
         \usepackage{multicol}
-        \usepackage[letterpaper, left=0.75in, right=0.75in, top=0.25in, bottom=0.25in]{geometry}
+        \usepackage[letterpaper, left=1in, right=1in, top=0.5in, bottom=0.5in]{geometry}
         \usepackage{xpatch}
         \xpatchcmd{\oneparchoices}{\penalty -50\hskip 1em plus 1em\relax}{\hfill}{}{}
         
         \begin{document}
         
-        \section*{$title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
+        \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
         each of the following ${clueType.toLowerCase()} is found in ${book.fullName}$limitedTo.
@@ -116,7 +118,7 @@ fun toLatexInWhatChapter(
         
         \newpage
         
-        \section*{ANSWERS ${book.fullName} Round $round: $title}
+        \section*{ANSWER KEY\\\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
         \begin{multicols}{2}
         \begin{enumerate}
     """.trimIndent())

@@ -12,7 +12,7 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-    writeOneTimeWordsIndex(Book.REV)
+    writeOneTimeWordsIndex(Book.GEN)
 }
 
 private fun writeOneTimeWordsIndex(book: Book) {

@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.*
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.toDisjointRangeSet
+import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Path
 
@@ -51,7 +52,9 @@ class BookData(val book: Book,
     private fun fileName(unit: AnalysisUnit): String = indexFileName(book, unit)
 
     private fun writeText(outPath: Path) {
-        outPath.toFile().writeText(text)
+        val outFile: File = outPath.toFile()
+        outFile.parentFile.mkdirs()
+        outFile.writeText(text)
         println("Wrote text to: $outPath")
     }
 
