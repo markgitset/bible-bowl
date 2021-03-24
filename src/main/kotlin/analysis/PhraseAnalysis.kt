@@ -36,6 +36,14 @@ internal fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
             // it's found in a superset of the other phrase's places
             other.values.toSet().subtract(this.values).isEmpty()
 
+fun buildNonLocalPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> =
+    buildPhrasesIndex(bookData, maxPhraseLength).filter { pie ->
+        pie.values.map { ref ->
+            val range: IntRange = bookData.verseIndex[ref.toRefNum()] ?: throw Exception()
+            bookData.chapters.valueEnclosing(range) ?: throw Exception()
+        }.distinct().size > 1
+    }
+
 fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> {
     val phrasesIndex = mutableListOf<PhraseIndexEntry>()
     for (nWords in maxPhraseLength downTo 2) {

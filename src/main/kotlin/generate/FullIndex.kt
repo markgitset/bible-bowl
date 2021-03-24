@@ -15,7 +15,7 @@ import java.nio.file.Paths
 fun main() {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    writeFullIndex(Book.REV, STOP_WORDS)
+    writeFullIndex(Book.GEN, STOP_WORDS)
 }
 
 private fun writeFullIndex(book: Book, stopWords: Set<String>) {

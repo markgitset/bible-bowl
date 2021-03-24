@@ -12,11 +12,11 @@ val STOP_WORDS: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "
     "him", "them", "her", "not", "had", "has", "its", "your", "then", "but", "those", "no", "as", "what", "this",
     "by", "my", "so", "into", "or", "when", "came", "an", "these", "which", "there", "been", "am", "at", "nor", "shall",
     "let", "do", "she", "if", "also", "our", "about", "may", "where", "because", "o", "would", "whose", "here", "how",
-    "could", "does", "me", "says", "said")
+    "could", "does", "me", "says", "said", "all", "out", "we", "went", "us")
 
 fun main() {
     // word frequencies
-    val bookData = BookData.readData(Paths.get("output"), Book.REV)
+    val bookData = BookData.readData(Paths.get("output"), Book.GEN)
     val wordIndex: List<WordIndexEntry> = buildWordIndex(bookData, STOP_WORDS, frequencyRange = 2..Int.MAX_VALUE)
     printWordFrequencies(wordIndex)
     printWordIndex(wordIndex)
