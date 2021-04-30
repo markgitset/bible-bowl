@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     application
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.5.0"
 }
 
 tasks.withType<KotlinCompile>().configureEach {
