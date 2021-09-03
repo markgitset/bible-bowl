@@ -19,7 +19,7 @@ fun main() {
 }
 
 private fun writeFullIndex(book: Book, stopWords: Set<String>) {
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(bookData)
         .map { wordIndexEntry ->
@@ -35,7 +35,7 @@ private fun writeFullIndex(book: Book, stopWords: Set<String>) {
                     """except for these:\\\\${stopWords.sorted().joinToString()}.""") {
 
             val index: List<WordIndexEntryC> =
-                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.toLowerCase() }
+                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
             writeIndex(writer, index, columns = 3) { formatVerseRefWithCount(it) }
 
             writer.appendLine("""\newpage""")

@@ -1,13 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-//repositories {
-//    jcenter()
-//    mavenCentral()
-//}
-
 plugins {
+    kotlin("jvm") version "1.5.30"
     application
-    kotlin("jvm") version "1.5.0"
 }
 
 tasks.withType<KotlinCompile>().configureEach {
@@ -15,6 +10,10 @@ tasks.withType<KotlinCompile>().configureEach {
         jvmTarget = "12"
         useIR = true
     }
+}
+
+tasks.compileJava {
+    options.release.set(12)
 }
 
 application {
@@ -33,6 +32,7 @@ dependencies {
     implementation("org.apache.opennlp:opennlp-tools:1.9.3")
     implementation("org.apache.lucene:lucene-core:8.8.1")
     implementation("com.robrua.nlp:easy-bert:1.0.3")
+//    implementation("org.tensorflow:tensorflow:1.13.1")
     implementation("com.robrua.nlp.models:easy-bert-uncased-L-12-H-768-A-12:1.0.0") // com/robrua/nlp/easy-bert/bert-uncased-L-12-H-768-A-12
     implementation("com.robrua.nlp.models:easy-bert-cased-L-12-H-768-A-12:1.0.0") // com/robrua/nlp/easy-bert/bert-cased-L-12-H-768-A-12
     testImplementation("org.junit.jupiter:junit-jupiter:5.4.2")

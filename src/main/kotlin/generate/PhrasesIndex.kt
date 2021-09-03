@@ -21,7 +21,7 @@ fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
     ref.item.toChapterAndVerse() + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
 
 private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
     val indexEntries: List<WordIndexEntryC> = buildPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->
@@ -45,7 +45,7 @@ private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
 }
 
 private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->

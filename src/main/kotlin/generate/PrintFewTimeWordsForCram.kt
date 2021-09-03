@@ -57,7 +57,7 @@ private fun oneSectionWordCards(bookData: BookData,
 
 fun main(args: Array<String>) {
     val book: Book = Book.parse(args.getOrNull(0), Book.REV)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
     // build one-chapter words

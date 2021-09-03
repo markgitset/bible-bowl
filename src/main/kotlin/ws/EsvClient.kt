@@ -89,7 +89,7 @@ class EsvClient(val includePassageReferences: Boolean = true,
     )
 
     fun queryPassage(singleQuery: String): Passage {
-        require(!singleQuery.contains(',')) { "singleQuery may not contain a comma!" }
+        require(',' !in singleQuery) { "singleQuery may not contain a comma!" }
         println("query = $singleQuery")
         val call: Call<PassageText> = query(singleQuery)
         val response: Response<PassageText> = call.execute()

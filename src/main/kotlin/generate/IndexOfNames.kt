@@ -19,7 +19,7 @@ fun main() {
 }
 
 private fun writeNamesIndex(book: Book, stopWords: Set<String>) {
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
     val indexEntries: List<WordIndexEntryC> = buildNamesIndex(bookData)
         .map { wordIndexEntry ->
@@ -36,7 +36,7 @@ private fun writeNamesIndex(book: Book, stopWords: Set<String>) {
             ) {
 
             val index: List<WordIndexEntryC> =
-                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.toLowerCase() }
+                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
             writeIndex(writer, index, columns = 2) { formatVerseRefWithCount(it) }
 
             writer.appendLine("""\newpage""")

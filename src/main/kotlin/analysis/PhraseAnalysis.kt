@@ -64,13 +64,13 @@ fun buildNGramIndex(bookData: BookData,
     val windowed: Sequence<Pair<List<String>, IntRange>> = bookData.words.asSequence()
         .map { bookData.excerpt(it) }
         .windowed(nWords) { excerpts ->
-            val words = excerpts.map { it.excerptText.toLowerCase() }
+            val words = excerpts.map { it.excerptText.lowercase() }
             if (words.count { it !in stopWords } < minGoWords) null
             else words to excerpts.map { it.excerptRange }.reduce { r1, r2 -> r1.enclose(r2) }
         }.filterNotNull()
     val index: Map<List<String>, List<IntRange>> = windowed.groupBy({ it.first }, { it.second })
     return index.filter { (phrase, ranges) ->
-        /*phrase !in stopWords &&*/ frequencyRange.contains(ranges.size)
+        /*phrase !in stopWords &&*/ ranges.size in frequencyRange
     }.map { (phrase, ranges) ->
         PhraseIndexEntry(phrase, ranges.map { phraseRange ->
             bookData.verseEnclosing(phraseRange.first..phraseRange.first) ?: throw Exception("Couldn't find verse enclosing $phraseRange!")

@@ -1,7 +1,7 @@
 /.idea
 /.gradle
 /build
-/out
+/products
 /tmp
 /*.gz
 /*.tsv
@@ -10,4 +10,6 @@
 /*.pdf
 /*.log
 /*.aux
-/output/
+/data/
+/out/
+*~

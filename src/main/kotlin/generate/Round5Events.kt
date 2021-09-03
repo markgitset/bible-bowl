@@ -39,7 +39,7 @@ private fun writeRound5Events(
     randomSeed: Int = Random.nextInt(1..9_999)
 ) {
     val random = Random(randomSeed)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
     val maxChapter: Int = bookData.chapters.lastEntry().value
@@ -60,7 +60,7 @@ private fun writeRound5Events(
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
         }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, random) }
 
-    var fileName = "${book.name.toLowerCase()}-events"
+    var fileName = "${book.name.lowercase()}-events"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
@@ -74,7 +74,8 @@ private fun writeRound5Events(
 }
 
 fun toLatexInWhatChapter(
-    questions: List<MultiChoiceQuestion>, appendable: Appendable,
+    questions: List<MultiChoiceQuestion>,
+    appendable: Appendable,
     book: Book,
     throughChapter: Int?,
     round: Int,
@@ -101,7 +102,7 @@ fun toLatexInWhatChapter(
         \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${clueType.toLowerCase()} is found in ${book.fullName}$limitedTo.
+        each of the following ${clueType.lowercase()} is found in ${book.fullName}$limitedTo.
         
         \vspace{0.1in}
         

@@ -77,7 +77,7 @@ enum class Book(val fullName: String) {
         fun parse(s: String?, default: Book): Book = if (s == null) default else try {
             valueOf(s.toUpperCase())
         } catch (e: IllegalArgumentException) {
-            values().firstOrNull { it.fullName.toLowerCase().startsWith(s.toLowerCase()) } ?: default
+            values().firstOrNull { it.fullName.lowercase().startsWith(s.lowercase()) } ?: default
         }
     }
 }

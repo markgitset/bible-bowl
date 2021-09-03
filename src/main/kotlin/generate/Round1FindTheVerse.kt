@@ -26,7 +26,7 @@ private fun writeFindTheVerse(
     numOfVersesToFind: Int = 40,
 ) {
     val random = Random(randomSeed)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
     val lastIncludedChapter: Int? = throughChapter?.let {
@@ -46,7 +46,7 @@ private fun writeFindTheVerse(
         .entries.shuffled(random).take(numOfVersesToFind)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
-    var fileName = "${book.name.toLowerCase()}-find-the-verse"
+    var fileName = "${book.name.lowercase()}-find-the-verse"
     if (throughChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 

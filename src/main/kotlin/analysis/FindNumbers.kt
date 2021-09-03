@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
 
     println("Bible Bowl!")
     val book: Book = Book.parse(args.getOrNull(0), Book.REV)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
 
@@ -46,7 +46,7 @@ public fun findNumbers(text: String): Sequence<Excerpt> =
 
 public fun buildNumbersIndex(bookData: BookData): List<WordIndexEntry> =
     NUMBER_REGEX.findAll(bookData.text).map { Excerpt(it.value, it.range) }
-        .groupBy { it.excerptText.toLowerCase() }
+        .groupBy { it.excerptText.lowercase() }
         .map { (key, excerpts) ->
             WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
@@ -54,7 +54,7 @@ public fun buildNumbersIndex(bookData: BookData): List<WordIndexEntry> =
 private fun toCards(numberExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {
     return numberExcerpts.groupBy { excerpt -> Pair(
         bookData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception(),
-        excerpt.excerptText.toLowerCase()
+        excerpt.excerptText.lowercase()
     ) }.map { (sentTextPair, numExcerpts) ->
         FillInTheBlank(
             sentTextPair.first,

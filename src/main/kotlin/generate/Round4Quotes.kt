@@ -24,7 +24,7 @@ private fun writeRound4Quotes(
     randomSeed: Int = Random.nextInt()
 ) {
     val random = Random(randomSeed)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
     val maxChapter: Int = bookData.chapters.lastEntry().value

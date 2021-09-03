@@ -191,7 +191,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @since 1.0.3
      */
     fun embedSequences(vararg sequences: String): Array<FloatArray> {
-        getInputs(sequences).use { inputs ->
+        return getInputs(sequences).use { inputs ->
             val output = bundle.session().runner()
                     .feed(model.inputIds, inputs.inputIds)
                     .feed(model.inputMask, inputs.inputMask)
@@ -201,7 +201,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
             output[0].use { embedding ->
                 val converted = Array(sequences.size) { FloatArray(embedding.shape()[1].toInt()) }
                 embedding.copyTo(converted)
-                return converted
+                converted
             }
         }
     }

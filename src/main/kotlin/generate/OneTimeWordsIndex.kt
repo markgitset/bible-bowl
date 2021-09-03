@@ -16,7 +16,7 @@ fun main() {
 }
 
 private fun writeOneTimeWordsIndex(book: Book) {
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
     val indexEntries: List<WordIndexEntry> = oneTimeWordsIndex(bookData)
     val file = File("output/$bookName", "$bookName-index-one-time-words.tex")
@@ -24,7 +24,7 @@ private fun writeOneTimeWordsIndex(book: Book) {
         writeDoc(writer, "${book.fullName} One-Time Words",
             docPreface = "The following words only appear one time in the whole book of ${book.fullName}.") {
 
-            writeIndex(writer, indexEntries.sortedBy { it.key.toLowerCase() }, "Alphabetical",
+            writeIndex(writer, indexEntries.sortedBy { it.key.lowercase() }, "Alphabetical",
                        columns = 4, formatValue = VerseRef::toChapterAndVerse)
             writer.appendLine("""\newpage""")
             writeIndex(writer, indexEntries.sortedBy { it.values.single() }, "In Order of Appearance",

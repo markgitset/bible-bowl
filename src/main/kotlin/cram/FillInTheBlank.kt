@@ -12,7 +12,7 @@ data class FillInTheBlank(val clue: Excerpt, val answers: List<Excerpt>, val ver
         val blankRanges = DisjointRangeSet(answers.map { it.excerptRange })
         val blankedClueString: String = clue.formatRanges(blankRanges, blankOut()).normalizeWS()
         val answersString =
-            if (answers.map { it.excerptText.toLowerCase() }.distinct().count() == 1) answers.first().excerptText
+            if (answers.map { it.excerptText.lowercase() }.distinct().count() == 1) answers.first().excerptText
             else answers.joinToString("<br/>") { it.excerptText }
         return Card(
             blankedClueString,

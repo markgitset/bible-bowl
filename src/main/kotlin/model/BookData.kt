@@ -9,24 +9,27 @@ import net.markdrew.chupacabra.core.toDisjointRangeSet
 import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Path
+import java.util.*
 
 class BookData(val book: Book,
                val text: String,
                val verses: DisjointRangeMap<Int>,
                val headings: DisjointRangeMap<String>,
                val chapters: DisjointRangeMap<Int>,
-               val paragraphs: DisjointRangeSet) {
+               val paragraphs: DisjointRangeSet,
+               val footnotes: SortedMap<Int, String>
+) {
 
     val verseIndex: Map<Int, IntRange> by lazy {
-        verses.entries.map { (range, refNum) -> refNum to range }.toMap()
+        verses.entries.associate { (range, refNum) -> refNum to range }
     }
 
     val chapterIndex: Map<Int, IntRange> by lazy {
-        chapters.entries.map { (range, chapterNum) -> chapterNum to range }.toMap()
+        chapters.entries.associate { (range, chapterNum) -> chapterNum to range }
     }
 
     val wordIndex: Map<String, List<IntRange>> by lazy {
-        words.groupBy { wordRange -> text.substring(wordRange).toLowerCase() }
+        words.groupBy { wordRange -> text.substring(wordRange).lowercase() }
     }
 
     /**
@@ -41,12 +44,13 @@ class BookData(val book: Book,
     }
 
     fun writeData(outPath: Path) {
-        val outDir = outPath.resolve(book.name.toLowerCase())
+        val outDir = outPath.resolve(book.name.lowercase())
         writeText(outDir.resolve(textFileName(book)))
         writeVerseIndex(outDir.resolve(fileName(VERSE)))
         writeHeadingsIndex(outDir.resolve(fileName(HEADING)))
         writeChaptersIndex(outDir.resolve(fileName(CHAPTER)))
         writeParagraphsIndex(outDir.resolve(fileName(PARAGRAPH)))
+        writeFootnotesIndex(outDir.resolve(fileName(FOOTNOTE)))
     }
 
     private fun fileName(unit: AnalysisUnit): String = indexFileName(book, unit)
@@ -79,6 +83,12 @@ class BookData(val book: Book,
     private fun writeParagraphsIndex(outPath: Path) {
         writeIterable(outPath, paragraphs) { range ->
             println("${range.first}\t${range.last}")
+        }
+    }
+
+    private fun writeFootnotesIndex(outPath: Path) {
+        writeIterable(outPath, footnotes.entries) { (offset, noteText) ->
+            println("${offset}\t${noteText}")
         }
     }
 
@@ -134,7 +144,7 @@ class BookData(val book: Book,
         }
 
         private fun indexFileName(book: Book, unit: AnalysisUnit): String =
-            "${book.name.toLowerCase()}-${unit.name.toLowerCase()}s.tsv"
+            "${book.name.lowercase()}-${unit.name.toLowerCase()}s.tsv"
 
         private fun textFileName(book: Book): String = book.name.toLowerCase() + ".txt"
 
@@ -166,6 +176,13 @@ class BookData(val book: Book,
             }.toDisjointRangeSet()
         }
 
+        private fun readFootnotes(inPath: Path): SortedMap<Int, String> = inPath.toFile().useLines { linesSeq ->
+            linesSeq.map { line ->
+                val (offset, noteText) = line.split('\t')
+                offset.toInt() to noteText
+            }.toMap().toSortedMap()
+        }
+
         fun readData(inPath: Path, book: Book): BookData {
             val bookDir = inPath.resolve(book.name.toLowerCase())
             val text = bookDir.resolve(textFileName(book)).toFile().readText()
@@ -173,8 +190,10 @@ class BookData(val book: Book,
             val headings = readHeadings(bookDir.resolve(indexFileName(book, HEADING)))
             val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)))
             val paragraphs = readParagraphs(bookDir.resolve(indexFileName(book, PARAGRAPH)))
-            return BookData(book, text, verses, headings, chapters, paragraphs)
+            val footnotes = readFootnotes(bookDir.resolve(indexFileName(book, FOOTNOTE)))
+            return BookData(book, text, verses, headings, chapters, paragraphs, footnotes)
         }
 
     }
+
 }

@@ -13,7 +13,7 @@ fun main(args: Array<String>) {
 
     println("Bible Bowl!")
     val book: Book = Book.parse(args.getOrNull(0), Book.REV)
-    val bookName = book.name.toLowerCase()
+    val bookName = book.name.lowercase()
     val bookData = BookData.readData(Paths.get("output"), book)
 
 
@@ -35,7 +35,7 @@ fun buildNamesIndex(bookData: BookData,
                     frequencyRange: IntRange? = null,
                     vararg exceptNames: String): List<WordIndexEntry> =
     bookData.words.map { bookData.excerpt(it).disown() }
-        .groupBy { it.excerptText.toLowerCase() }
+        .groupBy { it.excerptText.lowercase() }
         .filterKeys { it !in STOP_NAMES && it !in exceptNames}
         .filterValues { excerpts ->
             excerpts.none { excerpt ->
@@ -48,7 +48,7 @@ fun buildNamesIndex(bookData: BookData,
 
 public fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt> {
     return bookData.words.map { bookData.excerpt(it).disown() }
-        .groupBy { it.excerptText.toLowerCase() }
+        .groupBy { it.excerptText.lowercase() }
         .filterKeys { it !in STOP_NAMES && it !in exceptNames}
         .filterValues { excerpts ->
             excerpts.none { excerpt ->
