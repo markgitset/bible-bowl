@@ -21,21 +21,11 @@ fun main(args: Array<String>) {
 
 //    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
 //    val call: Call<PassageText> = service.text("Jud-Rev1:12",
-    val call: Call<PassageText> = service.text("Gen1",
-            includePassageReferences = false,
-            includeFootnotes = true,
-            includeFootnoteBody = true,
-//            includeShortCopyright = false,
-            includePassageHorizontalLines = false,
-            includeHeadingHorizontalLines = true,
-//            horizontalLineLength = 55,
-            includeHeadings = true,
-            indentParagraphs = 0,
-//            indentPoetry = true,
-//            indentPoetryLines = 4,
-//            indentDeclares = 40,
-//            indentPsalmDoxology = 30,
-            lineLength = 0)
+    val call: Call<PassageText> = service.text("Gen1-Gen2",
+        includePassageReferences = false,
+        includeShortCopyright = false,
+        includePassageHorizontalLines = false
+    )
     val passage: PassageText? = call.execute().body()
     passage?.passages?.forEach { println(it) }
 

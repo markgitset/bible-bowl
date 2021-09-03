@@ -24,6 +24,7 @@ class BookIndexer(val book: Book) {
     val headings = DisjointRangeMap<String>()
     val chapters = DisjointRangeMap<Int>()
     val paragraphs = DisjointRangeSet()
+    val poetry = DisjointRangeSet()
     val footnotes = sortedMapOf<Int, String>()
 
     private var headingStart: Int = 0
@@ -34,7 +35,7 @@ class BookIndexer(val book: Book) {
     fun indexBook(chapterPassages: Sequence<Passage>): BookData {
         chapterPassages.forEach { indexChapter(it) }
         endHeading()
-        return BookData(book, buffer.toString(), verses, headings, chapters, paragraphs, footnotes)
+        return BookData(book, buffer.toString(), verses, headings, chapters, paragraphs, footnotes, poetry)
     }
 
     private fun indexChapter(chapterPassage: Passage) {
@@ -44,9 +45,19 @@ class BookIndexer(val book: Book) {
         var nextLineIsHeader = false
         var inFootnotes = false
         val noteOffsetsByNoteNumber = mutableMapOf<Int, Int>()
+        var inPoetry = false
+        var potentialPoetryStart = -1
         for (line in lines) {
             if (line.isBlank()) {
+                if (inPoetry)
+                    poetry.add(potentialPoetryStart..buffer.length)
+                potentialPoetryStart = -1
+                inPoetry = false
                 continue
+            } else {
+                if (potentialPoetryStart < 0) potentialPoetryStart = buffer.length
+                else
+                    inPoetry = true
             }
             if (line.trim().lowercase() == "footnotes") {
                 inFootnotes = true
@@ -60,12 +71,14 @@ class BookIndexer(val book: Book) {
                 continue
             }
             if (nextLineIsHeader) {
+                potentialPoetryStart = -1
                 currentHeading = line.trim()
                 headingStart = buffer.length
                 nextLineIsHeader = false
                 continue
             }
             if (line.trim().matches("""_+""".toRegex())) {
+                potentialPoetryStart = -1
                 nextLineIsHeader = true
                 if (buffer.isNotEmpty()) endHeading()
                 continue

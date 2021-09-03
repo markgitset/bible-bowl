@@ -67,6 +67,17 @@ private fun Appendable.appendText(bookData: BookData, verseRef: VerseRef, textRa
         .subMap(textRange.first, textRange.endExclusive)
         .entries.sortedByDescending { (k, _) -> k }
         .forEach { (k, v) -> text.insert(k - textRange.first, renderFootNote(verseRef, v)) }
+
+//    val lines = text.lines()
+//    val s = text.toString()
+//    Regex("""\n""").text
+//
+//    while (i < text.length)
+//    for (i in text.ran)
+//    text.forEachIndexed { index, c ->
+//        if (c != '\n') continue
+//
+//    }
     append(text)
 }
 
@@ -93,9 +104,13 @@ private fun Appendable.appendDocPreamble(book: Book) {
             \usepackage[utf8]{inputenc}
             \usepackage[margin=1in]{geometry}
             \usepackage{multicol}
-            %\usepackage{verse}
             
-            \renewcommand*{\thefootnote}{\alph{footnote}}
+            % restart footnote numbering on each page
+            \usepackage{perpage}
+            \MakePerPage{footnote}
+            
+            % use letters instead of numbers for footnotes
+            \renewcommand{\thefootnote}{\alph{footnote}}
             
             \renewcommand{\flagverse}[1]{
                 \hskip-25pt\rlap{#1}\hskip25pt

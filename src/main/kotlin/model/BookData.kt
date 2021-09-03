@@ -17,7 +17,8 @@ class BookData(val book: Book,
                val headings: DisjointRangeMap<String>,
                val chapters: DisjointRangeMap<Int>,
                val paragraphs: DisjointRangeSet,
-               val footnotes: SortedMap<Int, String>
+               val footnotes: SortedMap<Int, String>,
+               val poetry: DisjointRangeSet,
 ) {
 
     val verseIndex: Map<Int, IntRange> by lazy {
@@ -51,6 +52,7 @@ class BookData(val book: Book,
         writeChaptersIndex(outDir.resolve(fileName(CHAPTER)))
         writeParagraphsIndex(outDir.resolve(fileName(PARAGRAPH)))
         writeFootnotesIndex(outDir.resolve(fileName(FOOTNOTE)))
+        writePoetryIndex(outDir.resolve(fileName(POETRY)))
     }
 
     private fun fileName(unit: AnalysisUnit): String = indexFileName(book, unit)
@@ -82,6 +84,12 @@ class BookData(val book: Book,
 
     private fun writeParagraphsIndex(outPath: Path) {
         writeIterable(outPath, paragraphs) { range ->
+            println("${range.first}\t${range.last}")
+        }
+    }
+
+    private fun writePoetryIndex(outPath: Path) {
+        writeIterable(outPath, poetry) { range ->
             println("${range.first}\t${range.last}")
         }
     }
@@ -144,9 +152,9 @@ class BookData(val book: Book,
         }
 
         private fun indexFileName(book: Book, unit: AnalysisUnit): String =
-            "${book.name.lowercase()}-${unit.name.toLowerCase()}s.tsv"
+            "${book.name.lowercase()}-${unit.name.lowercase()}s.tsv"
 
-        private fun textFileName(book: Book): String = book.name.toLowerCase() + ".txt"
+        private fun textFileName(book: Book): String = book.name.lowercase() + ".txt"
 
         private fun readVerses(inPath: Path): DisjointRangeMap<Int> = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
@@ -169,7 +177,7 @@ class BookData(val book: Book,
             }.toMap(DisjointRangeMap())
         }
 
-        private fun readParagraphs(inPath: Path): DisjointRangeSet = inPath.toFile().useLines { linesSeq ->
+        private fun readDisjointRangeSet(inPath: Path): DisjointRangeSet = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
                 val (first, last) = line.split('\t').map { it.toInt() }
                 first..last
@@ -189,9 +197,10 @@ class BookData(val book: Book,
             val verses = readVerses(bookDir.resolve(indexFileName(book, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(book, HEADING)))
             val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)))
-            val paragraphs = readParagraphs(bookDir.resolve(indexFileName(book, PARAGRAPH)))
+            val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(book, PARAGRAPH)))
             val footnotes = readFootnotes(bookDir.resolve(indexFileName(book, FOOTNOTE)))
-            return BookData(book, text, verses, headings, chapters, paragraphs, footnotes)
+            val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(book, POETRY)))
+            return BookData(book, text, verses, headings, chapters, paragraphs, footnotes, poetry)
         }
 
     }

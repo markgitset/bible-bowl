@@ -9,5 +9,6 @@ enum class AnalysisUnit {
     HEADING,
     CHAPTER,
     BOOK,
-    FOOTNOTE
+    FOOTNOTE,
+    POETRY
 }
