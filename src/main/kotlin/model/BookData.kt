@@ -52,10 +52,10 @@ class BookData(val book: Book,
         writeChaptersIndex(outDir.resolve(fileName(CHAPTER)))
         writeParagraphsIndex(outDir.resolve(fileName(PARAGRAPH)))
         writeFootnotesIndex(outDir.resolve(fileName(FOOTNOTE)))
-        writePoetryIndex(outDir.resolve(fileName(POETRY)))
+        writePoetryIndex(outDir.resolve(fileName(POETRY, plural = false)))
     }
 
-    private fun fileName(unit: AnalysisUnit): String = indexFileName(book, unit)
+    private fun fileName(unit: AnalysisUnit, plural: Boolean = true): String = indexFileName(book, unit, plural)
 
     private fun writeText(outPath: Path) {
         val outFile: File = outPath.toFile()
@@ -151,8 +151,8 @@ class BookData(val book: Book,
             println("Wrote data to: $outPath")
         }
 
-        private fun indexFileName(book: Book, unit: AnalysisUnit): String =
-            "${book.name.lowercase()}-${unit.name.lowercase()}s.tsv"
+        private fun indexFileName(book: Book, unit: AnalysisUnit, plural: Boolean = true): String =
+            "${book.name.lowercase()}-${unit.name.lowercase()}${if (plural) "s" else ""}.tsv"
 
         private fun textFileName(book: Book): String = book.name.lowercase() + ".txt"
 
@@ -199,7 +199,7 @@ class BookData(val book: Book,
             val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)))
             val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(book, PARAGRAPH)))
             val footnotes = readFootnotes(bookDir.resolve(indexFileName(book, FOOTNOTE)))
-            val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(book, POETRY)))
+            val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(book, POETRY, plural = false)))
             return BookData(book, text, verses, headings, chapters, paragraphs, footnotes, poetry)
         }
 

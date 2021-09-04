@@ -50,7 +50,7 @@ class BookIndexer(val book: Book) {
         for (line in lines) {
             if (line.isBlank()) {
                 if (inPoetry)
-                    poetry.add(potentialPoetryStart..buffer.length)
+                    poetry.add(potentialPoetryStart until buffer.length)
                 potentialPoetryStart = -1
                 inPoetry = false
                 continue

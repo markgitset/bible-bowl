@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import java.nio.file.Paths
@@ -10,10 +11,11 @@ fun main(vararg args: String) {
     val client = EsvClient(
         includePassageReferences = false,
         includeShortCopyright = false,
-        includePassageHorizontalLines = false
+        includePassageHorizontalLines = false,
+        indentPoetryLines = INDENT_POETRY_LINES,
     )
     val indexer = BookIndexer(book)
-    val bookData: BookData = indexer.indexBook(client.bookByChapters(book).take(3))
-    bookData.writeData(Paths.get("data2"))
+    val bookData: BookData = indexer.indexBook(client.bookByChapters(book))
+    bookData.writeData(Paths.get("data"))
 }
 

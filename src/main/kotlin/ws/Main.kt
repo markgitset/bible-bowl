@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
 
 //    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
 //    val call: Call<PassageText> = service.text("Jud-Rev1:12",
-    val call: Call<PassageText> = service.text("Gen1-Gen2",
+    val call: Call<PassageText> = service.text("Gen3:14-16",
         includePassageReferences = false,
         includeShortCopyright = false,
         includePassageHorizontalLines = false

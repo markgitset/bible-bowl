@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
@@ -60,7 +61,7 @@ class EsvClient(val includePassageReferences: Boolean = true,
                 val indentUsing: String = "space",
                 val indentParagraphs: Int = 2,
                 val indentPoetry: Boolean = true,
-                val indentPoetryLines: Int = 4,
+                val indentPoetryLines: Int = INDENT_POETRY_LINES,
                 val indentDeclares: Int = 40,
                 val indentPsalmDoxology: Int = 30,
                 val lineLength: Int = 0,

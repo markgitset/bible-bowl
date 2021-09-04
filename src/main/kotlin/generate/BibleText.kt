@@ -1,6 +1,9 @@
 package net.markdrew.biblebowl.generate
 
-import net.markdrew.biblebowl.model.*
+import net.markdrew.biblebowl.INDENT_POETRY_LINES
+import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.endExclusive
 import net.markdrew.chupacabra.core.intersect
@@ -27,6 +30,11 @@ private fun writeBibleText(book: Book) {
 fun Appendable.appendBook(bookData: BookData) {
     appendDocPreamble(bookData.book)
 
+    val poetryAndProse = DisjointRangeMap<Boolean>().apply {
+        bookData.paragraphs.forEach { put(it, false) }
+        bookData.poetry.forEach { putForcefully(it, true) }
+    }
+
     bookData.chapters.gcdAlignment(bookData.headings).forEach { (range, chapterHeading) ->
         val (chapter, heading) = chapterHeading
         if (chapter != null && bookData.chapters.keyEnclosing(range)!!.first == range.first) {
@@ -35,14 +43,11 @@ fun Appendable.appendBook(bookData: BookData) {
         if (heading != null && bookData.headings.keyEnclosing(range)!!.first == range.first) {
             appendHeadingTitle(heading)
         }
-        bookData.paragraphs.enclosedBy(range).forEach { paragraph ->
-            appendParagraph(bookData, paragraph)
+        poetryAndProse.enclosedBy(range).forEach { (paragraph, isPoetry) ->
+            if (isPoetry) appendPoetry(bookData, paragraph)
+            else appendParagraph(bookData, paragraph)
         }
-//        appendLine(bookData.excerpt(range).excerptText)
     }
-//    bookData.chapters.forEach { (chapterRange, chapterNum) ->
-//        addChapter(bookData, chapterNum, chapterRange)
-//    }
 
     closeDoc()
 }
@@ -61,24 +66,39 @@ private fun Appendable.appendParagraph(bookData: BookData, paragraph: IntRange) 
     appendLine()
 }
 
-private fun Appendable.appendText(bookData: BookData, verseRef: VerseRef, textRange: IntRange) {
+private fun Appendable.appendPoetry(bookData: BookData, paragraph: IntRange) {
+    appendLine("""\begin{verse}""")
+    bookData.verses.intersectedBy(paragraph).entries.forEachIndexed { i, (verseRange, refNum) ->
+        val verseRef = VerseRef.fromRefNum(refNum)
+        if (verseRange.first in paragraph) {
+            if (i > 0) append("\\\\\n")
+            append("""\flagverse{\textbf{${verseRef.verse}}} """)
+        }
+        val textRange: IntRange = verseRange.intersect(paragraph)
+        appendText(bookData, verseRef, textRange, poetry = true)
+        append(' ')
+    }
+    appendLine("""\\""")
+    appendLine("""\end{verse}""")
+    appendLine()
+}
+
+private fun Appendable.appendText(bookData: BookData,
+                                  verseRef: VerseRef,
+                                  textRange: IntRange,
+                                  poetry: Boolean = false) {
     val text: StringBuilder = StringBuilder(bookData.text.substring(textRange))
     bookData.footnotes
         .subMap(textRange.first, textRange.endExclusive)
         .entries.sortedByDescending { (k, _) -> k }
         .forEach { (k, v) -> text.insert(k - textRange.first, renderFootNote(verseRef, v)) }
-
-//    val lines = text.lines()
-//    val s = text.toString()
-//    Regex("""\n""").text
-//
-//    while (i < text.length)
-//    for (i in text.ran)
-//    text.forEachIndexed { index, c ->
-//        if (c != '\n') continue
-//
-//    }
-    append(text)
+    var result = text.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
+    if (poetry) {
+        result = result
+            .replace("""\n""".toRegex(), "\\\\\\\\\n")
+            .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
+    }
+    append(result)
 }
 
 private fun renderFootNote(verseRef: VerseRef, note: String): String {
@@ -104,7 +124,11 @@ private fun Appendable.appendDocPreamble(book: Book) {
             \usepackage[utf8]{inputenc}
             \usepackage[margin=1in]{geometry}
             \usepackage{multicol}
+            \usepackage{verse}
             
+            \setlength{\parindent}{0pt} % no paragraph indent
+            \setlength{\parskip}{0.5em} % vertical space before each paragraph
+
             % restart footnote numbering on each page
             \usepackage{perpage}
             \MakePerPage{footnote}
