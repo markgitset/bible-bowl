@@ -52,11 +52,14 @@ fun Appendable.appendBook(bookData: BookData) {
     closeDoc()
 }
 
+private fun formatVerseNum(verseNum: Int): String =
+    """\versenum{$verseNum}"""
+
 private fun Appendable.appendParagraph(bookData: BookData, paragraph: IntRange) {
     bookData.verses.intersectedBy(paragraph).forEach { (verseRange, refNum) ->
         val verseRef = VerseRef.fromRefNum(refNum)
         if (verseRange.first in paragraph) {
-            append("""\textbf{${verseRef.verse}}~""")
+            append(formatVerseNum(verseRef.verse)).append('~')
         }
         val textRange: IntRange = verseRange.intersect(paragraph)
         appendText(bookData, verseRef, textRange)
@@ -72,7 +75,7 @@ private fun Appendable.appendPoetry(bookData: BookData, paragraph: IntRange) {
         val verseRef = VerseRef.fromRefNum(refNum)
         if (verseRange.first in paragraph) {
             if (i > 0) append("\\\\\n")
-            append("""\flagverse{\textbf{${verseRef.verse}}} """)
+            append("""\flagverse{""").append(formatVerseNum(verseRef.verse)).append("""} """)
         }
         val textRange: IntRange = verseRange.intersect(paragraph)
         appendText(bookData, verseRef, textRange, poetry = true)
@@ -126,6 +129,13 @@ private fun Appendable.appendDocPreamble(book: Book) {
             \usepackage{multicol}
             \usepackage{verse}
             
+            % enable highlighting words
+            \usepackage{tikz}
+            \newcommand\mybox[2][]{\tikz[overlay]\node[fill=blue!20,inner sep=2pt, anchor=text, rectangle, rounded corners=1mm,#1] {#2};\phantom{#2}}
+
+            \newcommand{\versenum}[1]{\mybox[fill=black!60]{\color{white}\textbf{#1}}}
+            \newcommand{\mychapter}[1]{\section*{Chapter #1}}
+
             \setlength{\parindent}{0pt} % no paragraph indent
             \setlength{\parskip}{0.5em} % vertical space before each paragraph
 
@@ -178,7 +188,5 @@ private fun Appendable.appendHeadingTitle(headingTitle: String) {
 }
 
 private fun Appendable.appendChapterTitle(chapterNum: Int) {
-    appendLine()
-    appendLine()
-    appendLine("""\section*{Chapter $chapterNum}""")
+    appendLine("\n\n\\mychapter{$chapterNum}")
 }
