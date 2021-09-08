@@ -73,20 +73,22 @@ class BibleTextRenderer(val fontSize: Int = 10) {
             
             % format chapter and section headings
             \usepackage{titlesec}
-            \titleformat*{\section}{\LARGE\bfseries\raggedright}
-            \titleformat*{\subsection}{\Large\bfseries\raggedright}
-            \titlespacing*{\section}{0pt}{3.5ex plus 1ex}{2ex plus 1ex}
-            \titlespacing*{\subsection}{0pt}{2.5ex plus 1ex}{1ex plus 1ex}
+            \titleformat*{\section}{\Large\bfseries\raggedright}
+            \titleformat*{\subsection}{\large\bfseries\raggedright}
+            \titlespacing*{\section}{0pt}{3ex plus 1ex}{1ex plus 1ex}
+            \titlespacing*{\subsection}{0pt}{2ex plus 1ex}{1ex plus 1ex}
             
             % enable highlighting words
             \usepackage{tikz}
             \newcommand\mybox[2][]{
-                \tikz[overlay]\node[fill=blue!20,inner sep=2pt, anchor=text, rectangle, rounded corners=1mm,#1] {#2}
-                \phantom{#2}
+                \tikz[overlay]\node[fill=blue!20,inner sep=2pt, anchor=text, rectangle, rounded corners=1mm,#1] {#2}; \phantom{#2}
             }
             
-            % custom commands for verse numbers and chapter titles
-            \newcommand{\versenum}[1]{\mybox[fill=black!80]{\color{white}\textbf{#1}}}
+            % custom command for verse numbers
+            % \mbox is needed to prevent line breaks immediately after a versenum
+            \newcommand{\versenum}[1]{\mbox{\mybox[fill=black!70]{\color{white}\textbf{#1}}}}
+            
+            % custom command for chapter titles
             \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}
             
             % restart footnote numbering on each page
@@ -121,7 +123,7 @@ class BibleTextRenderer(val fontSize: Int = 10) {
         bookData.verses.intersectedBy(paragraph).forEach { (verseRange, refNum) ->
             val verseRef = VerseRef.fromRefNum(refNum)
             if (verseRange.first in paragraph) {
-                append(formatVerseNum(verseRef.verse)).append('~')
+                append(formatVerseNum(verseRef.verse))
             }
             val textRange: IntRange = verseRange.intersect(paragraph)
             appendText(bookData, verseRef, textRange)
@@ -137,7 +139,7 @@ class BibleTextRenderer(val fontSize: Int = 10) {
             val verseRef = VerseRef.fromRefNum(refNum)
             if (verseRange.first in paragraph) {
                 if (i > 0) append("\\\\\n")
-                append("""\flagverse{""").append(formatVerseNum(verseRef.verse)).append("""} """)
+                append("""\flagverse{""").append(formatVerseNum(verseRef.verse)).append("""}""")
             }
             val textRange: IntRange = verseRange.intersect(paragraph)
             appendText(bookData, verseRef, textRange, poetry = true)
