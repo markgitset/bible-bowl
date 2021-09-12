@@ -25,6 +25,7 @@ fun main() {
 data class WithCount<T>(val item: T, val count: Int)
 typealias WordIndexEntryC = IndexEntry<String, WithCount<VerseRef>>
 typealias WordIndexEntry = IndexEntry<String, VerseRef>
+typealias VerseIndexEntry = IndexEntry<VerseRef, String>
 
 private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
     buildWordIndex

@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.latex.IndexEntry
@@ -17,25 +18,32 @@ fun main() {
 
 private fun writeOneTimeWordsIndex(book: Book) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
-    val indexEntries: List<WordIndexEntry> = oneTimeWordsIndex(bookData)
-    val file = File("output/$bookName", "$bookName-index-one-time-words.tex")
+    val bookData = BookData.readData(Paths.get("data"), book)
+    val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(bookData)
+    val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(bookData)
+    val file = File("products/$bookName", "$bookName-index-one-time-words.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} One-Time Words",
             docPreface = "The following words only appear one time in the whole book of ${book.fullName}.") {
 
-            writeIndex(writer, indexEntries.sortedBy { it.key.lowercase() }, "Alphabetical",
+            writeIndex(writer, indexEntriesByWord.sortedBy { it.key.lowercase() }, "Alphabetical",
                        columns = 4, formatValue = VerseRef::toChapterAndVerse)
             writer.appendLine("""\newpage""")
-            writeIndex(writer, indexEntries.sortedBy { it.values.single() }, "In Order of Appearance",
-                       columns = 4, formatValue = VerseRef::toChapterAndVerse)
+            writeIndex(writer, indexEntriesByVerse.sortedBy { it.key }, "In Order of Appearance",
+                       columns = 4, formatKey = VerseRef::toChapterAndVerse)
         }
     }
     println("Wrote $file")
 }
 
-private fun oneTimeWordsIndex(bookData: BookData): List<WordIndexEntry> = oneTimeWords(bookData).map {
+private fun oneTimeWordsIndexByWord(bookData: BookData): List<WordIndexEntry> = oneTimeWords(bookData).map {
     val ref: VerseRef = bookData.verseEnclosing(it) ?: throw Exception()
     IndexEntry(bookData.excerpt(it).excerptText, listOf(ref))
 }
 
+private fun oneTimeWordsIndexByVerse(bookData: BookData): List<VerseIndexEntry> = oneTimeWords(bookData)
+    .groupBy {
+        bookData.verseEnclosing(it) ?: throw Exception()
+    }.map { (ref, wordRanges) ->
+        IndexEntry(ref, wordRanges.map { bookData.excerpt(it).excerptText })
+    }
