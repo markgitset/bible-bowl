@@ -73,9 +73,10 @@ enum class Book(val fullName: String) {
     val number = ordinal + 1
 
     companion object {
+        val DEFAULT = GEN
         fun fromNumber(n: Int): Book = values()[n-1]
         fun parse(s: String?, default: Book): Book = if (s == null) default else try {
-            valueOf(s.toUpperCase())
+            valueOf(s.uppercase())
         } catch (e: IllegalArgumentException) {
             values().firstOrNull { it.fullName.lowercase().startsWith(s.lowercase()) } ?: default
         }
@@ -83,5 +84,5 @@ enum class Book(val fullName: String) {
 }
 
 fun main() {
-    println(Book.REV.number)
+    println(Book.DEFAULT.number)
 }

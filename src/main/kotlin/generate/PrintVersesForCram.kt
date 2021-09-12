@@ -2,8 +2,8 @@ package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.toVerseRef
 import java.nio.file.Paths
 
 

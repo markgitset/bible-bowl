@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
@@ -13,15 +15,15 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-    writeOneTimeWordsIndex(Book.GEN)
+    writeOneTimeWordsIndex(Book.DEFAULT)
 }
 
 private fun writeOneTimeWordsIndex(book: Book) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("data"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(bookData)
     val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(bookData)
-    val file = File("products/$bookName", "$bookName-index-one-time-words.tex")
+    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-one-time-words.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} One-Time Words",
             docPreface = "The following words only appear one time in the whole book of ${book.fullName}.") {

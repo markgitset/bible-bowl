@@ -5,12 +5,13 @@ import java.io.Writer
 data class IndexEntry<K, V>(val key: K, val values: List<V>)
 
 fun <K, V> writeIndex(writer: Writer,
-                           entries: Iterable<IndexEntry<K, V>>,
-                           indexTitle: String? = null,
-                           indexPreface: String? = null,
-                           columns: Int = 2,
-                           formatKey: (K) -> String = { it.toString() },
-                           formatValue: (V) -> String = { it.toString() }) {
+                      entries: Iterable<IndexEntry<K, V>>,
+                      indexTitle: String? = null,
+                      indexPreface: String? = null,
+                      columns: Int = 2,
+                      formatKey: (K) -> String = { it.toString() },
+                      formatValue: (V) -> String = { it.toString() }) {
+
     if (indexTitle != null) writer.appendLine("""\subsection*{$indexTitle}""")
     if (indexPreface != null) writer.appendLine(indexPreface).appendLine()
     writer.appendLine("""

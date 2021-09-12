@@ -16,7 +16,7 @@ val STOP_WORDS: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "
 
 fun main() {
     // word frequencies
-    val bookData = BookData.readData(Paths.get("output"), Book.GEN)
+    val bookData = BookData.readData(Paths.get("output"), Book.DEFAULT)
     val wordIndex: List<WordIndexEntry> = buildWordIndex(bookData, STOP_WORDS, frequencyRange = 2..Int.MAX_VALUE)
     printWordFrequencies(wordIndex)
     printWordIndex(wordIndex)

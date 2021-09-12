@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
@@ -15,12 +17,12 @@ import java.nio.file.Paths
 fun main() {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    writeFullIndex(Book.GEN, STOP_WORDS)
+    writeFullIndex(Book.DEFAULT, STOP_WORDS)
 }
 
 private fun writeFullIndex(book: Book, stopWords: Set<String>) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(bookData)
         .map { wordIndexEntry ->
             WordIndexEntryC(
@@ -28,7 +30,7 @@ private fun writeFullIndex(book: Book, stopWords: Set<String>) {
                 wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) -> WithCount(verseRef, count) }
             )
         }
-    val file = File("output/$bookName", "$bookName-index-full.tex")
+    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-full.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Index",
             docPreface = "The following is a complete index of all words in the whole book of ${book.fullName}, " +

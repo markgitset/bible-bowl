@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -13,13 +15,14 @@ import kotlin.random.nextInt
 private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
 
 fun main() {
-    for (i in 1..10) {
-        writeFindTheVerse(Book.REV, randomSeed = i)
-    }
+    writeFindTheVerse(Book.DEFAULT, throughChapter = 1, numOfVersesToFind = 20)
+//    for (i in 1..10) {
+//        writeFindTheVerse(Book.DEFAULT, randomSeed = i)
+//    }
 }
 
 private fun writeFindTheVerse(
-    book: Book = Book.REV,
+    book: Book = Book.DEFAULT,
     throughChapter: Int? = null,
     randomSeed: Int = Random.nextInt(1..9_999),
     minCharLength: Int = 15,
@@ -27,7 +30,7 @@ private fun writeFindTheVerse(
 ) {
     val random = Random(randomSeed)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
     val lastIncludedChapter: Int? = throughChapter?.let {
         val maxChapter = bookData.chapters.lastEntry().value
@@ -50,11 +53,12 @@ private fun writeFindTheVerse(
     if (throughChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
-    File("output/$bookName/$fileName.tex").writer().use { writer ->
+    val outputFile = File("$PRODUCTS_DIR/$bookName/$fileName.tex")
+    outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
     }
 
-    println("Wrote ${File("output/$bookName/$fileName.tex")}")
+    println("Wrote $outputFile")
 }
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")

@@ -41,13 +41,15 @@ class BookIndexer(val book: Book) {
     private fun indexChapter(chapterPassage: Passage) {
         val chapterStart = buffer.length
         val currentChapter = chapterPassage.range.first.toVerseRef().chapter
-        val lines: List<String> = chapterPassage.text.lines()
         var nextLineIsHeader = false
         var inFootnotes = false
         val noteOffsetsByNoteNumber = mutableMapOf<Int, Int>()
         var inPoetry = false
         var potentialPoetryStart = -1
-        for (line in lines) {
+        var lineCount = 0
+        for (line in chapterPassage.text.lines()) {
+            lineCount += 1
+            println("line $lineCount")
             if (line.isBlank()) {
                 if (inPoetry)
                     poetry.add(potentialPoetryStart until buffer.length)
@@ -56,8 +58,7 @@ class BookIndexer(val book: Book) {
                 continue
             } else {
                 if (potentialPoetryStart < 0) potentialPoetryStart = buffer.length
-                else
-                    inPoetry = true
+                else if (!inFootnotes) inPoetry = true
             }
             if (line.trim().lowercase() == "footnotes") {
                 inFootnotes = true

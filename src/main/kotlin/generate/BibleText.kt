@@ -1,6 +1,8 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.VerseRef
@@ -11,15 +13,15 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.GEN
+    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
     writeBibleText(book)
 }
 
 private fun writeBibleText(book: Book) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("data"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
     for (fontSize in setOf(10, 11, 12)) {
-        val file = File("products/$bookName/$bookName-bible-text-${fontSize}pt.tex")
+        val file = File("$PRODUCTS_DIR/$bookName/$bookName-bible-text-${fontSize}pt.tex")
         BibleTextRenderer(fontSize).renderToFile(file, bookData)
         println("Wrote $file")
     }

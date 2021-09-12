@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
@@ -16,6 +17,6 @@ fun main(vararg args: String) {
     )
     val indexer = BookIndexer(book)
     val bookData: BookData = indexer.indexBook(client.bookByChapters(book))
-    bookData.writeData(Paths.get("data"))
+    bookData.writeData(Paths.get(DATA_DIR))
 }
 
