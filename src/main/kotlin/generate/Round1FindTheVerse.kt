@@ -112,7 +112,12 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
     appendable.appendLine("""
         \end{longtable}
         \end{center}
-        \clearpage
+    """.trimIndent())
+
+    // if size <= 20, don't need this as it will just create a blank page
+    if (size > 20) appendable.appendLine("""\clearpage""")
+
+    appendable.appendLine("""
         \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
         \begin{multicols}{2}
         \begin{enumerate}
