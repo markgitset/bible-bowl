@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.chupacabra.core.DisjointRangeMap
@@ -10,7 +12,7 @@ import kotlin.random.nextInt
 
 fun main() {
     for (i in 1..10) {
-        writeRound5Events(Book.REV, randomSeed = i)
+        writeRound5Events(Book.DEFAULT, randomSeed = i)
     }
 }
 
@@ -33,14 +35,14 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<String>
 }
 
 private fun writeRound5Events(
-    book: Book = Book.REV,
+    book: Book = Book.DEFAULT,
     throughChapter: Int? = null,
     numQuestions: Int = 40,
     randomSeed: Int = Random.nextInt(1..9_999)
 ) {
     val random = Random(randomSeed)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
     val maxChapter: Int = bookData.chapters.lastEntry().value
     val lastIncludedChapter: Int? = throughChapter?.let {
@@ -64,13 +66,13 @@ private fun writeRound5Events(
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
-    File("output/$bookName/$fileName.tex").writer().use { writer ->
+    File("$PRODUCTS_DIR/$bookName/$fileName.tex").writer().use { writer ->
         toLatexInWhatChapter(
             headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
         )
     }
 
-    println("Wrote ${File("output/$bookName/$fileName.tex")}")
+    println("Wrote ${File("$PRODUCTS_DIR/$bookName/$fileName.tex")}")
 }
 
 fun toLatexInWhatChapter(

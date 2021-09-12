@@ -2,10 +2,10 @@ package analysis
 
 import net.markdrew.biblebowl.analysis.PhraseIndexEntry
 import net.markdrew.biblebowl.analysis.subsumes
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.Book.REV
 import net.markdrew.biblebowl.model.VerseRef
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PhraseAnalysisKtTest {

@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
@@ -13,11 +15,11 @@ fun highlightVerse(target: String, verse: String): String =
 
 fun main(args: Array<String>) {
     println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
-    val uniqueWordsFile = File("output/$bookName", "$bookName-cram-one-time-words.tsv")
+    val uniqueWordsFile = File("$PRODUCTS_DIR/$bookName", "$bookName-cram-one-time-words.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
         oneTimeWords(bookData)
             .forEach { wordRange ->

@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
@@ -9,17 +11,17 @@ import java.nio.file.Paths
 
 fun main(args: Array<String>) {
     println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
-    val cramHeadingsPath = Paths.get("output/$bookName").resolve("$bookName-cram-headings.tsv")
+    val cramHeadingsPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-headings.tsv")
 
     printHeadings(cramHeadingsPath, bookData)
     //printHeadings(PrintWriter(System.out), headingIndex)
     println("Wrote data to: $cramHeadingsPath")
 
-    val cramReverseHeadingsPath = Paths.get("output/$bookName").resolve("$bookName-cram-reverse-headings.tsv")
+    val cramReverseHeadingsPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-reverse-headings.tsv")
     printReverseHeadings(cramReverseHeadingsPath, bookData)
     //printHeadings(PrintWriter(System.out), headingIndex)
     println("Wrote data to: $cramReverseHeadingsPath")

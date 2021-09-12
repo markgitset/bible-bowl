@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.model
 
+import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.toMathString
@@ -29,7 +30,7 @@ fun identifyQuotes(text: String): DisjointRangeSet = DisjointRangeSet(
 )
 
 fun main() {
-    val bookData = BookData.readData(Paths.get("output"), Book.REV)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
 //    for (r in identifySingleQuotes(bookData.text)) {
 //        println(r.toMathString() + """ "${bookData.text.substring(r).normalizeWS()}"""")
 //    }

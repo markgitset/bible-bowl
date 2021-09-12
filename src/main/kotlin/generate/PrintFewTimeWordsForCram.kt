@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
@@ -56,9 +58,9 @@ private fun oneSectionWordCards(bookData: BookData,
         }.toMap()
 
 fun main(args: Array<String>) {
-    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
     // build one-chapter words
     val oneChapterWordCards: Map<Card, IntRange> = oneSectionWordCards(bookData, bookData.chapters, "Chapter ")
@@ -71,7 +73,7 @@ fun main(args: Array<String>) {
         .sortedBy { it.front }
 
     // write 'em out
-    val outFile = File("output/$bookName", "$bookName-cram-few-time-words.tsv")
+    val outFile = File("$PRODUCTS_DIR/$bookName", "$bookName-cram-few-time-words.tsv")
     CardWriter.writeCards(fewTimeWordCards, outFile)
     println("Wrote few-time words cards to $outFile")
 }

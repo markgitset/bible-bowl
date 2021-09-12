@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
@@ -13,8 +15,8 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-//    writePhrasesIndex(Book.REV, maxPhraseLength = 23)
-    writeNonLocalPhrasesIndex(Book.REV, maxPhraseLength = 23)
+    writePhrasesIndex(Book.DEFAULT, maxPhraseLength = 23)
+    writeNonLocalPhrasesIndex(Book.DEFAULT, maxPhraseLength = 23)
 }
 
 fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
@@ -22,14 +24,14 @@ fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
 
 private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
     val indexEntries: List<WordIndexEntryC> = buildPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->
             WordIndexEntryC(
             phraseIndexEntry.key.joinToString(" "),
             phraseIndexEntry.values.groupingBy { it }.eachCount().map { WithCount(it.key, it.value) }
         ) }
-    val file = File("output/$bookName", "$bookName-index-phrases.tex")
+    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-phrases.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Reoccurring Phrases",
             docPreface = "The following phrases appear at least twice in the book of ${book.fullName}.") {
@@ -46,14 +48,14 @@ private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
 
 private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->
             WordIndexEntryC(
             phraseIndexEntry.key.joinToString(" "),
             phraseIndexEntry.values.groupingBy { it }.eachCount().map { WithCount(it.key, it.value) }
         ) }
-    val file = File("output/$bookName", "$bookName-index-nonlocal-phrases.tex")
+    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-nonlocal-phrases.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Reoccurring Non-Local Phrases", docPreface = "The following phrases " +
                 "appear in at least two different chapters in the book of ${book.fullName}."

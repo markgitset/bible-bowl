@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.*
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
@@ -10,13 +12,13 @@ import kotlin.random.Random
 
 fun main() {
 //    val nSamples = 10
-    writeRound4Quotes(Book.REV, numQuestions = 35)
+    writeRound4Quotes(Book.DEFAULT, numQuestions = 35)
 }
 
 private const val ROUND_4_PACE = 40.0 / 15.0 // questions/minute
 
 private fun writeRound4Quotes(
-    book: Book = Book.REV,
+    book: Book = Book.DEFAULT,
     throughChapter: Int? = null,
     exampleNum: Int? = null,
     date: LocalDate = LocalDate.now(),
@@ -25,7 +27,7 @@ private fun writeRound4Quotes(
 ) {
     val random = Random(randomSeed)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
     val maxChapter: Int = bookData.chapters.lastEntry().value
     val lastIncludedChapter: Int? = throughChapter?.let {
@@ -48,13 +50,13 @@ private fun writeRound4Quotes(
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-$randomSeed"
 
-    File("output/$bookName/$fileName.tex").writer().use { writer ->
+    File("$PRODUCTS_DIR/$bookName/$fileName.tex").writer().use { writer ->
         toLatexInWhatChapter(
             quotesToFind, writer, book, lastIncludedChapter, round = 4, clueType = "quotes", ROUND_4_PACE, randomSeed
         )
     }
 
-    println("Wrote ${File("output/$bookName/$fileName.tex")}")
+    println("Wrote ${File("$PRODUCTS_DIR/$bookName/$fileName.tex")}")
 }
 
 private fun round4CluePool(bookData: BookData, lastIncludedChapter: Int?): Map<IntRange, Int> {

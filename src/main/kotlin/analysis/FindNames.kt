@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
@@ -12,16 +14,16 @@ import java.nio.file.Paths
 fun main(args: Array<String>) {
 
     println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
 
     val nameExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
     printFrequencies(nameExcerpts)
     printMatches(nameExcerpts, bookData)
 
-    val cramNameBlanksPath = Paths.get("output/$bookName").resolve("$bookName-cram-name-blanks.tsv")
+    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-name-blanks.tsv")
     CardWriter(cramNameBlanksPath).use {
         it.write(toCards(nameExcerpts, bookData))
     }

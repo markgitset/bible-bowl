@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.generate
 
+import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.cram.Card
 import net.markdrew.biblebowl.cram.CardWriter
@@ -26,15 +28,15 @@ fun main(args: Array<String>) {
     "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty")
 
     println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.REV)
+    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get("output"), book)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
 
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(bookData.text)
     printMatches(findNumbers(bookData.text), bookData)
 
-    val cramNumberBlanksPath = Paths.get("output/$bookName").resolve("$bookName-cram-number-blanks.tsv")
+    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
     CardWriter(cramNumberBlanksPath).use {
         it.write(toCards(numberExcerpts, bookData))
     }

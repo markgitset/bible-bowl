@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.analysis
 
+import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
@@ -15,7 +16,7 @@ fun <E> List<E>.containsSublist(subList: List<E>): Boolean = this.indexOfSublist
 
 fun main() {
     // phrase frequencies
-    val bookData = BookData.readData(Paths.get("output"), Book.REV)
+    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
     val phrasesIndex = buildPhrasesIndex(bookData, maxPhraseLength = 23)
     printPhraseFrequencies(phrasesIndex)
 }

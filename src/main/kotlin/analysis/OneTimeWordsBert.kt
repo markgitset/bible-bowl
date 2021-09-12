@@ -7,7 +7,7 @@ data class OneTimeWordData(val wordRange: IntRange, val sent: String, val wordSe
 
 @ExperimentalPathApi
 fun main() {
-//    val bookData = BookData.readData(Paths.get("output"), Book.REV)
+//    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
 //    val oneTimeWords: List<IntRange> = oneTimeWords(bookData)
 
     Bert.load("com/robrua/nlp/easy-bert/bert-cased-L-12-H-768-A-12").use { bert ->
