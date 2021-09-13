@@ -1,15 +1,20 @@
 package net.markdrew.biblebowl.model
 
+import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.Excerpt
 import net.markdrew.biblebowl.generate.excerpt
 import net.markdrew.biblebowl.model.AnalysisUnit.*
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import net.markdrew.chupacabra.core.intersect
 import net.markdrew.chupacabra.core.toDisjointRangeSet
 import java.io.File
 import java.io.PrintWriter
+import java.lang.Integer.max
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.*
+import kotlin.math.min
 
 class BookData(val book: Book,
                val text: String,
@@ -118,6 +123,22 @@ class BookData(val book: Book,
         return null
     }
 
+    /** The range of chapters in this book */
+    val chapterRange: IntRange by lazy {
+        val values = chapters.values
+        val min = values.minOrNull() ?: throw Exception("Should never happen!")
+        val max = values.maxOrNull() ?: throw Exception("Should never happen!")
+        min..max
+    }
+
+    /**
+     * Return the character range corresponding to the given chapter range
+     */
+    fun charRangeFromChapterRange(selectedChaptersRange: IntRange): IntRange {
+        val chapters = chapterRange.intersect(selectedChaptersRange) // ensure a valid chapter range
+        return chapterIndex.getValue(chapters.first).first..chapterIndex.getValue(chapters.last).last
+    }
+
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
 
@@ -191,8 +212,8 @@ class BookData(val book: Book,
             }.toMap().toSortedMap()
         }
 
-        fun readData(inPath: Path, book: Book): BookData {
-            val bookDir = inPath.resolve(book.name.toLowerCase())
+        fun readData(book: Book, inPath: Path = Paths.get(DATA_DIR)): BookData {
+            val bookDir = inPath.resolve(book.name.lowercase())
             val text = bookDir.resolve(textFileName(book)).toFile().readText()
             val verses = readVerses(bookDir.resolve(indexFileName(book, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(book, HEADING)))

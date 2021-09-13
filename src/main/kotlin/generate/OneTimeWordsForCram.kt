@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
     println("Bible Bowl!")
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
     val uniqueWordsFile = File("$PRODUCTS_DIR/$bookName", "$bookName-cram-one-time-words.tsv")
     CardWriter(uniqueWordsFile).use { writer ->

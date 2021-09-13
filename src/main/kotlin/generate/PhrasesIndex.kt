@@ -24,7 +24,7 @@ fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
 
 private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntries: List<WordIndexEntryC> = buildPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->
             WordIndexEntryC(
@@ -48,7 +48,7 @@ private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
 
 private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(bookData, maxPhraseLength)
         .map { phraseIndexEntry ->
             WordIndexEntryC(

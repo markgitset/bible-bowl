@@ -22,7 +22,7 @@ fun main() {
 
 private fun writeFullIndex(book: Book, stopWords: Set<String>) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(bookData)
         .map { wordIndexEntry ->
             WordIndexEntryC(

@@ -8,7 +8,7 @@ import java.nio.file.Paths
 
 fun main(vararg args: String) {
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     fun verseOfPosition(position: Int): String =
         bookData.verses.valueContaining(position)?.toVerseRef()?.toChapterAndVerse().orEmpty()
     bookData.sentences.filter { bookData.verseEnclosing(it) == null }

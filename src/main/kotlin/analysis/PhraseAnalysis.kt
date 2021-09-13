@@ -16,7 +16,7 @@ fun <E> List<E>.containsSublist(subList: List<E>): Boolean = this.indexOfSublist
 
 fun main() {
     // phrase frequencies
-    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
+    val bookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
     val phrasesIndex = buildPhrasesIndex(bookData, maxPhraseLength = 23)
     printPhraseFrequencies(phrasesIndex)
 }

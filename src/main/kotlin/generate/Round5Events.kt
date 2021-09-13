@@ -42,7 +42,7 @@ private fun writeRound5Events(
 ) {
     val random = Random(randomSeed)
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
     val maxChapter: Int = bookData.chapters.lastEntry().value
     val lastIncludedChapter: Int? = throughChapter?.let {

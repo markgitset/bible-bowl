@@ -30,7 +30,7 @@ fun identifyQuotes(text: String): DisjointRangeSet = DisjointRangeSet(
 )
 
 fun main() {
-    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
+    val bookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
 //    for (r in identifySingleQuotes(bookData.text)) {
 //        println(r.toMathString() + """ "${bookData.text.substring(r).normalizeWS()}"""")
 //    }

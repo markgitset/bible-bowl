@@ -20,7 +20,7 @@ fun main() {
 
 private fun writeOneTimeWordsIndex(book: Book) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(bookData)
     val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(bookData)
     val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-one-time-words.tex")

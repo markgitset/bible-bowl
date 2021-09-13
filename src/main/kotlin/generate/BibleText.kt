@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
 
 private fun writeBibleText(book: Book) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     for (fontSize in setOf(10, 11, 12)) {
         val file = File("$PRODUCTS_DIR/$bookName/$bookName-bible-text-${fontSize}pt.tex")
         BibleTextRenderer(fontSize).renderToFile(file, bookData)

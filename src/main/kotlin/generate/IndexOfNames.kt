@@ -21,7 +21,7 @@ fun main() {
 
 private fun writeNamesIndex(book: Book, stopWords: Set<String>) {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(Paths.get(DATA_DIR), book)
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntries: List<WordIndexEntryC> = buildNamesIndex(bookData)
         .map { wordIndexEntry ->
             WordIndexEntryC(
