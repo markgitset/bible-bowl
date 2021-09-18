@@ -3,12 +3,19 @@ package net.markdrew.biblebowl.generate
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.generate.annotations.AnnotatedDoc
+import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
+import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
+import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
+import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
+import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.chupacabra.core.DisjointRangeMap
-import net.markdrew.chupacabra.core.endExclusive
-import net.markdrew.chupacabra.core.intersect
+import net.markdrew.biblebowl.model.toVerseRef
 import java.io.File
 import java.nio.file.Paths
 
@@ -21,175 +28,148 @@ private fun writeBibleText(book: Book) {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     for (fontSize in setOf(10, 11, 12)) {
-        val file = File("$PRODUCTS_DIR/$bookName/$bookName-bible-text-${fontSize}pt.tex")
-        BibleTextRenderer(fontSize).renderToFile(file, bookData)
+        val file = File("$PRODUCTS_DIR/$bookName/$bookName-bible-text2-${fontSize}pt.tex")
+        BibleTextRenderer2(fontSize).renderToFile(file, bookData)
         println("Wrote $file")
     }
 }
 
-class BibleTextRenderer(val fontSize: Int = 10) {
+class BibleTextRenderer2(val fontSize: Int = 10) {
 
     fun renderToFile(file: File, bookData: BookData) {
-        file.writer().use { renderText(it, bookData) }
+        file.writer().use {
+            renderText(it, bookData)
+        }
     }
 
     fun renderText(out: Appendable, bookData: BookData) {
-        renderBook(out, bookData) {
-            val poetryAndProse = DisjointRangeMap<Boolean>().apply {
-                bookData.paragraphs.forEach { put(it, false) }
-                bookData.poetry.forEach { putForcefully(it, true) }
+        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
+            CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
+        )
+        for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
+
+            // endings
+
+            if (transition.isEnded(PARAGRAPH) && !transition.isPresent(POETRY)) out.appendLine()
+            if (transition.isEnded(BOOK)) postamble(out)
+            if (transition.isEnded(POETRY)) out.appendLine("\\end{verse}\n")
+
+            // beginnings
+
+            if (transition.isBeginning(BOOK)) preamble(out, bookData.book.fullName)
+
+            transition.beginning(CHAPTER)?.apply { out.appendChapterTitle(value as Int) }
+
+            transition.beginning(HEADING)?.apply { out.appendHeadingTitle(value as String) }
+
+            if (transition.isBeginning(POETRY)) out.appendLine("""\begin{verse}""")
+
+            transition.beginning(VERSE)?.apply {
+                out.append(
+                    formatVerseNum(
+                        VerseRef.fromRefNum(value as Int).verse,
+                        transition.isPresent(POETRY)
+                    )
+                )
             }
 
-            bookData.chapters.gcdAlignment(bookData.headings).forEach { (range, chapterHeading) ->
-                val (chapter, heading) = chapterHeading
-                if (chapter != null && bookData.chapters.keyEnclosing(range)!!.first == range.first) {
-                    appendChapterTitle(chapter)
+            transition.beginning(FOOTNOTE)?.apply {
+                val verseRef = (
+                        // subtract/add one from footnote offset to find verse in case
+                        // the footnote occurs at the end/beginning of the verse
+                        bookData.verses.valueContaining(excerpt.excerptRange.first)
+                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first - 1)
+                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first + 1)
+                        )?.toVerseRef()
+                out.append(renderFootNote(verseRef!!, value as String))
+            }
+
+            // text
+
+            var textToOutput = excerpt.excerptText.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
+            if (transition.isPresent(POETRY)) {
+                textToOutput = textToOutput
+                    .replace("""\n""".toRegex(), "\\\\\\\\\n")
+                    .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
+            }
+            out.append(textToOutput)
+        }
+    }
+
+    private fun postamble(out: Appendable) {
+        out.appendLine(
+            """
+                
+                \end{multicols}
+                \end{document}
+            """.trimIndent()
+        )
+    }
+
+    private fun preamble(out: Appendable, bookName: String) {
+        out.appendLine(
+            """
+                \documentclass[${fontSize}pt, letter paper, twoside]{article}
+                \usepackage[utf8]{inputenc}
+                \usepackage[margin=0.6in, bindingoffset=0.5in]{geometry}
+                \usepackage{multicol}
+                
+                \setlength{\parindent}{0pt} % no paragraph indent
+                \setlength{\parskip}{1ex plus 1ex} % vertical space before each paragraph
+                
+                % for formatting poetry
+                \usepackage{verse}
+                \renewcommand{\flagverse}[1]{
+                    \hskip-25pt\rlap{#1}\hskip25pt
+                    \ignorespaces
                 }
-                if (heading != null && bookData.headings.keyEnclosing(range)!!.first == range.first) {
-                    appendHeadingTitle(heading)
+                
+                % format chapter and section headings
+                \usepackage{titlesec}
+                \titleformat*{\section}{\Large\bfseries\raggedright}
+                \titleformat*{\subsection}{\large\bfseries\raggedright}
+                \titlespacing*{\section}{0pt}{3ex plus 1ex}{1ex plus 1ex}
+                \titlespacing*{\subsection}{0pt}{2ex plus 1ex}{1ex plus 1ex}
+                
+                % enable highlighting words
+                \usepackage{tikz}
+                \newcommand\mybox[2][]{
+                    \tikz[overlay]\node[fill=blue!20,inner sep=2pt, anchor=text, rectangle, rounded corners=1mm,#1] {#2}; \phantom{#2}
                 }
-                poetryAndProse.enclosedBy(range).forEach { (paragraph, isPoetry) ->
-                    if (isPoetry) appendPoetry(bookData, paragraph)
-                    else appendParagraph(bookData, paragraph)
-                }
-            }
-        }
+                
+                % custom command for verse numbers
+                % \mbox is needed to prevent line breaks immediately after a versenum
+                \newcommand{\versenum}[1]{\mbox{\mybox[fill=black!70]{\color{white}\textbf{#1}}}}
+                
+                % custom command for chapter titles
+                \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}
+                
+                % restart footnote numbering on each page
+                \usepackage{perpage}
+                \MakePerPage{footnote}
+                
+                % use letters instead of numbers for footnotes
+                \renewcommand{\thefootnote}{\alph{footnote}}
+                
+                \title{$bookName}
+                \author{}
+                \date{}
+                
+                \begin{document}
+                
+                \newpage
+                \begin{multicols}{2}
+                
+            """.trimIndent()
+        )
     }
 
-    private fun renderBook(out: Appendable, bookData: BookData, renderContents: Appendable.() -> Unit) {
-        out.appendLine("""
-            \documentclass[${fontSize}pt, letter paper, twoside]{article}
-            \usepackage[utf8]{inputenc}
-            \usepackage[margin=0.6in, bindingoffset=0.5in]{geometry}
-            \usepackage{multicol}
-            
-            \setlength{\parindent}{0pt} % no paragraph indent
-            \setlength{\parskip}{1ex plus 1ex} % vertical space before each paragraph
-            
-            % for formatting poetry
-            \usepackage{verse}
-            \renewcommand{\flagverse}[1]{
-                \hskip-25pt\rlap{#1}\hskip25pt
-                \ignorespaces
-            }
-            
-            % format chapter and section headings
-            \usepackage{titlesec}
-            \titleformat*{\section}{\Large\bfseries\raggedright}
-            \titleformat*{\subsection}{\large\bfseries\raggedright}
-            \titlespacing*{\section}{0pt}{3ex plus 1ex}{1ex plus 1ex}
-            \titlespacing*{\subsection}{0pt}{2ex plus 1ex}{1ex plus 1ex}
-            
-            % enable highlighting words
-            \usepackage{tikz}
-            \newcommand\mybox[2][]{
-                \tikz[overlay]\node[fill=blue!20,inner sep=2pt, anchor=text, rectangle, rounded corners=1mm,#1] {#2}; \phantom{#2}
-            }
-            
-            % custom command for verse numbers
-            % \mbox is needed to prevent line breaks immediately after a versenum
-            \newcommand{\versenum}[1]{\mbox{\mybox[fill=black!70]{\color{white}\textbf{#1}}}}
-            
-            % custom command for chapter titles
-            \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}
-            
-            % restart footnote numbering on each page
-            \usepackage{perpage}
-            \MakePerPage{footnote}
-            
-            % use letters instead of numbers for footnotes
-            \renewcommand{\thefootnote}{\alph{footnote}}
-            
-            \title{${bookData.book.fullName}}
-            \author{}
-            \date{}
-            
-            \begin{document}
-            
-            \newpage
-            \begin{multicols}{2}
-            
-        """.trimIndent())
-        out.renderContents()
-        out.appendLine("""
-            
-            \end{multicols}
-            \end{document}
-        """.trimIndent())
-    }
-
-    private fun formatVerseNum(verseNum: Int): String =
-        """\versenum{$verseNum}"""
-
-    private fun Appendable.appendParagraph(bookData: BookData, paragraph: IntRange) {
-        bookData.verses.intersectedBy(paragraph).forEach { (verseRange, refNum) ->
-            val verseRef = VerseRef.fromRefNum(refNum)
-            if (verseRange.first in paragraph) {
-                append(formatVerseNum(verseRef.verse))
-            }
-            val textRange: IntRange = verseRange.intersect(paragraph)
-            appendText(bookData, verseRef, textRange)
-            append(' ')
-        }
-        appendLine()
-        appendLine()
-    }
-
-    private fun Appendable.appendPoetry(bookData: BookData, paragraph: IntRange) {
-        appendLine("""\begin{verse}""")
-        bookData.verses.intersectedBy(paragraph).entries.forEachIndexed { i, (verseRange, refNum) ->
-            val verseRef = VerseRef.fromRefNum(refNum)
-            if (verseRange.first in paragraph) {
-                if (i > 0) append("\\\\\n")
-                append("""\flagverse{""").append(formatVerseNum(verseRef.verse)).append("""}""")
-            }
-            val textRange: IntRange = verseRange.intersect(paragraph)
-            appendText(bookData, verseRef, textRange, poetry = true)
-            append(' ')
-        }
-        appendLine("""\\""")
-        appendLine("""\end{verse}""")
-        appendLine()
-    }
-
-    private fun Appendable.appendText(bookData: BookData,
-                                      verseRef: VerseRef,
-                                      textRange: IntRange,
-                                      poetry: Boolean = false) {
-        val text: StringBuilder = StringBuilder(bookData.text.substring(textRange))
-        bookData.footnotes
-            .subMap(textRange.first, textRange.endExclusive)
-            .entries.sortedByDescending { (k, _) -> k }
-            .forEach { (k, v) -> text.insert(k - textRange.first, renderFootNote(verseRef, v)) }
-        var result = text.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
-        if (poetry) {
-            result = result
-                .replace("""\n""".toRegex(), "\\\\\\\\\n")
-                .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
-        }
-        append(result)
-    }
+    private fun formatVerseNum(verseNum: Int, inPoetry: Boolean): String =
+        """\versenum{$verseNum}""".let { if (inPoetry) "\\flagverse{$it}" else it }
 
     private fun renderFootNote(verseRef: VerseRef, note: String): String {
         val formattedNote = note.replace(Regex("""\*([^*]+)\*"""), """\\textit{$1}""")
         return """\footnote{${verseRef.toFullString()} $formattedNote}"""
-    }
-
-    private fun Appendable.addChapter(
-        bookData: BookData,
-        chapterNum: Int,
-        chapterRange: IntRange
-    ) {
-        appendChapterTitle(chapterNum)
-
-        val headingsInChapter: DisjointRangeMap<String> = bookData.headings.intersectedBy(chapterRange)
-
-        headingsInChapter.forEach { (headingRange, headingTitle) ->
-            if (headingRange.first in chapterRange) {
-                appendHeadingTitle(headingTitle)
-
-            }
-        }
     }
 
     private fun Appendable.appendHeadingTitle(headingTitle: String) {
