@@ -3,19 +3,23 @@ package net.markdrew.biblebowl.generate
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.annotations.AnnotatedDoc
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
+import net.markdrew.biblebowl.model.AnalysisUnit.NAME
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
 import java.nio.file.Paths
 
@@ -28,7 +32,7 @@ private fun writeBibleText(book: Book) {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     for (fontSize in setOf(10, 11, 12)) {
-        val file = File("$PRODUCTS_DIR/$bookName/$bookName-bible-text2-${fontSize}pt.tex")
+        val file = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-unique-${fontSize}pt.tex")
         BibleTextRenderer2(fontSize).renderToFile(file, bookData)
         println("Wrote $file")
     }
@@ -45,11 +49,16 @@ class BibleTextRenderer2(val fontSize: Int = 10) {
     fun renderText(out: Appendable, bookData: BookData) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
             CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
-        )
+        ).apply {
+            setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
+            setAnnotations(NAME, DisjointRangeSet(findNames(bookData, "god").map { it.excerptRange }.toList()))
+        }
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             // endings
 
+            if (transition.isEnded(UNIQUE_WORD)) out.append('}')
+//            if (transition.isEnded(NAME)) out.append('}')
             if (transition.isEnded(PARAGRAPH) && !transition.isPresent(POETRY)) out.appendLine()
             if (transition.isEnded(BOOK)) postamble(out)
             if (transition.isEnded(POETRY)) out.appendLine("\\end{verse}\n")
@@ -84,6 +93,9 @@ class BibleTextRenderer2(val fontSize: Int = 10) {
                 out.append(renderFootNote(verseRef!!, value as String))
             }
 
+            if (transition.isBeginning(UNIQUE_WORD)) out.append("""\uline{""")
+//            if (transition.isBeginning(NAME)) out.append("""\myname{""")
+
             // text
 
             var textToOutput = excerpt.excerptText.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
@@ -113,7 +125,8 @@ class BibleTextRenderer2(val fontSize: Int = 10) {
                 \usepackage[utf8]{inputenc}
                 \usepackage[margin=0.6in, bindingoffset=0.5in]{geometry}
                 \usepackage{multicol}
-                
+                \usepackage[normalem]{ulem}
+
                 \setlength{\parindent}{0pt} % no paragraph indent
                 \setlength{\parskip}{1ex plus 1ex} % vertical space before each paragraph
                 
@@ -140,6 +153,10 @@ class BibleTextRenderer2(val fontSize: Int = 10) {
                 % custom command for verse numbers
                 % \mbox is needed to prevent line breaks immediately after a versenum
                 \newcommand{\versenum}[1]{\mbox{\mybox[fill=black!70]{\color{white}\textbf{#1}}}}
+                
+                % custom command for names
+                % \mbox is needed to prevent line breaks immediately after a versenum
+                \newcommand{\myname}[1]{\mybox[fill=blue!50]{#1}}
                 
                 % custom command for chapter titles
                 \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}

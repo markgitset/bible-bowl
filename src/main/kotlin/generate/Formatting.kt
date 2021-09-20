@@ -15,6 +15,9 @@ data class Excerpt(val excerptText: String, val excerptRange: IntRange) {
     fun formatRanges(ranges: DisjointRangeSet, formatFun: (String) -> String): String =
         ranges.reversed().fold(excerptText) { tmpStr, range -> formatRange(tmpStr, relative(range), formatFun) }
 
+    /**
+     * Remove a possessive endings (e.g., "'s"), if present
+     */
     fun disown(): Excerpt = if (excerptText.endsWith("'s") || excerptText.endsWith("’s")) {
         Excerpt(excerptText.dropLast(2), excerptRange.first..(excerptRange.last-2))
     } else this

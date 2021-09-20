@@ -28,9 +28,9 @@ private fun writeNumbersIndex(book: Book, stopWords: Set<String>) {
             }
         )
     }
-    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-numbers.tex")
+    val file = File("$PRODUCTS_DIR/$bookName/indices", "$bookName-index-numbers.tex")
     file.writer().use { writer ->
-        writeDoc(writer, "${book.fullName} Index",
+        writeDoc(writer, "${book.fullName} Numbers Index",
             docPreface = "The following is a complete index of all numbers in the whole book of ${book.fullName}"//, " +
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {

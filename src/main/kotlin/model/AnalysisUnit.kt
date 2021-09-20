@@ -10,5 +10,8 @@ enum class AnalysisUnit {
     CHAPTER,
     BOOK,
     FOOTNOTE,
-    POETRY
+    POETRY,
+    UNIQUE_WORD,
+    NAME,
+    NUMBER,
 }

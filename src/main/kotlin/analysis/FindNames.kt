@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
     printFrequencies(nameExcerpts)
     printMatches(nameExcerpts, bookData)
 
-    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-name-blanks.tsv")
+    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
     CardWriter(cramNameBlanksPath).use {
         it.write(toCards(nameExcerpts, bookData))
     }
@@ -48,8 +48,8 @@ fun buildNamesIndex(bookData: BookData,
             WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
 
-public fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt> {
-    return bookData.words.map { bookData.excerpt(it).disown() }
+fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt> =
+    bookData.words.map { bookData.excerpt(it).disown() }
         .groupBy { it.excerptText.lowercase() }
         .filterKeys { it !in STOP_NAMES && it !in exceptNames}
         .filterValues { excerpts ->
@@ -57,7 +57,6 @@ public fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<E
                 excerpt.excerptText.first().let { it.isLowerCase() || it.isDigit() }
             }
         }.values.flatten().sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange }).asSequence()
-}
 
 private fun toCards(nameExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {
     return nameExcerpts.groupBy { excerpt ->
