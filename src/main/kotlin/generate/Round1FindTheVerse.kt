@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
@@ -15,9 +16,13 @@ import kotlin.random.nextInt
 private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
 
 fun main() {
-    writeFindTheVerse(Book.DEFAULT, throughChapter = 1, numOfVersesToFind = 20)
+    val book: Book = Book.DEFAULT
+//    writeFindTheVerse(book, throughChapter = 1, numOfVersesToFind = 20)
+    for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
+        writeFindTheVerse(book, randomSeed = 5, throughChapter = i, numOfVersesToFind = 20)
+    }
 //    for (i in 1..10) {
-//        writeFindTheVerse(Book.DEFAULT, randomSeed = i)
+//        writeFindTheVerse(book, randomSeed = i)
 //    }
 }
 
@@ -38,11 +43,19 @@ private fun writeFindTheVerse(
         if (it == maxChapter) null else it
     }
 
-    var cluePool = bookData.oneVerseSentParts
+    var cluePool: DisjointRangeMap<Int> = bookData.oneVerseSentParts
     if (lastIncludedChapter != null) {
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
+
+    // remove any ambiguous clues
+    cluePool = DisjointRangeMap(cluePool.entries
+        .groupBy { (range, _) -> bookData.text.substring(range).lowercase() }
+        .values
+        .mapNotNull { it.singleOrNull() }
+        .associate { (range, verse) -> range to verse }
+    )
 
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
@@ -53,7 +66,7 @@ private fun writeFindTheVerse(
     if (throughChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
-    val outputFile = File("$PRODUCTS_DIR/$bookName/$fileName.tex")
+    val outputFile = File("$PRODUCTS_DIR/$bookName/practice/$fileName.tex")
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
     }
