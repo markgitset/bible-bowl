@@ -2,24 +2,27 @@ package net.markdrew.biblebowl.latex
 
 import java.io.File
 
-fun toPdf(latexFile: File): File {
-    ProcessBuilder(
+fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false): File {
+    val processBuilder = ProcessBuilder(
         "pdflatex",
-        "-output-directory", latexFile.parent,
+        "-output-directory", parent,
         "-interaction", "nonstopmode",
-        latexFile.absolutePath
-    ).inheritIO().start().waitFor()
-    for (ext in setOf(".aux", ".log")) {
-        latexFile.resolveSibling(latexFile.nameWithoutExtension + ext).delete()
+        absolutePath
+    )
+    if (showStdIo) processBuilder.inheritIO()
+    processBuilder.start().waitFor()
+    if (!keepLogFiles) {
+        for (ext in setOf(".aux", ".log")) {
+            resolveSibling(nameWithoutExtension + ext).delete()
+        }
     }
-    return latexFile.resolveSibling(latexFile.nameWithoutExtension + ".pdf")
+    return resolveSibling("$nameWithoutExtension.pdf")
 }
 
-fun showPdf(pdfFile: File) {
-    val process: Process = ProcessBuilder("evince", pdfFile.absolutePath).inheritIO().start()
+fun showPdf(pdfFile: File): File = pdfFile.also {
+    ProcessBuilder("evince", pdfFile.absolutePath).inheritIO().start()
 }
 
 fun main() {
-    val pdf: File = toPdf(File("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex"))
-    showPdf(pdf)
+    showPdf(File("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").toPdf())
 }
