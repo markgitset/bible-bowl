@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.chupacabra.core.DisjointRangeMap
@@ -12,7 +13,7 @@ import kotlin.random.nextInt
 
 fun main() {
     for (i in 1..10) {
-        writeRound5Events(Book.DEFAULT, randomSeed = i)
+        writeRound5Events(Book.DEFAULT, randomSeed = i).toPdf()
     }
 }
 
@@ -39,40 +40,58 @@ private fun writeRound5Events(
     throughChapter: Int? = null,
     numQuestions: Int = 40,
     randomSeed: Int = Random.nextInt(1..9_999)
-) {
-    val random = Random(randomSeed)
+): File {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
-    val maxChapter: Int = bookData.chapters.lastEntry().value
-    val lastIncludedChapter: Int? = throughChapter?.let {
-        require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${book.fullName}!" }
-        if (it == maxChapter) null else it
+    val maxChapter: Int = bookData.chapterRange.last
+    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, maxChapter)
+
+    val headingsToFind: List<MultiChoiceQuestion> =
+        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions)
+
+    var fileName = "${book.name.lowercase()}-events"
+    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
+    fileName += "-%04d".format(randomSeed)
+
+    val texFile = File("$PRODUCTS_DIR/$bookName/$fileName.tex")
+    texFile.writer().use { writer ->
+        toLatexInWhatChapter(
+            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
+        )
     }
 
+    println("Wrote $texFile")
+    return texFile
+}
+
+fun headingsCluePool(
+    bookData: BookData,
+    lastIncludedChapter: Int?,
+    randomSeed: Int,
+    numQuestions: Int,
+): List<MultiChoiceQuestion> {
+    val random = Random(randomSeed)
     var cluePool: DisjointRangeMap<String> = bookData.headings
     if (lastIncludedChapter != null) {
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
 
-    val headingsToFind: List<MultiChoiceQuestion> = cluePool
+    return cluePool
         .entries.shuffled(random).take(numQuestions)
         .map { (range, heading) ->
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
-        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, random) }
+        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, random) }
+}
 
-    var fileName = "${book.name.lowercase()}-events"
-    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
-    fileName += "-%04d".format(randomSeed)
-
-    File("$PRODUCTS_DIR/$bookName/$fileName.tex").writer().use { writer ->
-        toLatexInWhatChapter(
-            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
-        )
-    }
-
-    println("Wrote ${File("$PRODUCTS_DIR/$bookName/$fileName.tex")}")
+fun lastIncludedChapter(
+    bookData: BookData,
+    throughChapter: Int?,
+): Int? = throughChapter?.let {
+    val maxChapter = bookData.chapterRange.last
+    require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${bookData.book.fullName}!" }
+    if (it == maxChapter) null else it
 }
 
 fun toLatexInWhatChapter(

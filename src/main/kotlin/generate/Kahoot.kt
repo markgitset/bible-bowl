@@ -35,6 +35,22 @@ class KahootContext(private val sheet: SXSSFSheet) {
 
     private var rowNum = 1
 
+    fun question(kahootQuestion: KahootQuestion) {
+        sheet.apply {
+            createRow(rowNum).apply {
+                createCell(0).setCellValue(rowNum.toDouble())
+                createCell(1).setCellValue(kahootQuestion.prompt)
+                createCell(2).setCellValue(kahootQuestion.answer1.toString())
+                createCell(3).setCellValue(kahootQuestion.answer2.toString())
+                createCell(4).setCellValue(kahootQuestion.answer3.toString())
+                createCell(5).setCellValue(kahootQuestion.answer4.toString())
+                createCell(6).setCellValue(kahootQuestion.timeLimit.name.drop(4).toDouble())
+                createCell(7).setCellValue(kahootQuestion.correctAnswers.joinToString(","))
+            }
+        }
+        rowNum++
+    }
+
     fun question(
         prompt: String,
         answer1: Any,

@@ -1,19 +1,19 @@
 # To Do List
 
 1. Build question bank for generating rounds 2 and 3
-2. ~~Generate Kahoot .xlsx sheets~~
-3. Highlight names and numbers in generated text
-4. Build question bank for generating power round
-5. ~~Fix page breaks in short find-the-verse tests~~
-6. For reoccurring non-local phrases, index by each word
-7. For reoccurring non-local phrases, improve deduplication
-8. Add chapter headings to back of fill-in-blank cards
-9. Function to break long passages (> 22 words) at conjunctions (for, e.g., round 4)
-10. Compute/use TF-IDF scores
-11. Word stemming
-12. Compute word co-occurrence stats
-13. Generate power round one-time word ordering questions (by grouping related one-time words)
-14. Build command-line interfaces for these utilities
+2. Highlight names and numbers in generated text
+3. Build question bank for generating power round
+4. For reoccurring non-local phrases, index by each word
+5. For reoccurring non-local phrases, improve deduplication
+6. Add chapter headings to back of fill-in-blank cards
+7. Function to break long passages (> 22 words) at conjunctions (e.g., for round 4)
+8. Compute/use TF-IDF scores
+9. Word stemming
+10. Compute word co-occurrence stats
+11. Generate power round one-time word ordering questions (by grouping related one-time words)
+12. Build command-line interfaces for these utilities
+13. ~~Generate Kahoot .xlsx sheets~~
+14. ~~Fix page breaks in short find-the-verse tests~~
 15. ~~Auto-compile latex to PDF~~
 16. ~~Ensure find-the-verse clues are unique in the book~~
 17. ~~Auto-produce text (with unique words underlined)~~
