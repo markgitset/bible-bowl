@@ -4,7 +4,7 @@
 2. ~~Generate Kahoot .xlsx sheets~~
 3. Highlight names and numbers in generated text
 4. Build question bank for generating power round
-5. Fix page breaks in short find-the-verse tests
+5. ~~Fix page breaks in short find-the-verse tests~~
 6. For reoccurring non-local phrases, index by each word
 7. For reoccurring non-local phrases, improve deduplication
 8. Add chapter headings to back of fill-in-blank cards

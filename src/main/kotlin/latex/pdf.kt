@@ -16,7 +16,9 @@ fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false): File 
             resolveSibling(nameWithoutExtension + ext).delete()
         }
     }
-    return resolveSibling("$nameWithoutExtension.pdf")
+    return resolveSibling("$nameWithoutExtension.pdf").also {
+        println("Wrote $it")
+    }
 }
 
 fun showPdf(pdfFile: File): File = pdfFile.also {

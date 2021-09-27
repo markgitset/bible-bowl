@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -14,12 +15,13 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
+private const val VERSES_PER_PAGE = 20
 
 fun main() {
     val book: Book = Book.DEFAULT
 //    writeFindTheVerse(book, throughChapter = 1, numOfVersesToFind = 20)
     for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
-        writeFindTheVerse(book, randomSeed = 5, throughChapter = i, numOfVersesToFind = 20)
+        writeFindTheVerse(book, randomSeed = 6, throughChapter = i, numOfVersesToFind = 20).toPdf()
     }
 //    for (i in 1..10) {
 //        writeFindTheVerse(book, randomSeed = i)
@@ -32,7 +34,7 @@ private fun writeFindTheVerse(
     randomSeed: Int = Random.nextInt(1..9_999),
     minCharLength: Int = 15,
     numOfVersesToFind: Int = 40,
-) {
+): File {
     val random = Random(randomSeed)
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
@@ -72,6 +74,7 @@ private fun writeFindTheVerse(
     }
 
     println("Wrote $outputFile")
+    return outputFile
 }
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
@@ -97,13 +100,16 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
                                                throughChapter: Int?) {
     val seedString = "%04d".format(randomSeed)
     val bookDesc = book + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
+    val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
         \usepackage[utf8]{inputenc}
-        \usepackage[letterpaper, left=0.75in, right=0.75in, top=1in, bottom=1in]{geometry}
+        \usepackage[letterpaper, left=0.75in, right=0.75in, top=0.75in, bottom=0.75in]{geometry}
         \usepackage{multicol}
         \usepackage[T1]{fontenc}
-        \usepackage{longtable}
+    """.trimIndent())
+    if (size > VERSES_PER_PAGE) appendable.appendLine("\\usepackage{longtable}")
+    appendable.appendLine("""
         \usepackage{array}
         \renewcommand{\arraystretch}{1.5}
         \newcounter{rowcount}
@@ -117,24 +123,20 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
         
         \begin{center}
-        \begin{longtable}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}p{5.5in}||m{0.3in}|m{0.3in}|}
+        \begin{$tabularEnv}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}p{5.5in}||m{0.3in}|m{0.3in}|}
             \multicolumn{1}{c}{}&\multicolumn{2}{c}{ANSWER}\\
             \multicolumn{1}{c}{}&\multicolumn{1}{c}{Chapter}&\multicolumn{1}{c}{Verse}\\
             \hline
     """.trimIndent())
-    this.forEach {
-        appendable.appendLine("""    ${removeUnmatchedCharPairs(it.verse.normalizeWS())} & & \\""")
+    this.forEachIndexed { i, refVerse ->
+        if (i > 0 && i % VERSES_PER_PAGE == 0) appendable.appendLine("    \\newpage\\hline")
+        appendable.appendLine("""    ${removeUnmatchedCharPairs(refVerse.verse.normalizeWS())} & & \\""")
         appendable.appendLine("""    \hline""")
     }
     appendable.appendLine("""
-        \end{longtable}
+        \end{$tabularEnv}
         \end{center}
-    """.trimIndent())
-
-    // if size <= 20, don't need this as it will just create a blank page
-    if (size > 20) appendable.appendLine("""\clearpage""")
-
-    appendable.appendLine("""
+        \clearpage
         \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
         \begin{multicols}{2}
         \begin{enumerate}
