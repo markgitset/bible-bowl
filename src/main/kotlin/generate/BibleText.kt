@@ -5,6 +5,7 @@ import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.annotations.AnnotatedDoc
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -32,15 +33,18 @@ private fun writeBibleText(book: Book) {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     for (fontSize in setOf(10, 11, 12)) {
-        val file = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-unique-${fontSize}pt.tex")
-        BibleTextRenderer2(fontSize).renderToFile(file, bookData)
-        println("Wrote $file")
+        val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-unique-${fontSize}pt.tex")
+        BibleTextRenderer(fontSize).renderToFile(latexFile, bookData)
+        println("Wrote $latexFile")
+        val pdfFile = latexFile.toPdf()
+        println("Wrote $pdfFile")
     }
 }
 
-class BibleTextRenderer2(val fontSize: Int = 10) {
+class BibleTextRenderer(val fontSize: Int = 10) {
 
     fun renderToFile(file: File, bookData: BookData) {
+        file.parentFile.mkdirs()
         file.writer().use {
             renderText(it, bookData)
         }

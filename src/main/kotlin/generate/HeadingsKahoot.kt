@@ -10,13 +10,13 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    writeHeadingsKahoot(Book.DEFAULT, throughChapter = 20, randomSeed = 0)
+    writeHeadingsKahoot(Book.DEFAULT, throughChapter = 10, randomSeed = 1)
 }
 
 private fun writeHeadingsKahoot(
     book: Book = Book.DEFAULT,
     throughChapter: Int? = null,
-    numQuestions: Int = 20,
+    numQuestions: Int = Int.MAX_VALUE,
     timeLimit: KahootTimeLimit = KahootTimeLimit.SEC_10,
     randomSeed: Int = Random.nextInt(1..9_999)
 ): File {
@@ -26,13 +26,13 @@ private fun writeHeadingsKahoot(
     val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
 
     val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions)
+        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 4)
 
     var fileName = "${book.name.lowercase()}-headings-kahoot"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
-    val xlsxFile = File("$PRODUCTS_DIR/$bookName/practice/$fileName.xlsx")
+    val xlsxFile = File("$PRODUCTS_DIR/$bookName/kahoot/$fileName.xlsx")
     kahoot(xlsxFile) {
         for (multiChoice in headingsToFind) {
             question(

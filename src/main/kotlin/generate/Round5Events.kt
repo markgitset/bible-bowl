@@ -48,7 +48,7 @@ private fun writeRound5Events(
     val lastIncludedChapter: Int? = lastIncludedChapter(bookData, maxChapter)
 
     val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions)
+        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 5)
 
     var fileName = "${book.name.lowercase()}-events"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
@@ -70,6 +70,7 @@ fun headingsCluePool(
     lastIncludedChapter: Int?,
     randomSeed: Int,
     numQuestions: Int,
+    nChoices: Int,
 ): List<MultiChoiceQuestion> {
     val random = Random(randomSeed)
     var cluePool: DisjointRangeMap<String> = bookData.headings
@@ -82,7 +83,7 @@ fun headingsCluePool(
         .entries.shuffled(random).take(numQuestions)
         .map { (range, heading) ->
             Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
-        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, random) }
+        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, random, nChoices) }
 }
 
 fun lastIncludedChapter(

@@ -49,7 +49,6 @@ class BookIndexer(val book: Book) {
         var lineCount = 0
         for (line in chapterPassage.text.lines()) {
             lineCount += 1
-            println("line $lineCount")
             if (line.isBlank()) {
                 if (inPoetry)
                     poetry.add(potentialPoetryStart until buffer.length)

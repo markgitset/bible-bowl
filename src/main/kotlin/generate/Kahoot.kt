@@ -79,6 +79,7 @@ class KahootContext(private val sheet: SXSSFSheet) {
 fun kahoot(file: File, sheetFun: KahootContext.() -> Unit) {
     SXSSFWorkbook().use { wb ->  // keep 100 rows in memory, exceeding rows will be flushed to disk
         KahootContext(wb.createSheet()).sheetFun()
+        file.parentFile.mkdirs()
         file.outputStream().buffered().use { wb.write(it) }
         wb.dispose() // dispose of temporary files backing this workbook on disk
     }
