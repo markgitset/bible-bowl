@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.annotations
+package net.markdrew.biblebowl.generate.text
 
 import net.markdrew.chupacabra.core.DisjointRangeMap
 

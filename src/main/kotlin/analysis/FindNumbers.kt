@@ -3,9 +3,9 @@ package net.markdrew.biblebowl.generate
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.WordIndexEntry
-import net.markdrew.biblebowl.cram.Card
-import net.markdrew.biblebowl.cram.CardWriter
-import net.markdrew.biblebowl.cram.FillInTheBlank
+import net.markdrew.biblebowl.generate.cram.Card
+import net.markdrew.biblebowl.generate.cram.CardWriter
+import net.markdrew.biblebowl.generate.cram.FillInTheBlank
 import net.markdrew.biblebowl.model.*
 import net.markdrew.biblebowl.model.BookData
 import java.nio.file.Paths

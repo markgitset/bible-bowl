@@ -1,7 +1,10 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.kahoot
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.generate.practice.MultiChoiceQuestion
+import net.markdrew.biblebowl.generate.practice.headingsCluePool
+import net.markdrew.biblebowl.generate.practice.lastIncludedChapter
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import java.io.File

@@ -1,10 +1,10 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.text
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.generate.annotations.AnnotatedDoc
+import net.markdrew.biblebowl.generate.findNames
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK

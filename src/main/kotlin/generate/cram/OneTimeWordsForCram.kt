@@ -1,9 +1,9 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.cram
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.cram.CardWriter
+import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.toVerseRef

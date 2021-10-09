@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.cram
+package net.markdrew.biblebowl.generate.cram
 
 import net.markdrew.chupacabra.core.NonCloseableWriter.Companion.stdout
 import java.io.Closeable

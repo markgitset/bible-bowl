@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.annotations
+package net.markdrew.biblebowl.generate.text
 
 data class TextRun<K>(
     val range: IntRange,

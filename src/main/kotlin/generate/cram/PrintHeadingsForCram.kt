@@ -1,8 +1,7 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.cram
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.cram.CardWriter
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.rangeLabel

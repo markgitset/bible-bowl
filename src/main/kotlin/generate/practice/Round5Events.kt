@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR

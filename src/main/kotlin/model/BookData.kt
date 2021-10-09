@@ -1,18 +1,13 @@
 package net.markdrew.biblebowl.model
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.generate.Excerpt
-import net.markdrew.biblebowl.generate.annotations.AnnotatedDoc
 import net.markdrew.biblebowl.generate.excerpt
-import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
-import net.markdrew.biblebowl.model.AnalysisUnit.SENTENCE
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
-import net.markdrew.biblebowl.model.AnalysisUnit.WORD
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.intersect
@@ -168,24 +163,6 @@ class BookData(val book: Book,
 
     fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.toRefNum()))
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
-
-    fun toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc<AnalysisUnit> =
-        AnnotatedDoc(text, BOOK).apply {
-            fun addAnns(unit: AnalysisUnit, map: DisjointRangeMap<*>) {
-                if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, map)
-            }
-            fun addAnns(unit: AnalysisUnit, set: DisjointRangeSet) {
-                if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, set)
-            }
-            addAnns(VERSE, verses)
-            addAnns(HEADING, headings)
-            addAnns(CHAPTER, chapters)
-            addAnns(PARAGRAPH, paragraphs)
-            addAnns(POETRY, poetry)
-            addAnns(SENTENCE, sentences)
-            addAnns(WORD, words)
-            if (FOOTNOTE in annotationTypes || annotationTypes.isEmpty()) setAnnotations(FOOTNOTE, footnotes)
-        }
 
     companion object {
 

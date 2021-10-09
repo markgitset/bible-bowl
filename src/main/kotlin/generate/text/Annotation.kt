@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.annotations
+package net.markdrew.biblebowl.generate.text
 
 data class Annotation<K>(
     val key: K,
