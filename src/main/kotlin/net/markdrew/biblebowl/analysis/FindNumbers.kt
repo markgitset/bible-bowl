@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(bookData.text)
-    printMatches(findNumbers(bookData.text), bookData)
+    printNumberMatches(findNumbers(bookData.text), bookData)
 
     val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
     CardWriter(cramNumberBlanksPath).use {
@@ -66,7 +66,7 @@ private fun toCards(numberExcerpts: Sequence<Excerpt>, bookData: BookData): List
     }
 }
 
-private fun printMatches(numberExcerpts: Sequence<Excerpt>, bookData: BookData) {
+private fun printNumberMatches(numberExcerpts: Sequence<Excerpt>, bookData: BookData) {
     numberExcerpts.forEachIndexed { i, numExcerpt ->
         val (numString, numRange) = numExcerpt
         val sentRange: Excerpt? = bookData.sentenceContext(numRange)

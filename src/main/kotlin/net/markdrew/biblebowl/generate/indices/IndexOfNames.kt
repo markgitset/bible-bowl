@@ -1,10 +1,12 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.indices
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
+import net.markdrew.biblebowl.analysis.buildNamesIndex
+import net.markdrew.biblebowl.generate.formatVerseRefWithCount
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex

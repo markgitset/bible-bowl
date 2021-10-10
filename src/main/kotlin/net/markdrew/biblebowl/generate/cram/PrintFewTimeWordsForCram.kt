@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate.cram
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.analysis.oneSectionWords
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.toVerseRef
@@ -40,20 +41,17 @@ fun mergeCards(vararg cardMaps: Map<Card, IntRange>): Collection<Card> =
 private fun oneSectionWordCards(bookData: BookData,
                                 sectionMap: DisjointRangeMap<out Any>,
                                 sectionPrefix: String = ""): Map<Card, IntRange> =
-    bookData.wordIndex
-        .filterValues { ranges -> ranges.size > 1 } // remove one-time words
-        .filterValues { ranges ->
-            ranges.map { sectionMap.valueEnclosing(it) }.distinct().count() == 1  // only entries all in same section
-        }.map { (word, ranges) ->
-            val (sectionRange, section) = sectionMap.entryEnclosing(ranges.first()) ?: throw Exception()
-            println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
-            val verseListString = ranges.joinToString {
-                bookData.verses.valueEnclosing(it)?.toVerseRef()?.toChapterAndVerse() ?: throw Exception()
-            }
-            val cardBack = listOf(sectionPrefix + section,
-                                  "(${ranges.size} times: $verseListString)").joinToString("<br/>")
-            Card(word, cardBack) to sectionRange
-        }.toMap()
+    oneSectionWords(bookData, sectionMap).associate { (word, ranges, section, sectionRange) ->
+        println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
+        val verseListString = ranges.joinToString {
+            bookData.verses.valueEnclosing(it)?.toVerseRef()?.toChapterAndVerse() ?: throw Exception()
+        }
+        val cardBack = listOf(
+            sectionPrefix + section,
+            "(${ranges.size} times: $verseListString)"
+        ).joinToString("<br/>")
+        Card(word, cardBack) to sectionRange
+    }
 
 fun main(args: Array<String>) {
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
@@ -71,7 +69,7 @@ fun main(args: Array<String>) {
         .sortedBy { it.front }
 
     // write 'em out
-    val outFile = File("$PRODUCTS_DIR/$bookName", "$bookName-cram-few-time-words.tsv")
+    val outFile = File("$PRODUCTS_DIR/$bookName/cram", "$bookName-cram-local-words.tsv")
     CardWriter.writeCards(fewTimeWordCards, outFile)
-    println("Wrote few-time words cards to $outFile")
+    println("Wrote local words cards to $outFile")
 }

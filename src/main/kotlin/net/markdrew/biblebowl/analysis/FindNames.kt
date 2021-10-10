@@ -1,34 +1,11 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.analysis.WordIndexEntry
-import net.markdrew.biblebowl.generate.cram.Card
-import net.markdrew.biblebowl.generate.cram.CardWriter
-import net.markdrew.biblebowl.generate.cram.FillInTheBlank
-import net.markdrew.biblebowl.model.*
+import net.markdrew.biblebowl.generate.blankOut
+import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
-import java.nio.file.Paths
-
-fun main(args: Array<String>) {
-
-    println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-
-
-    val nameExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
-    printFrequencies(nameExcerpts)
-    printMatches(nameExcerpts, bookData)
-
-    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
-    CardWriter(cramNameBlanksPath).use {
-        it.write(toCards(nameExcerpts, bookData))
-    }
-
-}
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
     "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember")
@@ -58,19 +35,7 @@ fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt>
             }
         }.values.flatten().sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange }).asSequence()
 
-private fun toCards(nameExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {
-    return nameExcerpts.groupBy { excerpt ->
-        bookData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception()
-    }.map { (sentRange, nameExcerpts) ->
-        FillInTheBlank(
-            sentRange,
-            nameExcerpts,
-            bookData.verseEnclosing(sentRange.excerptRange) ?: throw Exception()
-        ).toCramCard()
-    }
-}
-
-private fun printFrequencies(nameExcerpts: Sequence<Excerpt>) {
+fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
     nameExcerpts.groupBy { it.excerptText }
         .map { (name, excerpts) -> excerpts.size to name }
         .sortedBy { it.first }
@@ -79,7 +44,7 @@ private fun printFrequencies(nameExcerpts: Sequence<Excerpt>) {
         }
 }
 
-private fun printMatches(nameExcerpts: Sequence<Excerpt>, bookData: BookData) {
+fun printNameMatches(nameExcerpts: Sequence<Excerpt>, bookData: BookData) {
     nameExcerpts.forEachIndexed { i, numExcerpt ->
         val (nameString, nameRange) = numExcerpt
         val sentRange: Excerpt? = bookData.sentenceContext(nameRange)

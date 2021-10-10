@@ -134,12 +134,26 @@ class BookData(val book: Book,
     }
 
     /**
-     * Return the character range corresponding to the given chapter range
+     * @return the character range corresponding to the given chapter range
      */
     fun charRangeFromChapterRange(selectedChaptersRange: IntRange): IntRange {
         val chapters = chapterRange.intersect(selectedChaptersRange) // ensure a valid chapter range
         return chapterIndex.getValue(chapters.first).first..chapterIndex.getValue(chapters.last).last
     }
+
+    /**
+     * @return the character range from the beginning through [lastChapter], or the whole book if [lastChapter] is null
+     */
+    fun charRangeThroughChapter(lastChapter: Int?): IntRange =
+        if (lastChapter == null) text.indices
+        else charRangeFromChapterRange(1..lastChapter)
+
+    /**
+     * @return the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
+     * otherwise an empty string
+     */
+    fun maxChapterOrEmpty(prefix: String = "", maxChapter: Int?, suffix: String = ""): String =
+        maxChapter?.takeIf { it < chapterRange.last }?.let { prefix + it + suffix }.orEmpty()
 
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }

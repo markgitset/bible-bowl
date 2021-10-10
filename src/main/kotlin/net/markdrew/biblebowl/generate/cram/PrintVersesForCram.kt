@@ -16,7 +16,7 @@ fun main(args: Array<String>) {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
-    val cramFile = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-verses.tsv")
+    val cramFile = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-verses.tsv")
     CardWriter(cramFile).use {
         bookData.verses.forEach { (range, verseRefNum) ->
             val verseText = bookData.text.substring(range).normalizeWS()

@@ -1,4 +1,4 @@
-package analysis
+package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.analysis.PhraseIndexEntry
 import net.markdrew.biblebowl.analysis.subsumes
