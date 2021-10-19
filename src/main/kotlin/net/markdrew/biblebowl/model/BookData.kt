@@ -177,6 +177,7 @@ class BookData(val book: Book,
 
     fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.toRefNum()))
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
+    fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
 
     companion object {
 

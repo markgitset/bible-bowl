@@ -15,17 +15,18 @@
 13. In Cram one-words, don't highlight part of a word
 14. Allow hyphens in names (e.g., Tubal-cain)
 15. Exclude genealogies from generated names questions (or maybe score significance of names?)
-16. ~~Generate Kahoot .xlsx sheets~~
-17. ~~Fix page breaks in short find-the-verse tests~~
-18. ~~Auto-compile latex to PDF~~
-19. ~~Ensure find-the-verse clues are unique in the book~~
-20. ~~Auto-produce text (with unique words underlined)~~
-21. ~~Trim phrase entries that only differ by a leading/trailing stopword~~
-22. ~~Build human-oriented phrase indices for reference while studying~~
-23. ~~Handle numbers like "three and a half" and fractions~~
-24. ~~Add frequency count to word/phrase index entries~~ 
-25. ~~Generate round 4 (quotes)~~
-26. ~~Extract all numbers from the text (and build cram cards from them)~~
-27. ~~Build human-oriented word indices for reference while studying~~
-28. ~~Generate round 1 (find the verse)~~
-29. ~~Generate round 5 (events)~~
+16. ~~Add verse refs to practice tests' answer keys~~
+17. ~~Generate Kahoot .xlsx sheets~~
+18. ~~Fix page breaks in short find-the-verse tests~~
+19. ~~Auto-compile latex to PDF~~
+20. ~~Ensure find-the-verse clues are unique in the book~~
+21. ~~Auto-produce text (with unique words underlined)~~
+22. ~~Trim phrase entries that only differ by a leading/trailing stopword~~
+23. ~~Build human-oriented phrase indices for reference while studying~~
+24. ~~Handle numbers like "three and a half" and fractions~~
+25. ~~Add frequency count to word/phrase index entries~~ 
+26. ~~Generate round 4 (quotes)~~
+27. ~~Extract all numbers from the text (and build cram cards from them)~~
+28. ~~Build human-oriented word indices for reference while studying~~
+29. ~~Generate round 1 (find the verse)~~
+30. ~~Generate round 5 (events)~~

@@ -5,6 +5,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
@@ -12,14 +13,15 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    for (i in 1..10) {
-        writeRound5Events(Book.DEFAULT, randomSeed = i).toPdf()
-    }
+    writeRound5Events(Book.DEFAULT, throughChapter = 20, randomSeed = 9610).toPdf()
+//    for (i in 1..10) {
+//        writeRound5Events(Book.DEFAULT, randomSeed = i).toPdf()
+//    }
 }
 
 private const val ROUND_5_PACE = 40.0 / 10.0 // questions/minute
 
-data class Question(val question: String, val answer: String)
+data class Question(val question: String, val answer: String, val answerRef: VerseRef? = null)
 
 fun multiChoice(qAndA: Question, chaptersInBook: Int, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
     val chapter = qAndA.answer.toInt()
@@ -44,8 +46,7 @@ private fun writeRound5Events(
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
-    val maxChapter: Int = bookData.chapterRange.last
-    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, maxChapter)
+    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
 
     val headingsToFind: List<MultiChoiceQuestion> =
         headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 5)
@@ -54,7 +55,7 @@ private fun writeRound5Events(
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
     fileName += "-%04d".format(randomSeed)
 
-    val texFile = File("$PRODUCTS_DIR/$bookName/$fileName.tex")
+    val texFile = File("$PRODUCTS_DIR/$bookName/practice/round5/$fileName.tex").also { it.parentFile.mkdirs() }
     texFile.writer().use { writer ->
         toLatexInWhatChapter(
             headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
@@ -82,7 +83,10 @@ fun headingsCluePool(
     return cluePool
         .entries.shuffled(random).take(numQuestions)
         .map { (range, heading) ->
-            Question(heading, bookData.chapters.intersectedBy(range).firstEntry().value.toString())
+            Question(
+                heading,
+                bookData.chapters.intersectedBy(range).firstEntry().value.toString()
+            )
         }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, random, nChoices) }
 }
 
@@ -146,7 +150,8 @@ fun toLatexInWhatChapter(
         \begin{enumerate}
     """.trimIndent())
     questions.forEach {
-        appendable.appendLine("    \\item ${'A' + it.correctChoice}")
+        val ref: String = it.question.answerRef?.toChapterAndVerse() ?: "chapter ${it.question.answer}"
+        appendable.appendLine("    \\item ${'A' + it.correctChoice} ($ref)")
     }
     appendable.appendLine("""
         \end{enumerate}

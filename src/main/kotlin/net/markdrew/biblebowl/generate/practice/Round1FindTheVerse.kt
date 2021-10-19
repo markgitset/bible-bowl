@@ -20,12 +20,9 @@ private const val VERSES_PER_PAGE = 20
 
 fun main() {
     val book: Book = Book.DEFAULT
-//    writeFindTheVerse(book, throughChapter = 1, numOfVersesToFind = 20)
-    for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
-        writeFindTheVerse(book, randomSeed = 6, throughChapter = i, numOfVersesToFind = 20).toPdf()
-    }
-//    for (i in 1..10) {
-//        writeFindTheVerse(book, randomSeed = i)
+    writeFindTheVerse(book, randomSeed = 5, throughChapter = 10, numOfVersesToFind = 20)
+//    for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
+//        writeFindTheVerse(book, randomSeed = 6, throughChapter = i, numOfVersesToFind = 20).toPdf()
 //    }
 }
 
@@ -73,9 +70,7 @@ private fun writeFindTheVerse(
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
     }
-
-    println("Wrote $outputFile")
-    return outputFile
+    return outputFile.toPdf()
 }
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
