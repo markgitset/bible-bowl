@@ -48,7 +48,7 @@ class BookData(val book: Book,
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
     val words: DisjointRangeSet by lazy {
-        """\d{1,3}(?:,\d{3})+|\w+(?:[’']s)?""".toRegex().findAll(text).map { it.range }.toDisjointRangeSet()
+        """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex().findAll(text).map { it.range }.toDisjointRangeSet()
     }
 
     fun writeData(outPath: Path) {
