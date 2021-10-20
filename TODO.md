@@ -12,9 +12,9 @@
 10. Compute word co-occurrence stats
 11. Generate power round one-time word ordering questions (by grouping related one-time words)
 12. Build command-line interfaces for these utilities
-13. In Cram one-words, don't highlight part of a word
-14. Allow hyphens in names (e.g., Tubal-cain)
-15. Exclude genealogies from generated names questions (or maybe score significance of names?)
+13. Exclude genealogies from generated names questions (or maybe score significance of names?)
+14. ~~In Cram one-words, don't highlight part of a word~~
+15. ~~Allow hyphens in names (e.g., Tubal-cain)~~
 16. ~~Add verse refs to practice tests' answer keys~~
 17. ~~Generate Kahoot .xlsx sheets~~
 18. ~~Fix page breaks in short find-the-verse tests~~

@@ -7,6 +7,7 @@ import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildWordIndex
 import net.markdrew.biblebowl.latex.IndexEntry
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.Book
@@ -52,5 +53,5 @@ private fun writeFullIndex(book: Book, stopWords: Set<String>) {
                        columns = 5)
         }
     }
-    println("Wrote $file")
+    file.toPdf()
 }

@@ -8,7 +8,8 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
-    "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember")
+    "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember", "hurry", "possessor", "perhaps",
+    "oh", "suppose", "knead", "meanwhile", "quick", "raiders", "whichever", "unstable")
 
 fun buildNamesIndex(bookData: BookData,
                     frequencyRange: IntRange? = null,
