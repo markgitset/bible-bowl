@@ -13,7 +13,7 @@ import java.io.File
 import java.nio.file.Paths
 
 fun highlightVerse(target: String, verse: String): String =
-    verse.replace(Regex.fromLiteral(target), "<b><u>$0</u></b>")
+    verse.replace(Regex("""\b$target\b"""), "<b><u>$0</u></b>")
 
 fun main(args: Array<String>) {
     println(BANNER)
