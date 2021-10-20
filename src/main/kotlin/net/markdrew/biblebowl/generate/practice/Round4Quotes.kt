@@ -72,5 +72,9 @@ private fun round4CluePool(bookData: BookData, lastIncludedChapter: Int?): Map<I
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
-    return cluePool.filterKeys { it.length() >= 15 }
+    val longEnoughClues = cluePool.filterKeys { it.length() >= 15 }
+    // finally, ensure that we don't have any clues with more than one correct answer
+    return longEnoughClues.entries
+        .groupBy { (k, _) -> bookData.text.substring(k).lowercase() } // group clues by the text of the clue
+        .values.filter { it.size == 1 }.flatten().associate { (k, v) -> k to v } // only keep groups of one clue
 }
