@@ -1,16 +1,21 @@
 package net.markdrew.biblebowl.latex
 
+import org.apache.commons.io.output.NullOutputStream
 import java.io.File
 
-fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false): File {
+fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false, twice: Boolean = false): File {
+    if (twice) toPdf(showStdIo, keepLogFiles = true, twice = false)
+
     val processBuilder = ProcessBuilder(
         "pdflatex",
         "-output-directory", parent,
         "-interaction", "nonstopmode",
         absolutePath
-    )
-    if (showStdIo) processBuilder.inheritIO()
-    processBuilder.start().waitFor()
+    ).inheritIO()
+    // without this, it may hang when the output buffer fills up
+    if (!showStdIo) processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD)
+    val process = processBuilder.start()
+    process.waitFor()
     if (!keepLogFiles) {
         for (ext in setOf(".aux", ".log")) {
             resolveSibling(nameWithoutExtension + ext).delete()
