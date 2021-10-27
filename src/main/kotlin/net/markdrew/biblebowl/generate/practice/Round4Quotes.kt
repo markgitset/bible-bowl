@@ -13,7 +13,9 @@ import kotlin.random.nextInt
 
 fun main() {
 //    val nSamples = 10
-    writeRound4Quotes(Book.DEFAULT, numQuestions = 35, throughChapter = 12, randomSeed = 9610)
+    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
+        writeRound4Quotes(Book.DEFAULT, numQuestions = 33, randomSeed = 1, throughChapter = lastChapter)
+    }
 }
 
 private const val ROUND_4_PACE = 40.0 / 15.0 // questions/minute
