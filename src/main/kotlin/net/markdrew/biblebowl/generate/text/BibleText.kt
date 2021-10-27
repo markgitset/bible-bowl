@@ -25,23 +25,38 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
+//    writeBibleText(Book.LUK, TextOptions(fontSize = 12, chapterBreaksPage = true))
     val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
-    writeBibleText(book)
-}
-
-private fun writeBibleText(book: Book) {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     for (fontSize in setOf(10, 11, 12)) {
-        val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-unique-${fontSize}pt.tex")
-        BibleTextRenderer(fontSize).renderToFile(latexFile, bookData)
-        println("Wrote $latexFile")
-        val pdfFile = latexFile.toPdf()
-        println("Wrote $pdfFile")
+        val opts = TextOptions(fontSize = fontSize)
+        writeBibleText(book, opts)
     }
 }
 
-class BibleTextRenderer(val fontSize: Int = 10) {
+data class TextOptions(
+    val fontSize: Int = 10,
+    val uniqueWords: Boolean = false,
+    val names: Boolean = false,
+    val chapterBreaksPage: Boolean = false,
+) {
+    val fileNameSuffix: String by lazy {
+        (if (names) "names-" else "") +
+        (if (uniqueWords) "unique-" else "") +
+        (if (chapterBreaksPage) "breaks-" else "") +
+        "${fontSize}pt"
+    }
+}
+
+private fun writeBibleText(book: Book, opts: TextOptions) {
+    val bookName = book.name.lowercase()
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-${opts.fileNameSuffix}.tex")
+    BibleTextRenderer(opts).renderToFile(latexFile, bookData)
+    println("Wrote $latexFile")
+    latexFile.toPdf(twice = true)
+}
+
+class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
     fun renderToFile(file: File, bookData: BookData) {
         file.parentFile.mkdirs()
@@ -50,22 +65,38 @@ class BibleTextRenderer(val fontSize: Int = 10) {
         }
     }
 
-    fun renderText(out: Appendable, bookData: BookData) {
+    private fun renderText(out: Appendable, bookData: BookData) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
             CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
         ).apply {
-            setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
-            setAnnotations(NAME, DisjointRangeSet(findNames(bookData, "god").map { it.excerptRange }.toList()))
+            if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
+            if (opts.names) {
+                setAnnotations(NAME, DisjointRangeSet(findNames(bookData, "god").map { it.excerptRange }.toList()))
+            }
         }
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
+            // since footnotes are zero-width and follow the text to which they refer,
+            // we need to handle them before any endings
+            transition.beginning(FOOTNOTE)?.apply {
+                val verseRef = (
+                        // subtract/add one from footnote offset to find verse in case
+                        // the footnote occurs at the end/beginning of the verse
+                        bookData.verses.valueContaining(excerpt.excerptRange.first)
+                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first - 1)
+                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first + 1)
+                        )?.toVerseRef()
+                out.append(renderFootNote(verseRef!!, value as String))
+            }
+
             // endings
 
-            if (transition.isEnded(UNIQUE_WORD)) out.append('}')
-//            if (transition.isEnded(NAME)) out.append('}')
+            if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append('}')
+//            if (opts.names && transition.isEnded(NAME)) out.append('}')
             if (transition.isEnded(PARAGRAPH) && !transition.isPresent(POETRY)) out.appendLine()
             if (transition.isEnded(BOOK)) postamble(out)
             if (transition.isEnded(POETRY)) out.appendLine("\\end{verse}\n")
+            if (transition.isEnded(CHAPTER)) out.appendLine("\\clearpage")
 
             // beginnings
 
@@ -86,18 +117,7 @@ class BibleTextRenderer(val fontSize: Int = 10) {
                 )
             }
 
-            transition.beginning(FOOTNOTE)?.apply {
-                val verseRef = (
-                        // subtract/add one from footnote offset to find verse in case
-                        // the footnote occurs at the end/beginning of the verse
-                        bookData.verses.valueContaining(excerpt.excerptRange.first)
-                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first - 1)
-                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                        )?.toVerseRef()
-                out.append(renderFootNote(verseRef!!, value as String))
-            }
-
-            if (transition.isBeginning(UNIQUE_WORD)) out.append("""\uline{""")
+            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""\uline{""")
 //            if (transition.isBeginning(NAME)) out.append("""\myname{""")
 
             // text
@@ -125,7 +145,7 @@ class BibleTextRenderer(val fontSize: Int = 10) {
     private fun preamble(out: Appendable, bookName: String) {
         out.appendLine(
             """
-                \documentclass[${fontSize}pt, letter paper, twoside]{article}
+                \documentclass[${opts.fontSize}pt, letter paper, twoside]{article}
                 \usepackage[utf8]{inputenc}
                 \usepackage[margin=0.6in, bindingoffset=0.5in]{geometry}
                 \usepackage{multicol}
