@@ -34,7 +34,11 @@ fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt>
             excerpts.none { excerpt ->
                 excerpt.excerptText.first().let { it.isLowerCase() || it.isDigit() }
             }
-        }.values.flatten().sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange }).asSequence()
+        }
+        .values
+        .flatten()
+        .sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange })
+        .asSequence()
 
 fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
     nameExcerpts.groupBy { it.excerptText }

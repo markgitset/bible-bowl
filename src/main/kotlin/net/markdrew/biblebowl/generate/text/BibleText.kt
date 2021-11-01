@@ -5,6 +5,7 @@ import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.generate.findNumbers
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
@@ -12,6 +13,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.NAME
+import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
@@ -25,22 +27,24 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-//    writeBibleText(Book.LUK, TextOptions(fontSize = 12, chapterBreaksPage = true))
-    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
-    for (fontSize in setOf(10, 11, 12)) {
-        val opts = TextOptions(fontSize = fontSize)
-        writeBibleText(book, opts)
-    }
+    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = true, uniqueWords = false))
+//    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
+//    for (fontSize in setOf(10, 11, 12)) {
+//        val opts = TextOptions(fontSize = fontSize)
+//        writeBibleText(book, opts)
+//    }
 }
 
 data class TextOptions(
     val fontSize: Int = 10,
     val uniqueWords: Boolean = false,
     val names: Boolean = false,
+    val numbers: Boolean = false,
     val chapterBreaksPage: Boolean = false,
 ) {
     val fileNameSuffix: String by lazy {
         (if (names) "names-" else "") +
+        (if (numbers) "nums-" else "") +
         (if (uniqueWords) "unique-" else "") +
         (if (chapterBreaksPage) "breaks-" else "") +
         "${fontSize}pt"
@@ -73,8 +77,15 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             if (opts.names) {
                 setAnnotations(NAME, DisjointRangeSet(findNames(bookData, "god").map { it.excerptRange }.toList()))
             }
+            if (opts.numbers) {
+                setAnnotations(NUMBER, DisjointRangeSet(findNumbers(bookData.text).map { it.excerptRange }.toList()))
+            }
         }
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
+
+            if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append("}}")
+            if (opts.names && transition.isEnded(NAME)) out.append('}')
+            if (opts.numbers && transition.isEnded(NUMBER)) out.append('}')
 
             // since footnotes are zero-width and follow the text to which they refer,
             // we need to handle them before any endings
@@ -91,12 +102,10 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
             // endings
 
-            if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append('}')
-//            if (opts.names && transition.isEnded(NAME)) out.append('}')
             if (transition.isEnded(PARAGRAPH) && !transition.isPresent(POETRY)) out.appendLine()
             if (transition.isEnded(BOOK)) postamble(out)
             if (transition.isEnded(POETRY)) out.appendLine("\\end{verse}\n")
-            if (transition.isEnded(CHAPTER)) out.appendLine("\\clearpage")
+            if (opts.chapterBreaksPage && transition.isEnded(CHAPTER)) out.appendLine("\\clearpage")
 
             // beginnings
 
@@ -117,8 +126,9 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 )
             }
 
-            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""\uline{""")
-//            if (transition.isBeginning(NAME)) out.append("""\myname{""")
+            if (opts.names && transition.isBeginning(NAME)) out.append("""\myname{""")
+            if (opts.numbers && transition.isBeginning(NUMBER)) out.append("""\mynumber{""")
+            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""{\uline{""")
 
             // text
 
@@ -180,7 +190,11 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 
                 % custom command for names
                 % \mbox is needed to prevent line breaks immediately after a versenum
-                \newcommand{\myname}[1]{\mybox[fill=blue!50]{#1}}
+                % \newcommand{\myname}[1]{\mybox[fill=blue!50]{#1}}
+                \usepackage{color}
+                \usepackage{soul}
+                \newcommand{\myname}[1]{{\sethlcolor{yellow}\hl{#1}}}
+                \newcommand{\mynumber}[1]{{\sethlcolor{orange}\hl{#1}}}
                 
                 % custom command for chapter titles
                 \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}

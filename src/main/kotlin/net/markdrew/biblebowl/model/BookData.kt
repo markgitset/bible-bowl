@@ -47,9 +47,7 @@ class BookData(val book: Book,
 
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
-    val words: DisjointRangeSet by lazy {
-        """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex().findAll(text).map { it.range }.toDisjointRangeSet()
-    }
+    val words: DisjointRangeSet by lazy { parseWords(text).map { it.range }.toDisjointRangeSet() }
 
     fun writeData(outPath: Path) {
         val outDir = outPath.resolve(book.name.lowercase())
@@ -180,6 +178,9 @@ class BookData(val book: Book,
     fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
 
     companion object {
+
+        internal fun parseWords(text: String): Sequence<MatchResult> =
+            """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex().findAll(text)
 
         private fun <T> writeIterable(outPath: Path, iterable: Iterable<T>, formatFun: PrintWriter.(T) -> Unit) {
             outPath.toFile().printWriter().use { pw ->
