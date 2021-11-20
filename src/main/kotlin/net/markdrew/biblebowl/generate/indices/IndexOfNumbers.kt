@@ -5,7 +5,9 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
+import net.markdrew.biblebowl.analysis.buildNumbersIndex
 import net.markdrew.biblebowl.latex.IndexEntry
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.Book
@@ -43,13 +45,14 @@ private fun writeNumbersIndex(book: Book, stopWords: Set<String>) {
 
             val freqs: List<IndexEntry<String, Int>> = indexEntries
                 .map { IndexEntry(it.key, listOf(it.values.sumOf { withCount -> withCount.count })) }
-                .filter { it.values.single() > 1 }
+//                .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
             writeIndex(writer, freqs, "Numbers in ${book.fullName} in Order of Increasing Frequency",
                        indexPreface = "Each name here occurs in the book of ${book.fullName} " +
-                               "the number of times shown next to it.  One-time numbers are omitted for brevity.",
+                               "the number of times shown next to it.",//  One-time numbers are omitted for brevity.",
                        columns = 5)
         }
     }
-    println("Wrote $file")
+    file.toPdf()
+//    println("Wrote $file")
 }

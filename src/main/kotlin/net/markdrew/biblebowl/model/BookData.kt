@@ -1,7 +1,10 @@
 package net.markdrew.biblebowl.model
 
 import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.excerpt
+import net.markdrew.biblebowl.generate.text.AnnotatedDoc
+import net.markdrew.biblebowl.generate.text.toAnnotatedDoc
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
@@ -10,6 +13,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import net.markdrew.chupacabra.core.encloses
 import net.markdrew.chupacabra.core.intersect
 import net.markdrew.chupacabra.core.toDisjointRangeSet
 import java.io.File
@@ -243,4 +247,27 @@ class BookData(val book: Book,
 
     }
 
+}
+
+fun main() {
+    val bookData = BookData.readData(Book.GEN, Paths.get(DATA_DIR))
+//    for (w in bookData.words) {
+//        if (bookData.chapterIndex[8]!!.encloses(w))
+//            println(bookData.excerpt(w))
+//    } // worked
+//    for (w in oneTimeWords(bookData)) {
+//        if (bookData.chapterIndex[8]!!.encloses(w))
+//            println(bookData.excerpt(w))
+//    } // worked
+
+    val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
+        CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
+    ).apply {
+        setAnnotations(AnalysisUnit.UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
+    }
+    for (tr in annotatedDoc.textRuns()) {
+        if (bookData.chapterIndex[8]!!.encloses(tr.range)) {
+            println("${bookData.excerpt(tr.range).excerptText} $tr")
+        }
+    }
 }

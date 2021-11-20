@@ -1,45 +1,54 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.analysis.WordIndexEntry
+import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.cram.Card
-import net.markdrew.biblebowl.generate.cram.CardWriter
 import net.markdrew.biblebowl.generate.cram.FillInTheBlank
-import net.markdrew.biblebowl.model.*
+import net.markdrew.biblebowl.generate.normalizeWS
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.VerseRef
+import org.intellij.lang.annotations.Language
 import java.nio.file.Paths
 
-val ONE_AS_NUMBER = """(?<![Tt]he |a |[Nn]o |holy |true |each )\bone\b(?!\.| like| of| another| who| is| mind| seated)"""
-val SPECIAL_NUMBERS_PATTERN = """\b(?:zero|$ONE_AS_NUMBER|two|three|five|ten|eleven|twelve|forty|hundreds?|thousands?|myriads?)\b"""
-val NUMBER_PATTERN = """\b(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|four|fif|six|seven|eight?|nine)(?:teen|ty)?)\b"""
-val MULTI_NUMBER_PATTERN = """$NUMBER_PATTERN(?:(?:\-| | of |)$NUMBER_PATTERN)?"""
-val NUMERAL_PATTERN = """\d{1,3}(?:,\d\d\d)*"""
+@Language("RegExp") const val NUMERAL_PATTERN = """\d{1,3}(?:,\d\d\d)*"""
+@Language("RegExp") const val BASE_FRACTIONS =
+    """(?:hal(?:f|ve)|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)s?"""
+@Language("RegExp") const val ONE_AS_NUMBER =
+    """(?<=-)one|one(?= and|[\- ]$BASE_FRACTIONS)"""
+@Language("RegExp") const val SPECIAL_NUMBERS_PATTERN =
+    """\b(?:zero|$ONE_AS_NUMBER|two|three|five|ten|eleven|twelve|forty|hundreds?|thousands?|myriads?)\b"""
+@Language("RegExp") const val NUMBER_PATTERN =
+    """\b(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|four|fif|six|seven|eight?|nine)(?:teen|ty)?(?:fold)?)\b"""
+@Language("RegExp") const val MULTI_NUMBER_PATTERN = """$NUMBER_PATTERN(?:(?:-| | of |)$NUMBER_PATTERN)*"""
 
-val BASE_FRACTIONS = """(?:half|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)s?"""
-val FRACTIONS = """(?:$MULTI_NUMBER_PATTERN\s+and\s+(a|$MULTI_NUMBER_PATTERN)\s+$BASE_FRACTIONS|""" +
-        """$BASE_FRACTIONS(?=\s+(?:of|an?)\b))"""
+@Language("RegExp") const val TENS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)ty)"""
+@Language("RegExp") const val TENS_ORDINALS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)tieth)"""
+@Language("RegExp") const val TEENS = """(?:(?:thir|four|fif|six|seven|eigh|nine)teen)"""
+@Language("RegExp") const val ORDINALS =
+    """(?:(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|""" +
+            """(?:$TENS-)?(?:first|second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|$TEENS)th))\b)"""
+@Language("RegExp") const val FRACTIONS =
+    """(?:\b(?:$MULTI_NUMBER_PATTERN(?:\s+and\s+(a|$MULTI_NUMBER_PATTERN))?[\-\s]\s*)?$BASE_FRACTIONS\b)"""
 
-val COMBINED_NUMBER_PATTERN = "$MULTI_NUMBER_PATTERN|$NUMERAL_PATTERN|$FRACTIONS"
+@Language("RegExp") const val COMBINED_NUMBER_PATTERN = "$FRACTIONS|$ORDINALS|$MULTI_NUMBER_PATTERN|$NUMERAL_PATTERN"
 val NUMBER_REGEX = COMBINED_NUMBER_PATTERN.toRegex()
 
 fun main(args: Array<String>) {
-    val NUMBER_WORDS = setOf("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty")
 
     println("Bible Bowl!")
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
-
     val numberExcerpts: Sequence<Excerpt> = findNumbers(bookData.text)
-    printNumberMatches(findNumbers(bookData.text), bookData)
+    printNumberMatches(numberExcerpts, bookData)
 
-    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
-    CardWriter(cramNumberBlanksPath).use {
-        it.write(toCards(numberExcerpts, bookData))
-    }
+//    val bookName = book.name.lowercase()
+//    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
+//    CardWriter(cramNumberBlanksPath).use {
+//        it.write(toCards(numberExcerpts, bookData))
+//    }
 
 }
 

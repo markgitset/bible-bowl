@@ -5,7 +5,7 @@ import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.generate.findNumbers
+import net.markdrew.biblebowl.analysis.findNumbers
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
