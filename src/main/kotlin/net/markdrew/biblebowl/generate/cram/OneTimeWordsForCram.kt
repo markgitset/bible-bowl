@@ -24,7 +24,9 @@ fun main(args: Array<String>) {
     val oneTimeWords: List<IntRange> = oneTimeWords(bookData)
     for (lastChapter in bookData.chapterRange) {
         if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.last) {
-            writeFile(bookData, oneTimeWords, lastChapter)
+            writeFile(bookData, oneTimeWords, 1..lastChapter)
+            val firstChapter = lastChapter - stepByNChapters + 1
+            if (firstChapter > 1) writeFile(bookData, oneTimeWords, firstChapter..lastChapter)
         }
     }
 }
@@ -32,13 +34,13 @@ fun main(args: Array<String>) {
 private fun writeFile(
     bookData: BookData,
     oneTimeWords: List<IntRange>,
-    lastChapter: Int
+    chapterRange: IntRange
 ) {
     val bookName = bookData.book.name.lowercase()
-    val scopeString = bookData.maxChapterOrEmpty("-chapters-1-", lastChapter)
+    val scopeString = bookData.chapterRangeOrEmpty("-chapters-", chapterRange)
     val uniqueWordsFile = File("$PRODUCTS_DIR/$bookName/cram", "$bookName-cram-one-words$scopeString.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
-        writeCards(writer, oneTimeWords, bookData, throughChapter = lastChapter)
+        writeCards(writer, oneTimeWords, bookData, chapterRange)
     }
     println("Wrote $uniqueWordsFile")
 }
@@ -47,11 +49,11 @@ private fun writeCards(
     writer: CardWriter,
     oneTimeWords: List<IntRange>,
     bookData: BookData,
-    throughChapter: Int?
+    chapterRange: IntRange?
 ) {
     val words: List<IntRange> =
-        if (throughChapter == null) oneTimeWords
-        else oneTimeWords.filter { bookData.charRangeThroughChapter(throughChapter).encloses(it) }
+        if (chapterRange == null) oneTimeWords
+        else oneTimeWords.filter { bookData.charRangeFromChapterRange(chapterRange).encloses(it) }
     words.forEach { wordRange ->
         val (verseRange, verseRefNum) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
         val verseText: String = bookData.text.substring(verseRange)

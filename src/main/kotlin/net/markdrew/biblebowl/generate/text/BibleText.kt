@@ -27,7 +27,7 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = true, uniqueWords = false))
+    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
 //    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
 //    for (fontSize in setOf(10, 11, 12)) {
 //        val opts = TextOptions(fontSize = fontSize)
@@ -193,8 +193,10 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 % \newcommand{\myname}[1]{\mybox[fill=blue!50]{#1}}
                 \usepackage{color}
                 \usepackage{soul}
-                \newcommand{\myname}[1]{{\sethlcolor{yellow}\hl{#1}}}
-                \newcommand{\mynumber}[1]{{\sethlcolor{orange}\hl{#1}}}
+                \definecolor{namesColor}{rgb}{0.8, 0.9, 1.0} % light blue
+                \definecolor{numsColor}{rgb}{1.0, 0.85, 0.7} % light orange
+                \newcommand{\myname}[1]{{\sethlcolor{namesColor}\hl{#1}}}
+                \newcommand{\mynumber}[1]{{\sethlcolor{numsColor}\hl{#1}}}
                 
                 % custom command for chapter titles
                 \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}

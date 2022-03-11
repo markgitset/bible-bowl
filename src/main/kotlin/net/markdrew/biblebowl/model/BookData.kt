@@ -157,6 +157,13 @@ class BookData(val book: Book,
     fun maxChapterOrEmpty(prefix: String = "", maxChapter: Int?, suffix: String = ""): String =
         maxChapter?.takeIf { it < chapterRange.last }?.let { prefix + it + suffix }.orEmpty()
 
+    /**
+     * @return the given chapter range (with optional prefix/suffix) if it is less than all chapters of the book,
+     * otherwise an empty string
+     */
+    fun chapterRangeOrEmpty(prefix: String = "", range: IntRange?, suffix: String = ""): String =
+        range?.takeIf { it != chapterRange }?.let { prefix + it.first + "-" + it.last + suffix }.orEmpty()
+
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
 

@@ -13,7 +13,7 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
+    for (lastChapter in setOf(30)) {
         writeRound5Events(Book.DEFAULT, throughChapter = lastChapter, randomSeed = 1).toPdf()
     }
 //    for (i in 1..10) {
