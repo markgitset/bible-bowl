@@ -73,7 +73,7 @@ enum class Book(val fullName: String) {
     val number = ordinal + 1
 
     companion object {
-        val DEFAULT = GEN
+        val DEFAULT = MAT
         fun fromNumber(n: Int): Book = values()[n-1]
         fun parse(s: String?, default: Book): Book = if (s == null) default else try {
             valueOf(s.uppercase())

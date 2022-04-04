@@ -27,7 +27,9 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
+    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
+    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
+//    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
 //    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
 //    for (fontSize in setOf(10, 11, 12)) {
 //        val opts = TextOptions(fontSize = fontSize)

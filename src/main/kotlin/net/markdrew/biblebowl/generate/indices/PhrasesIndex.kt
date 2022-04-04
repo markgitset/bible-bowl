@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
 import net.markdrew.biblebowl.analysis.buildPhrasesIndex
+import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.Book
@@ -31,7 +32,8 @@ private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
             phraseIndexEntry.key.joinToString(" "),
             phraseIndexEntry.values.groupingBy { it }.eachCount().map { WithCount(it.key, it.value) }
         ) }
-    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-phrases.tex")
+    val dir = File("$PRODUCTS_DIR/$bookName/indices").also { it.mkdirs() }
+    val file = dir.resolve("$bookName-index-phrases.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Reoccurring Phrases",
             docPreface = "The following phrases appear at least twice in the book of ${book.fullName}.") {
@@ -43,7 +45,7 @@ private fun writePhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
                        columns = 2) { formatVerseRefWithCount(it) }
         }
     }
-    println("Wrote $file")
+    file.toPdf()
 }
 
 private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
@@ -55,7 +57,8 @@ private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
             phraseIndexEntry.key.joinToString(" "),
             phraseIndexEntry.values.groupingBy { it }.eachCount().map { WithCount(it.key, it.value) }
         ) }
-    val file = File("$PRODUCTS_DIR/$bookName", "$bookName-index-nonlocal-phrases.tex")
+    val dir = File("$PRODUCTS_DIR/$bookName/indices").also { it.mkdirs() }
+    val file = dir.resolve("$bookName-index-nonlocal-phrases.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Reoccurring Non-Local Phrases", docPreface = "The following phrases " +
                 "appear in at least two different chapters in the book of ${book.fullName}."
@@ -68,6 +71,6 @@ private fun writeNonLocalPhrasesIndex(book: Book, maxPhraseLength: Int = 50) {
                        columns = 2) { formatVerseRefWithCount(it) }
         }
     }
-    println("Wrote $file")
+    file.toPdf()
 }
 

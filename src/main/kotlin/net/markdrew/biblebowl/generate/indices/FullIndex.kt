@@ -31,7 +31,8 @@ private fun writeFullIndex(book: Book, stopWords: Set<String>) {
                 wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) -> WithCount(verseRef, count) }
             )
         }
-    val file = File("$PRODUCTS_DIR/$bookName/indices", "$bookName-index-full.tex")
+    val dir = File("$PRODUCTS_DIR/$bookName/indices").also { it.mkdirs() }
+    val file = dir.resolve("$bookName-index-full.tex")
     file.writer().use { writer ->
         writeDoc(writer, "${book.fullName} Word Index",
             docPreface = "The following is a complete index of all words in the whole book of ${book.fullName}, " +
