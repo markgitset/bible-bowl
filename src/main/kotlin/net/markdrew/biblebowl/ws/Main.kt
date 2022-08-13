@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 // Application keys must be included with each API request in an Authorization header.
 
-fun main(args: Array<String>) {
+fun main() {
 
     println("Bible Bowl!")
 

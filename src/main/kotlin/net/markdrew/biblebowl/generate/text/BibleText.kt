@@ -26,7 +26,7 @@ import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
 import java.nio.file.Paths
 
-fun main(args: Array<String>) {
+fun main() {
     writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
     writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
