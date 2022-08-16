@@ -149,6 +149,15 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             """
                 
                 \end{multicols}
+                \vspace*{\fill}
+                \vspace{\baselineskip}
+                \footnotesize
+                \noindent %\raggedright
+                Taken from the \textit{ESV}\textsuperscript{\textregistered}\textit{ Bible }
+                (\textit{The Holy Bible, English Standard Version}\textsuperscript{\textregistered}), 
+                Copyright \textsuperscript{\textcopyright} 2001 by Crossway, 
+                a publishing ministry of Good News Publishers. Used by permission. All rights reserved.
+                \vspace{\baselineskip}
                 \end{document}
             """.trimIndent()
         )
