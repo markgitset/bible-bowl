@@ -6,6 +6,8 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 private data class Footnote(val noteNum: Int, val verseRef: String, val noteText: String) {
     companion object {
@@ -32,8 +34,12 @@ class BookIndexer(val book: Book) {
 
     private lateinit var currentHeading: String
 
-    fun indexBook(chapterPassages: Sequence<Passage>): BookData {
-        chapterPassages.forEach { indexChapter(it) }
+    fun indexBook(chapterPassages: Sequence<Passage>, 
+                  timeBetweenChapters: Duration = 1.seconds): BookData {
+        chapterPassages.forEach {
+            indexChapter(it)
+            Thread.sleep(timeBetweenChapters.inWholeMilliseconds)
+        }
         endHeading()
         return BookData(book, buffer.toString(), verses, headings, chapters, paragraphs, footnotes, poetry)
     }
