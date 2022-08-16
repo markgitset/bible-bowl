@@ -7,8 +7,8 @@ import net.markdrew.biblebowl.model.BookData
 import java.nio.file.Paths
 
 fun main(vararg args: String) {
-    val bookName: String = args.getOrNull(0) ?: "gen"
-    val book: Book = Book.valueOf(bookName.uppercase())
+    val bookName: String? = args.getOrNull(0)
+    val book: Book = bookName?.let { Book.valueOf(it.uppercase()) } ?: Book.DEFAULT
     val client = EsvClient(
         includePassageReferences = false,
         includeShortCopyright = false,
