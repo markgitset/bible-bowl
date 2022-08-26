@@ -22,12 +22,12 @@ fun main(args: Array<String>) {
     printNameFrequencies(nameExcerpts)
     printNameMatches(nameExcerpts, bookData)
 
-    val stepByNChapters = 10
-    for (lastChapter in bookData.chapterRange) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.last) {
-            writeFile(bookData, nameExcerpts, lastChapter)
-        }
-    }
+//    val stepByNChapters = 10
+//    for (lastChapter in bookData.chapterRange) {
+//        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.last) {
+//            writeFile(bookData, nameExcerpts, lastChapter)
+//        }
+//    }
 //
 //    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
 //    CardWriter(cramNameBlanksPath).use {
