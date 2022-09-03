@@ -50,20 +50,24 @@ class BookIndexer(val book: Book) {
         var nextLineIsHeader = false
         var inFootnotes = false
         val noteOffsetsByNoteNumber = mutableMapOf<Int, Int>()
-        var inPoetry = false
+        var prevLineWasBlank = false
         var potentialPoetryStart = -1
         var lineCount = 0
         for (line in chapterPassage.text.lines()) {
             lineCount += 1
             if (line.isBlank()) {
-                if (inPoetry)
+                if (prevLineWasBlank) // poetry section ends with 2 blank lines
                     poetry.add(potentialPoetryStart until buffer.length)
+                else if (potentialPoetryStart >= 0 && !inFootnotes) {
+                    prevLineWasBlank = true
+                    continue
+                }
                 potentialPoetryStart = -1
-                inPoetry = false
+                prevLineWasBlank = false
                 continue
             } else {
-                if (potentialPoetryStart < 0) potentialPoetryStart = buffer.length
-                else if (!inFootnotes) inPoetry = true
+                if (prevLineWasBlank || potentialPoetryStart < 0) potentialPoetryStart = buffer.length
+                prevLineWasBlank = false
             }
             if (line.trim().lowercase() == "footnotes") {
                 inFootnotes = true
