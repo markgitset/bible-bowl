@@ -27,13 +27,13 @@ import java.nio.file.Paths
 @Language("RegExp") const val TENS_ORDINALS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)tieth)"""
 @Language("RegExp") const val TEENS = """(?:(?:thir|four|fif|six|seven|eigh|nine)teen)"""
 @Language("RegExp") const val ORDINALS =
-    """(?:(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|""" +
-            """(?:$TENS-)?(?:first|second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|$TEENS)th))\b)"""
+    """(?:(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|(?:$TENS-first)\b|""" +
+            """(?:$TENS-)?(?:second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|$TEENS)th))\b)"""
 @Language("RegExp") const val FRACTIONS =
     """(?:\b(?:$MULTI_NUMBER_PATTERN(?:\s+and\s+(a|$MULTI_NUMBER_PATTERN))?[\-\s]\s*)?$BASE_FRACTIONS\b)"""
 
 @Language("RegExp") const val COMBINED_NUMBER_PATTERN = "$FRACTIONS|$ORDINALS|$MULTI_NUMBER_PATTERN|$NUMERAL_PATTERN"
-val NUMBER_REGEX = COMBINED_NUMBER_PATTERN.toRegex()
+val NUMBER_REGEX = COMBINED_NUMBER_PATTERN.toRegex(RegexOption.IGNORE_CASE)
 
 fun main(args: Array<String>) {
 
