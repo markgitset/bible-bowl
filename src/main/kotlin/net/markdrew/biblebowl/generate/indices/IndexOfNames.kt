@@ -2,10 +2,10 @@ package net.markdrew.biblebowl.indices
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
+import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.generate.formatVerseRefWithCount
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
@@ -19,10 +19,22 @@ import java.nio.file.Paths
 fun main() {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    writeNamesIndex(Book.DEFAULT, STOP_WORDS)
+    writeNamesList(Book.DEFAULT)
+    writeNamesIndex(Book.DEFAULT)
 }
 
-private fun writeNamesIndex(book: Book, stopWords: Set<String>) {
+private fun writeNamesList(book: Book) {
+    val bookName = book.name.lowercase()
+    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val names: Sequence<String> = findNames(bookData).map { it.excerptText }.sorted()
+    val dir = File("$PRODUCTS_DIR/$bookName/lists").also { it.mkdirs() }
+    val file = dir.resolve("$bookName-list-names.txt")
+    file.writer().use { writer ->
+        for (name in names) writer.appendLine(name)
+    }
+}
+
+private fun writeNamesIndex(book: Book) {
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
     val indexEntries: List<WordIndexEntryC> = buildNamesIndex(bookData)
@@ -40,8 +52,7 @@ private fun writeNamesIndex(book: Book, stopWords: Set<String>) {
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {
 
-            val index: List<WordIndexEntryC> =
-                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
+            val index: List<WordIndexEntryC> = indexEntries.sortedBy { it.key.lowercase() }
             writeIndex(writer, index, columns = 3) { formatVerseRefWithCount(it) }
 
             writer.appendLine("""\newpage""")

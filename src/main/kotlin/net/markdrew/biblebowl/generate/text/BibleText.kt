@@ -27,8 +27,9 @@ import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
-    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
+//    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
+//    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
+    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
 //    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
 //    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
 //    for (fontSize in setOf(10, 11, 12)) {
@@ -77,7 +78,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
         ).apply {
             if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
             if (opts.names) {
-                setAnnotations(NAME, DisjointRangeSet(findNames(bookData, "god").map { it.excerptRange }.toList()))
+                setAnnotations(NAME, DisjointRangeSet(findNames(bookData).map { it.excerptRange }.toList()))
             }
             if (opts.numbers) {
                 setAnnotations(NUMBER, DisjointRangeSet(findNumbers(bookData.text).map { it.excerptRange }.toList()))
@@ -168,12 +169,12 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             """
                 \documentclass[${opts.fontSize}pt, letter paper, twoside]{article}
                 \usepackage[utf8]{inputenc}
-                \usepackage[margin=0.6in, bindingoffset=0.5in]{geometry}
+                \usepackage[margin=0.6in, bindingoffset=0.5in, foot=0.25in]{geometry}
                 \usepackage{multicol}
                 \usepackage[normalem]{ulem}
 
                 \setlength{\parindent}{0pt} % no paragraph indent
-                \setlength{\parskip}{1ex plus 1ex} % vertical space before each paragraph
+                \setlength{\parskip}{1ex plus 0.5ex} % vertical space before each paragraph
                 
                 % for formatting poetry
                 \usepackage{verse}
@@ -186,8 +187,8 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 \usepackage{titlesec}
                 \titleformat*{\section}{\Large\bfseries\raggedright}
                 \titleformat*{\subsection}{\large\bfseries\raggedright}
-                \titlespacing*{\section}{0pt}{3ex plus 1ex}{1ex plus 1ex}
-                \titlespacing*{\subsection}{0pt}{2ex plus 1ex}{1ex plus 1ex}
+                \titlespacing*{\section}{0pt}{3ex plus 0.5ex}{1ex plus 0.25ex}
+                \titlespacing*{\subsection}{0pt}{2ex plus 0.5ex}{1ex plus 0.25ex}
                 
                 % enable highlighting words
                 \usepackage{tikz}
