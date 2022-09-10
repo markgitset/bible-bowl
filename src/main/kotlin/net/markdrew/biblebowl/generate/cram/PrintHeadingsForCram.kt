@@ -8,6 +8,7 @@ import net.markdrew.biblebowl.rangeLabel
 import net.markdrew.chupacabra.core.intersect
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.math.roundToInt
 
 
 fun main(args: Array<String>) {
@@ -15,13 +16,27 @@ fun main(args: Array<String>) {
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookData = BookData.readData(book)
 
-    printHeadings(bookData)
     printReverseHeadings(bookData)
 
-//    for (i in bookData.chapterRange) {
-//        printHeadings(bookData, 1..i)
-//        printReverseHeadings(bookData, 1..i)
-//    }
+    // cumulative sets
+    val newHeadingsPerSet = 10
+    val idealNumberOfSets = bookData.headings.size / newHeadingsPerSet.toFloat()
+    //println("idealNumberOfSets = $idealNumberOfSets")
+    val newChaptersPerSet = (bookData.chapters.size / idealNumberOfSets).roundToInt()
+    //println("newChaptersPerSet = $newChaptersPerSet")
+    for (chunk in bookData.chapterRange.chunked(newChaptersPerSet)) {
+//        println(1..chunk.last())
+        printHeadings(bookData, 1..chunk.last())
+    }
+//    println()
+
+    // exclusive sets
+    val nChunks = 4
+    val chunkSize = bookData.chapterRange.last / nChunks
+    for (chunk in bookData.chapterRange.chunked(chunkSize)) {
+//        println(chunk.first()..chunk.last())
+        printHeadings(bookData, chunk.first()..chunk.last())
+    }
 }
 
 private fun makePath(bookData: BookData, fileType: String, chapterRange: IntRange): Path {

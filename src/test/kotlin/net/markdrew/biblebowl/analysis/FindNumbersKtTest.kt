@@ -64,11 +64,12 @@ internal class FindNumbersKtTest {
     @Test
     fun `findNumbers finds simple ordinals`() {
         val simpleOrdinals = listOf(
-            "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
+            "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
             "tenth", "eleventh", "twelfth"
         )
         assertRegexMatch(ORDINALS, simpleOrdinals)
         assertFound(simpleOrdinals)
+        assertNotFound("first")
     }
 
     @Test
@@ -108,6 +109,7 @@ internal class FindNumbersKtTest {
     fun `findNumbers finds weird combos`() {
         assertFound(listOf(
             "thousands of ten thousands",
+            "six hundred and second",
             "six hundred and first"
         ))
     }
@@ -116,6 +118,7 @@ internal class FindNumbersKtTest {
     fun `findNumbers finds folds`() {
         assertFound(listOf(
             "sevenfold",
+            "hundredfold",
             "seventy-sevenfold"
         ))
     }

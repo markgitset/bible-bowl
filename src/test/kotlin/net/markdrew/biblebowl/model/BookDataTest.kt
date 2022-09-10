@@ -10,7 +10,7 @@ internal class BookDataTest {
     fun `hyphenated words parse as one word`() {
         assertEquals(
             listOf("There", "were", "twenty-seven", "dogs"),
-            BookData.parseWords("There were twenty-seven dogs.").map { it.value }.toList()
+            BookData.wordsPattern.findAll("There were twenty-seven dogs.").map { it.value }.toList()
         )
     }
 }

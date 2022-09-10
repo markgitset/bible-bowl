@@ -16,20 +16,32 @@ import net.markdrew.biblebowl.model.AnalysisUnit.NAME
 import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
 import java.nio.file.Paths
 
+private val divineNames = setOf("God", "Jesus", "Christ", "Holy Spirit", "Immanuel", "Father", "Spirit of God",
+    "Son of God", "Son of Man", "Son of David", "Lord of the harvest", "Spirit of your Father", "Son")
+
 fun main() {
+    val customHighlights = mapOf(
+        "yellow" to divineNames.map { it.toRegex() }.toSet(),
+        "namesColor" to setOf("John the Baptist".toRegex()),
+    )
 //    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
+    writeBibleText(
+        Book.DEFAULT,
+        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+    )
 //    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
 //    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
 //    for (fontSize in setOf(10, 11, 12)) {
@@ -44,6 +56,7 @@ data class TextOptions(
     val names: Boolean = false,
     val numbers: Boolean = false,
     val chapterBreaksPage: Boolean = false,
+    val customHighlights: Map<String, Set<Regex>> = emptyMap()
 ) {
     val fileNameSuffix: String by lazy {
         (if (names) "names-" else "") +
@@ -74,19 +87,34 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
     private fun renderText(out: Appendable, bookData: BookData) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
-            CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
+            CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
         ).apply {
+            val regexAnnotationsRangeMap: DisjointRangeMap<String> =
+                opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
+                    drm.apply {
+                        putAll(bookData.findAll(*patterns.toTypedArray()).associateWith { color })
+                    }
+                }
+            setAnnotations(REGEX, regexAnnotationsRangeMap)
             if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
             if (opts.names) {
-                setAnnotations(NAME, DisjointRangeSet(findNames(bookData).map { it.excerptRange }.toList()))
+                val namesRangeSet = DisjointRangeSet(
+                    findNames(bookData, exceptNames = divineNames.toTypedArray())
+                        .map { it.excerptRange }.toList()
+                )
+                // remove any ranges that intersect with custom regex ranges
+                val deconflicted = namesRangeSet.minusEnclosedBy(regexAnnotationsRangeMap)
+                setAnnotations(NAME, deconflicted)
             }
             if (opts.numbers) {
-                setAnnotations(NUMBER, DisjointRangeSet(findNumbers(bookData.text).map { it.excerptRange }.toList()))
+                val numbersRangeSet = DisjointRangeSet(findNumbers(bookData.text).map { it.excerptRange }.toList())
+                setAnnotations(NUMBER, numbersRangeSet)
             }
         }
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append("}}")
+            if (transition.isEnded(REGEX)) out.append('}')
             if (opts.names && transition.isEnded(NAME)) out.append('}')
             if (opts.numbers && transition.isEnded(NUMBER)) out.append('}')
 
@@ -129,9 +157,13 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 )
             }
 
+            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""{\uline{""")
             if (opts.names && transition.isBeginning(NAME)) out.append("""\myname{""")
             if (opts.numbers && transition.isBeginning(NUMBER)) out.append("""\mynumber{""")
-            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""{\uline{""")
+            if (transition.isBeginning(REGEX)) {
+                val color = transition.beginning.first { it.key == REGEX }.value
+                out.append("""\myhl[$color]{""")
+            }
 
             // text
 
@@ -207,18 +239,26 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 \usepackage{soul}
                 \definecolor{namesColor}{rgb}{0.8, 0.9, 1.0} % light blue
                 \definecolor{numsColor}{rgb}{1.0, 0.85, 0.7} % light orange
-                \newcommand{\myname}[1]{{\sethlcolor{namesColor}\hl{#1}}}
-                \newcommand{\mynumber}[1]{{\sethlcolor{numsColor}\hl{#1}}}
+                %\newcommand{\myname}[1]{{\sethlcolor{namesColor}\hl{#1}}}
+                %\newcommand{\mynumber}[1]{{\sethlcolor{numsColor}\hl{#1}}}
+                \newcommand\myhl[2][yellow]{%
+                    \tikz[overlay]\node[
+                        fill=#1,inner sep=1.5pt,anchor=text,rectangle,rounded corners=1pt
+                    ]{#2};\phantom{#2}%
+                }
                 
+                \newcommand\mynumber[2][]{\myhl[numsColor]{#2}}
+                \newcommand\myname[2][]{\myhl[namesColor]{#2}}
+
                 % custom command for chapter titles
                 \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}
                 
                 % restart footnote numbering on each page
-                \usepackage{perpage}
-                \MakePerPage{footnote}
+                %\usepackage{perpage}
+                %\MakePerPage{footnote}
                 
                 % use letters instead of numbers for footnotes
-                \renewcommand{\thefootnote}{\alph{footnote}}
+                %\renewcommand{\thefootnote}{\alph{footnote}}
                 
                 \title{$bookName}
                 \author{}

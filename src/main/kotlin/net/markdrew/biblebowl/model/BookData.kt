@@ -51,7 +51,7 @@ class BookData(val book: Book,
 
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
-    val words: DisjointRangeSet by lazy { parseWords(text).map { it.range }.toDisjointRangeSet() }
+    val words: DisjointRangeSet by lazy { findAll(wordsPattern) }
 
     fun writeData(outPath: Path) {
         val outDir = outPath.resolve(book.name.lowercase())
@@ -64,7 +64,8 @@ class BookData(val book: Book,
         writePoetryIndex(outDir.resolve(fileName(POETRY, plural = false)))
     }
 
-    private fun fileName(unit: AnalysisUnit, plural: Boolean = true): String = indexFileName(book, unit, plural)
+    private fun fileName(unit: AnalysisUnit, plural: Boolean = true): String =
+        indexFileName(book, unit, plural)
 
     private fun writeText(outPath: Path) {
         val outFile: File = outPath.toFile()
@@ -188,10 +189,24 @@ class BookData(val book: Book,
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
     fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
 
+    fun findAll(vararg patterns: Regex): DisjointRangeSet =
+        patterns.fold(DisjointRangeSet()) { drs, pattern ->
+            pattern.findAll(text).map { it.range }.forEach { r ->
+                // if two patterns overlap, and one encloses the other, keep only the longer range
+                val intersections = drs.rangesIntersectedBy(r)
+                if (intersections.size == 1) {
+                    val other = intersections.single()
+                    if (r.encloses(other)) drs.addForcefully(r)
+                    // if other encloses r, do nothing
+                    else if (!other.encloses(r)) drs.add(r) // expect this to fail
+                } else drs.add(r) // success when no intersections, and fail when there are more than 1
+            }
+            drs
+        }
+
     companion object {
 
-        internal fun parseWords(text: String): Sequence<MatchResult> =
-            """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex().findAll(text)
+        internal val wordsPattern = """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex()
 
         private fun <T> writeIterable(outPath: Path, iterable: Iterable<T>, formatFun: PrintWriter.(T) -> Unit) {
             outPath.toFile().printWriter().use { pw ->

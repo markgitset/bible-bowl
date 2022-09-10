@@ -62,8 +62,9 @@ private fun nameCandidates(bookData: BookData, exceptNames: Array<out String>): 
     bookData.words
         .filter { isName(bookData, it) }
         .map { bookData.excerpt(it).disown() } // non-possessive word Excerpts
+        .filter { it.excerptText !in exceptNames }
         .groupBy { it.excerptText.lowercase() } // Map<String, List<Excerpt>>
-        .filterKeys { it !in STOP_NAMES && it !in exceptNames } // remove stop names
+        .filterKeys { it !in STOP_NAMES } // remove stop names
 //        .filterValues { excerpts ->
 //            excerpts.none { excerpt ->
 //                excerpt.excerptText.first().let { it.isLowerCase() || it.isDigit() }

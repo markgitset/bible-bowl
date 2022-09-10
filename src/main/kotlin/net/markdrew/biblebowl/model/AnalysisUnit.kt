@@ -14,4 +14,5 @@ enum class AnalysisUnit {
     UNIQUE_WORD,
     NAME,
     NUMBER,
+    REGEX,
 }
