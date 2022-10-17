@@ -47,7 +47,7 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
         var run: TextRun<A>? = TextRun(prevEndExclusive until prevEndExclusive, emptySet())
         while (run != null) {
             yield(run)
-            prevEndExclusive = run.range.endExclusive
+            prevEndExclusive = run.range.last + 1
             run = runAt(prevEndExclusive)
         }
         yield(TextRun(prevEndExclusive until prevEndExclusive, emptySet()))
