@@ -75,7 +75,7 @@ enum class Book(val fullName: String) {
     companion object {
         val DEFAULT = MAT
         fun fromNumber(n: Int): Book = values()[n-1]
-        fun parse(s: String?, default: Book): Book = if (s == null) default else try {
+        fun parse(s: String?, default: Book = DEFAULT): Book = if (s == null) default else try {
             valueOf(s.uppercase())
         } catch (e: IllegalArgumentException) {
             values().firstOrNull { it.fullName.lowercase().startsWith(s.lowercase()) } ?: default

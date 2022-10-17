@@ -31,23 +31,17 @@ import java.nio.file.Paths
 private val divineNames = setOf("God", "Jesus", "Christ", "Holy Spirit", "Immanuel", "Father", "Spirit of God",
     "Son of God", "Son of Man", "Son of David", "Lord of the harvest", "Spirit of your Father", "Son")
 
-fun main() {
+fun main(args: Array<String>) {
+    val book = Book.parse(args.firstOrNull())
     val customHighlights = mapOf(
-        "yellow" to divineNames.map { it.toRegex() }.toSet(),
+        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
         "namesColor" to setOf("John the Baptist".toRegex()),
     )
-//    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = false))
-//    writeBibleText(Book.DEFAULT, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleText(
-        Book.DEFAULT,
-        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
-    )
-//    writeBibleText(Book.DEFAULT, TextOptions(names = true, numbers = true, uniqueWords = true))
-//    val book = args.firstOrNull()?.uppercase()?.let { Book.valueOf(it) } ?: Book.DEFAULT
-//    for (fontSize in setOf(10, 11, 12)) {
-//        val opts = TextOptions(fontSize = fontSize)
-//        writeBibleText(book, opts)
-//    }
+    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
+//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
+//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
+//    writeBibleText(book, TextOptions(names = true, numbers = true, uniqueWords = true,
+//                                     customHighlights = customHighlights))
 }
 
 data class TextOptions(
@@ -233,21 +227,22 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 \newcommand{\versenum}[1]{\mbox{\mybox[fill=black!70]{\color{white}\textbf{#1}}}}
                 
                 % custom command for names
-                % \mbox is needed to prevent line breaks immediately after a versenum
-                % \newcommand{\myname}[1]{\mybox[fill=blue!50]{#1}}
                 \usepackage{color}
                 \usepackage{soul}
+                \definecolor{divineColor}{rgb}{1.0, 1.0, 0.4} % light yellow
                 \definecolor{namesColor}{rgb}{0.8, 0.9, 1.0} % light blue
-                \definecolor{numsColor}{rgb}{1.0, 0.85, 0.7} % light orange
-                %\newcommand{\myname}[1]{{\sethlcolor{namesColor}\hl{#1}}}
-                %\newcommand{\mynumber}[1]{{\sethlcolor{numsColor}\hl{#1}}}
-                \newcommand\myhl[2][yellow]{%
+                \definecolor{numsColor}{RGB}{247, 191, 136} % light orange
+
+                \newcommand\myhl[2][divineColor]{%
                     \tikz[overlay]\node[
                         fill=#1,inner sep=1.5pt,anchor=text,rectangle,rounded corners=1pt
                     ]{#2};\phantom{#2}%
                 }
                 
+                % custom command for highlighting numbers
                 \newcommand\mynumber[2][]{\myhl[numsColor]{#2}}
+
+                % custom command for highlighting names
                 \newcommand\myname[2][]{\myhl[namesColor]{#2}}
 
                 % custom command for chapter titles

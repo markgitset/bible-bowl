@@ -20,7 +20,7 @@ private const val VERSES_PER_PAGE = 20
 
 fun main() {
     val book: Book = Book.DEFAULT
-    writeFindTheVerse(book, randomSeed = 20, throughChapter = 47, numOfVersesToFind = 20)
+    writeFindTheVerse(book, throughChapter = 8, numOfVersesToFind = 20)
 //    for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
 //        writeFindTheVerse(book, randomSeed = 6, throughChapter = i, numOfVersesToFind = 20).toPdf()
 //    }
@@ -67,6 +67,7 @@ private fun writeFindTheVerse(
     fileName += "-%04d".format(randomSeed)
 
     val outputFile = File("$PRODUCTS_DIR/$bookName/practice/round1/$fileName.tex")
+    outputFile.parentFile.mkdirs()
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
     }
