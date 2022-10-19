@@ -137,7 +137,7 @@ class BookData(val book: Book,
     }
 
     /**
-     * @return the character range corresponding to the given chapter range
+     * Returns the character range corresponding to the given chapter range
      */
     fun charRangeFromChapterRange(selectedChaptersRange: IntRange): IntRange {
         val chapters = chapterRange.intersect(selectedChaptersRange) // ensure a valid chapter range
@@ -145,21 +145,27 @@ class BookData(val book: Book,
     }
 
     /**
-     * @return the character range from the beginning through [lastChapter], or the whole book if [lastChapter] is null
+     * Returns the character range from the beginning through [lastChapter], or the whole book if [lastChapter] is null
      */
     fun charRangeThroughChapter(lastChapter: Int?): IntRange =
         if (lastChapter == null) text.indices
         else charRangeFromChapterRange(1..lastChapter)
 
     /**
-     * @return the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
+     * Returns chapter headings that intersect the given chapter range
+     */
+    fun headings(chapterRange: IntRange): DisjointRangeMap<String> =
+        headings.intersectedBy(charRangeFromChapterRange(chapterRange))
+
+    /**
+     * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
      * otherwise an empty string
      */
     fun maxChapterOrEmpty(prefix: String = "", maxChapter: Int?, suffix: String = ""): String =
         maxChapter?.takeIf { it < chapterRange.last }?.let { prefix + it + suffix }.orEmpty()
 
     /**
-     * @return the given chapter range (with optional prefix/suffix) if it is less than all chapters of the book,
+     * Returns the given chapter range (with optional prefix/suffix) if it is less than all chapters of the book,
      * otherwise an empty string
      */
     fun chapterRangeOrEmpty(prefix: String = "", range: IntRange?, suffix: String = ""): String =
