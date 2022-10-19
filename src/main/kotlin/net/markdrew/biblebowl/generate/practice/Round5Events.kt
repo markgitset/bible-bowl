@@ -76,7 +76,7 @@ fun headingsCluePool(
     nChoices: Int,
 ): List<MultiChoiceQuestion> {
     val random = Random(randomSeed)
-    var cluePool: DisjointRangeMap<String> = bookData.headings
+    var cluePool: DisjointRangeMap<String> = bookData.headingCharRanges
     if (lastIncludedChapter != null) {
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)

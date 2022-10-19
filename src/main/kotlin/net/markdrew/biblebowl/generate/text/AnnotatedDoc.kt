@@ -6,7 +6,6 @@ import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
-import net.markdrew.chupacabra.core.endExclusive
 import net.markdrew.chupacabra.core.intersect
 
 class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
@@ -87,7 +86,7 @@ fun BookData.toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc<
             if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, set)
         }
         addAnns(AnalysisUnit.VERSE, verses)
-        addAnns(AnalysisUnit.HEADING, headings)
+        addAnns(AnalysisUnit.HEADING, headingCharRanges)
         addAnns(AnalysisUnit.CHAPTER, chapters)
         addAnns(AnalysisUnit.PARAGRAPH, paragraphs)
         addAnns(AnalysisUnit.POETRY, poetry)

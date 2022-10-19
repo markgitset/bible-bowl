@@ -11,6 +11,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
+import net.markdrew.biblebowl.ws.toIntRange
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.encloses
@@ -25,7 +26,7 @@ import java.util.SortedMap
 class BookData(val book: Book,
                val text: String,
                val verses: DisjointRangeMap<Int>,
-               val headings: DisjointRangeMap<String>,
+               val headingCharRanges: DisjointRangeMap<String>,
                val chapters: DisjointRangeMap<Int>,
                val paragraphs: DisjointRangeSet,
                val footnotes: SortedMap<Int, String>,
@@ -42,6 +43,13 @@ class BookData(val book: Book,
 
     val wordIndex: Map<String, List<IntRange>> by lazy {
         words.groupBy { wordRange -> text.substring(wordRange).lowercase() }
+    }
+
+    val headings: List<Heading> by lazy {
+        headingCharRanges.map { (headingCharRange, headingTitle) ->
+            val chapterRange: IntRange = chapters.valuesIntersectedBy(headingCharRange).toIntRange()
+            Heading(headingTitle, chapterRange)
+        }
     }
 
     /**
@@ -81,7 +89,7 @@ class BookData(val book: Book,
     }
 
     private fun writeHeadingsIndex(outPath: Path) {
-        writeIterable(outPath, headings.entries) { (range, heading) ->
+        writeIterable(outPath, headingCharRanges.entries) { (range, heading) ->
             println("${range.first}\t${range.last}\t$heading")
         }
     }
@@ -120,7 +128,7 @@ class BookData(val book: Book,
         if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerse()
 
         val chapter: Int? = chapters.valueEnclosing(range)
-        val heading: String? = headings.valueEnclosing(range)
+        val heading: String? = headingCharRanges.valueEnclosing(range)
         if (heading != null) return "Chapter $chapter: $heading"
 
         if (chapter != null) return "Chapter $chapter"
@@ -152,10 +160,9 @@ class BookData(val book: Book,
         else charRangeFromChapterRange(1..lastChapter)
 
     /**
-     * Returns chapter headings that intersect the given chapter range
+     * Returns chapter [[Heading]]s that intersect the given chapter range
      */
-    fun headings(chapterRange: IntRange): DisjointRangeMap<String> =
-        headings.intersectedBy(charRangeFromChapterRange(chapterRange))
+    fun headings(chapterRange: IntRange): List<Heading> = headings.filter { it.chapterRange.first in chapterRange }
 
     /**
      * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,

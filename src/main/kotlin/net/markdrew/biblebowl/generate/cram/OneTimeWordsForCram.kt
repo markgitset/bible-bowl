@@ -59,7 +59,7 @@ private fun writeCards(
         val verseText: String = bookData.text.substring(verseRange)
         val word = bookData.text.substring(wordRange)
         val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
-        val heading = bookData.headings.valueEnclosing(wordRange)
+        val heading = bookData.headingCharRanges.valueEnclosing(wordRange)
         val verseRefString = verseRefNum.toVerseRef().toFullString()
         val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"
         writer.write(word, answer, hint = highlightedVerse)

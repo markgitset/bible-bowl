@@ -20,7 +20,7 @@ internal class OneTimeWordsKtTest {
                     Book.GEN,
                     "There were twenty-seven dogs there.",
                     verses = DisjointRangeMap(),
-                    headings = DisjointRangeMap(),
+                    headingCharRanges = DisjointRangeMap(),
                     chapters = DisjointRangeMap(),
                     paragraphs = DisjointRangeSet(),
                     footnotes = TreeMap(),

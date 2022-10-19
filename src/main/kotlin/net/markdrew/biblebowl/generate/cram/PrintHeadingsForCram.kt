@@ -18,18 +18,15 @@ fun main(args: Array<String>) {
 
     printReverseHeadings(bookData)
 
-    // compute all the heading-to-chapters mappings for the whole book
-    val headingsToChapters: Map<String, List<List<Int>>> = computeHeadingsToChapters(bookData)
-
     // write out cumulative sets (i.e., chapters 1 to N)
     val newHeadingsPerSet = 10
-    val idealNumberOfSets = bookData.headings.size / newHeadingsPerSet.toFloat()
+    val idealNumberOfSets = bookData.headingCharRanges.size / newHeadingsPerSet.toFloat()
     //println("idealNumberOfSets = $idealNumberOfSets")
     val newChaptersPerSet = (bookData.chapters.size / idealNumberOfSets).roundToInt()
     //println("newChaptersPerSet = $newChaptersPerSet")
     for (chunk in bookData.chapterRange.chunked(newChaptersPerSet)) {
 //        println(1..chunk.last())
-        printHeadings(bookData, headingsToChapters, 1..chunk.last())
+        printHeadings(bookData, 1..chunk.last())
     }
 //    println()
 
@@ -38,7 +35,7 @@ fun main(args: Array<String>) {
     val chunkSize = bookData.chapterRange.last / nChunks
     for (chunk in bookData.chapterRange.chunked(chunkSize)) {
 //        println(chunk.first()..chunk.last())
-        printHeadings(bookData, headingsToChapters, chunk.first()..chunk.last())
+        printHeadings(bookData, chunk.first()..chunk.last())
     }
 }
 
@@ -52,52 +49,22 @@ private fun makePath(bookData: BookData, fileType: String, chapterRange: IntRang
     return dir.resolve("$bookName-$fileType$suffix.tsv")
 }
 
-private fun printHeadings(
-    bookData: BookData,
-    headingsToChapters: Map<String, List<List<Int>>>,
-    chapterRange: IntRange = bookData.chapterRange
-) {
+private fun printHeadings(bookData: BookData, chapterRange: IntRange = bookData.chapterRange) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
     val cramHeadingsPath = makePath(bookData, "cram-headings", chapterRange)
     CardWriter(cramHeadingsPath).use { writer ->
-        headingsToChapters.mapValues { (_, chapterLists: List<List<Int>>) ->
-            // remove any chapterLists that don't start in the requested chapter range
-            chapterLists.filter { it.first() in chapterRange }
-        }.filterValues { chapterLists: List<List<Int>> ->
-            // remove any heading entries whose chapterLists are now empty
-            chapterLists.isNotEmpty()
-        }.forEach { (heading, chapterLists) ->
+        bookData.headings(chapterRange).groupBy {
+            it.title
+        }.forEach { (headingTitle, headingList) ->
             // format and write out the results
-            val answerString = chapterLists.joinToString("<br/>OR<br/>") { it.joinToString(" & ") }
-            writer.write(heading, answerString)
+            val answerString = headingList.joinToString("<br/>OR<br/>") { heading ->
+                heading.chapterRange.toList().joinToString(" & ")
+            }
+            writer.write(headingTitle, answerString)
         }
     }
     println("Wrote data to: $cramHeadingsPath")
 }
-
-/**
- * Compute a map of headings to a list of lists of chapter numbers.
- *
- * Outer list contains an entry for each occurrence of a heading, and the inner list is for headings that span more
- * than one chapter.  Most headings will only be in one chapter and will look something like: listOf(listOf(3)).
- *
- * A heading that spans chapters 3 and 4 will look like: listOf(listOf(3, 4)).
- *
- * In rare cases, a heading appears twice within a book.  For example, "Jesus Heals Many" is in Mat 8 and 15, and would
- * look like: listOf(listOf(8), listOf(15)).
- */
-private fun computeHeadingsToChapters(bookData: BookData): Map<String, List<List<Int>>> =
-    bookData.headings
-        .map { (headingRange, heading) ->
-            val chapters: List<Int> = bookData.chapters.valuesIntersectedBy(headingRange)
-            heading to chapters
-        }.fold(mutableMapOf<String, List<List<Int>>>()) { map, headingToChapterPair ->
-            map.apply {
-                merge(headingToChapterPair.first, listOf(headingToChapterPair.second)) { oldVal, newVal ->
-                    oldVal + newVal
-                }
-            }
-        }
 
 private fun printReverseHeadings(bookData: BookData, chapterRange: IntRange = bookData.chapterRange) {
     val cramHeadingsPath = makePath(bookData, "cram-reverse-headings", chapterRange)
@@ -105,7 +72,7 @@ private fun printReverseHeadings(bookData: BookData, chapterRange: IntRange = bo
         bookData.chapters
             .filterValues { it in chapterRange }
             .map { (chapterRange, chapter) ->
-                val headings: List<String> = bookData.headings.valuesIntersectedBy(chapterRange)
+                val headings: List<String> = bookData.headingCharRanges.valuesIntersectedBy(chapterRange)
                 writer.write("${bookData.book.fullName} $chapter", headings.joinToString("<br/>"))
             }
     }

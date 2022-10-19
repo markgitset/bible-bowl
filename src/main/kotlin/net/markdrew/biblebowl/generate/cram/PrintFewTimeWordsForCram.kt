@@ -62,7 +62,7 @@ fun main(args: Array<String>) {
     val oneChapterWordCards: Map<Card, IntRange> = oneSectionWordCards(bookData, bookData.chapters, "Chapter ")
 
     // build one-heading words
-    val oneHeadingWordCards: Map<Card, IntRange> = oneSectionWordCards(bookData, bookData.headings)
+    val oneHeadingWordCards: Map<Card, IntRange> = oneSectionWordCards(bookData, bookData.headingCharRanges)
 
     // combine the two sets of cards
     val fewTimeWordCards: Collection<Card> = mergeCards(oneChapterWordCards, oneHeadingWordCards)
