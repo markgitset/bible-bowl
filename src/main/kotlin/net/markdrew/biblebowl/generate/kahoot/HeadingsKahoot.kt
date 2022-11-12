@@ -3,8 +3,9 @@ package net.markdrew.biblebowl.generate.kahoot
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.generate.practice.MultiChoiceQuestion
+import net.markdrew.biblebowl.generate.practice.PracticeTest
+import net.markdrew.biblebowl.generate.practice.Round
 import net.markdrew.biblebowl.generate.practice.headingsCluePool
-import net.markdrew.biblebowl.generate.practice.lastIncludedChapter
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import java.io.File
@@ -26,10 +27,11 @@ private fun writeHeadingsKahoot(
     val bookName = book.name.lowercase()
     val bookData = BookData.readData(book, Paths.get(DATA_DIR))
 
-    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
+    val practiceTest = PracticeTest(Round.EVENTS, throughChapter, book, numQuestions)
+    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
 
     val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 4)
+        headingsCluePool(bookData, lastIncludedChapter, practiceTest, nChoices = 4)
 
     var fileName = "${book.name.lowercase()}-headings-kahoot"
     if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"

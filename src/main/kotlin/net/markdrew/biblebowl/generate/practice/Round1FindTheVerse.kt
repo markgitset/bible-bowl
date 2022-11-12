@@ -1,7 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.Book
@@ -12,36 +11,33 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Paths
-import kotlin.random.Random
-import kotlin.random.nextInt
 
-private const val ROUND_1_PACE = 40.0 / 25.0 // questions/minute
 private const val VERSES_PER_PAGE = 20
 
 fun main() {
-    val book: Book = Book.DEFAULT
-    writeFindTheVerse(book, throughChapter = 8, numOfVersesToFind = 20)
-//    for (i in setOf(4, 7, 10, 13, 16, 18, 20, 23, 24, 26, 28, 30, 32, 35, 37, 40, 41, 43, 45, 48, null)) {
-//        writeFindTheVerse(book, randomSeed = 6, throughChapter = i, numOfVersesToFind = 20).toPdf()
-//    }
+    val bookData: BookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
+    val directory = File("matthew-round1-set")
+    val seeds = setOf(10, 20, 30, 40, 50)
+    for (throughChapter in bookData.chapterRange) {
+        for (seed in seeds) {
+            writeFindTheVerse(
+                PracticeTest(Round.FIND_THE_VERSE, throughChapter, numQuestions = 20, randomSeed = seed),
+                bookData = bookData,
+                directory = directory
+            )
+        }
+    }
 }
 
 private fun writeFindTheVerse(
-    book: Book = Book.DEFAULT,
-    throughChapter: Int? = null,
-    randomSeed: Int = Random.nextInt(1..9_999),
+    practiceTest: PracticeTest,
     minCharLength: Int = 15,
-    numOfVersesToFind: Int = 40,
+    bookData: BookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR)),
+    directory: File? = null,
 ): File {
-    val random = Random(randomSeed)
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    require(practiceTest.book == bookData.book)
 
-    val lastIncludedChapter: Int? = throughChapter?.let {
-        val maxChapter = bookData.chapters.lastEntry().value
-        require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${book.fullName}!" }
-        if (it == maxChapter) null else it
-    }
+    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
 
     var cluePool: DisjointRangeMap<Int> = bookData.oneVerseSentParts
     if (lastIncludedChapter != null) {
@@ -59,17 +55,12 @@ private fun writeFindTheVerse(
 
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
-        .entries.shuffled(random).take(numOfVersesToFind)
+        .entries.shuffled(practiceTest.random).take(practiceTest.numQuestions)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
-    var fileName = "${book.name.lowercase()}-find-the-verse"
-    if (throughChapter != null) fileName += "-to-ch-$throughChapter"
-    fileName += "-%04d".format(randomSeed)
-
-    val outputFile = File("$PRODUCTS_DIR/$bookName/practice/round1/$fileName.tex")
-    outputFile.parentFile.mkdirs()
+    val outputFile = practiceTest.buildTexFileName(lastIncludedChapter, directory)
     outputFile.writer().use { writer ->
-        versesToFind.toLatexInWhatChapter(writer, book.fullName, randomSeed, lastIncludedChapter)
+        versesToFind.toLatexInWhatChapter(writer, practiceTest, lastIncludedChapter)
     }
     return outputFile.toPdf()
 }
@@ -92,11 +83,11 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
 }
 
 fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
-                                               book: String,
-                                               randomSeed: Int,
+                                               practiceTest: PracticeTest,
                                                throughChapter: Int?) {
-    val seedString = "%04d".format(randomSeed)
-    val bookDesc = book + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
+    val seedString = "%04d".format(practiceTest.randomSeed)
+    val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
+    val bookDesc = practiceTest.book.fullName + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
@@ -116,7 +107,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         
         \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
         
-        \section*{\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
+        \section*{\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
         Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
         
         \begin{center}
@@ -134,7 +125,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \end{$tabularEnv}
         \end{center}
         \clearpage
-        \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, ${(this.size / ROUND_1_PACE).toInt()} minutes)}\hfill Round 1}
+        \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
         \begin{multicols}{2}
         \begin{enumerate}
     """.trimIndent())

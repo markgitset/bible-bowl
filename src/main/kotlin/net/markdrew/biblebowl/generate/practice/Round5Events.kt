@@ -1,27 +1,47 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 fun main() {
-    for (lastChapter in setOf(30)) {
-        writeRound5Events(Book.DEFAULT, throughChapter = lastChapter, randomSeed = 1).toPdf()
-    }
+    writeRound5Events(PracticeTest(Round.EVENTS, throughChapter = 10)).toPdf()
+//    for (lastChapter in setOf(30)) {
+//        writeRound5Events(Book.DEFAULT, throughChapter = lastChapter, randomSeed = 1).toPdf()
+//    }
 //    for (i in 1..10) {
 //        writeRound5Events(Book.DEFAULT, randomSeed = i).toPdf()
 //    }
 }
 
-private const val ROUND_5_PACE = 40.0 / 10.0 // questions/minute
+//private fun writeFullSet(book: Book = Book.DEFAULT): File {
+//    val bookName = book.name.lowercase()
+//    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+//
+//    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
+//
+//    val headingsToFind: List<MultiChoiceQuestion> =
+//        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 5)
+//
+//    var fileName = "${book.name.lowercase()}-events"
+//    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
+//    fileName += "-%04d".format(randomSeed)
+//
+//    val texFile = File("$PRODUCTS_DIR/$bookName/practice/round5/$fileName.tex").also { it.parentFile.mkdirs() }
+//    texFile.writer().use { writer ->
+//        toLatexInWhatChapter(
+//            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
+//        )
+//    }
+//
+//    println("Wrote $texFile")
+//    return texFile
+//}
 
 data class Question(val question: String, val answer: String, val answerRef: VerseRef? = null)
 
@@ -39,29 +59,16 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<String>
     val correctChoice: Int = choices.indexOf(question.answer).let { if (it < 0) noneIndex else it }
 }
 
-private fun writeRound5Events(
-    book: Book = Book.DEFAULT,
-    throughChapter: Int? = null,
-    numQuestions: Int = 40,
-    randomSeed: Int = Random.nextInt(1..9_999)
-): File {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+private fun writeRound5Events(practiceTest: PracticeTest): File {
+    val bookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR))
+    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
 
-    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
+    val texFile: File = practiceTest.buildTexFileName(lastIncludedChapter)
 
     val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 5)
-
-    var fileName = "${book.name.lowercase()}-events"
-    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
-    fileName += "-%04d".format(randomSeed)
-
-    val texFile = File("$PRODUCTS_DIR/$bookName/practice/round5/$fileName.tex").also { it.parentFile.mkdirs() }
+        headingsCluePool(bookData, lastIncludedChapter, practiceTest, nChoices = 5)
     texFile.writer().use { writer ->
-        toLatexInWhatChapter(
-            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
-        )
+        toLatexInWhatChapter(headingsToFind, writer, practiceTest, lastIncludedChapter)
     }
 
     println("Wrote $texFile")
@@ -71,11 +78,9 @@ private fun writeRound5Events(
 fun headingsCluePool(
     bookData: BookData,
     lastIncludedChapter: Int?,
-    randomSeed: Int,
-    numQuestions: Int,
+    practiceTest: PracticeTest,
     nChoices: Int,
 ): List<MultiChoiceQuestion> {
-    val random = Random(randomSeed)
     var cluePool: DisjointRangeMap<String> = bookData.headingCharRanges
     if (lastIncludedChapter != null) {
         val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
@@ -83,37 +88,33 @@ fun headingsCluePool(
     }
 
     return cluePool
-        .entries.shuffled(random).take(numQuestions)
+        .entries.shuffled(practiceTest.random).take(practiceTest.numQuestions)
         .map { (range, heading) ->
             Question(
                 heading,
                 bookData.chapters.intersectedBy(range).firstEntry().value.toString()
             )
-        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, random, nChoices) }
+        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, practiceTest.random, nChoices) }
 }
 
-fun lastIncludedChapter(
-    bookData: BookData,
-    throughChapter: Int?,
-): Int? = throughChapter?.let {
-    val maxChapter = bookData.chapterRange.last
-    require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${bookData.book.fullName}!" }
-    if (it == maxChapter) null else it
-}
+//fun lastIncludedChapter(
+//    bookData: BookData,
+//    throughChapter: Int?,
+//): Int? = throughChapter?.let {
+//    val maxChapter = bookData.chapterRange.last
+//    require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${bookData.book.fullName}!" }
+//    if (it == maxChapter) null else it
+//}
 
 fun toLatexInWhatChapter(
     questions: List<MultiChoiceQuestion>,
     appendable: Appendable,
-    book: Book,
+    practiceTest: PracticeTest,
     throughChapter: Int?,
-    round: Int,
-    clueType: String,
-    pace: Double,
-    randomSeed: Int,
-    title: String = "In What Chapter - ${clueType.capitalize()}",
-    minutes: Int = (questions.size / pace + 0.01).toInt(),
+    title: String = "In What Chapter - ${practiceTest.round.longName}",
+    minutes: Int = practiceTest.round.minutesAtPaceFor(questions.size),
 ) {
-    val seedString = "%04d".format(randomSeed)
+    val seedString = "%04d".format(practiceTest.randomSeed)
     val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
     appendable.appendLine("""
         \documentclass{exam}
@@ -127,10 +128,10 @@ fun toLatexInWhatChapter(
         
         \begin{document}
         
-        \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
+        \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round ${practiceTest.round.number}}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${clueType.lowercase()} is found in ${book.fullName}$limitedTo.
+        each of the following ${practiceTest.round.shortName} is found in ${practiceTest.book.fullName}$limitedTo.
         
         \vspace{0.1in}
         
@@ -147,7 +148,7 @@ fun toLatexInWhatChapter(
         
         \newpage
         
-        \section*{ANSWER KEY\\\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round $round}
+        \section*{ANSWER KEY\\\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round ${practiceTest.round.number}}
         \begin{multicols}{2}
         \begin{enumerate}
     """.trimIndent())

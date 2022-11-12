@@ -1,10 +1,14 @@
 package net.markdrew.biblebowl.latex
 
-import org.apache.commons.io.output.NullOutputStream
 import java.io.File
 
-fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false, twice: Boolean = false): File {
-    if (twice) toPdf(showStdIo, keepLogFiles = true, twice = false)
+fun File.toPdf(
+    showStdIo: Boolean = false,
+    keepLogFiles: Boolean = false,
+    keepTexFiles: Boolean = false,
+    twice: Boolean = false
+): File {
+    if (twice) toPdf(showStdIo, keepLogFiles = true, keepTexFiles = true, twice = false)
 
     val processBuilder = ProcessBuilder(
         "pdflatex",
@@ -21,6 +25,7 @@ fun File.toPdf(showStdIo: Boolean = false, keepLogFiles: Boolean = false, twice:
             resolveSibling(nameWithoutExtension + ext).delete()
         }
     }
+    if (!keepTexFiles) resolveSibling("$nameWithoutExtension.tex").delete()
     return resolveSibling("$nameWithoutExtension.pdf").also {
         println("Wrote $it")
     }
