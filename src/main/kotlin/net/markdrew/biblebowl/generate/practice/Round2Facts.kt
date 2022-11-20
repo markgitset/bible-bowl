@@ -1,19 +1,19 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
-import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
-import kotlin.math.roundToInt
+import java.io.InputStream
+import java.net.URL
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 fun main() {
     val bookData = BookData.readData()
     val practice: PracticeContent = bookData.practice(1..13)
-    writeRound5Events(PracticeTest(Round.EVENTS, practice)).toPdf()
+    showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)).toPdf(keepTexFiles = true))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
@@ -25,67 +25,58 @@ fun main() {
 //    }
 }
 
-data class Question(
+private data class Question2(
     val question: String,
-    // the FIRST answer is assumed to be the arbitrarily chosen correct answer
+    val nCorrectAnswers: Int, // the FIRST nCorrectAnswers are correct
     val answers: List<String>,
-    val answerRefs: List<VerseRef>? = null,
-)
-
-fun multiChoice(qAndA: Question, coveredChapters: IntRange, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
-    val nSpecificChoices = nChoices - 1 // nChoices minus 1 for the "none of these" answer
-    val answerIsNone = random.nextInt(1..nChoices) == 1 // i.e., 1/nChoices chance of the answer being none of these
-    val nCorrectChoices = if (answerIsNone) 0 else 1
-    val maxOffset = ((nSpecificChoices + 0.4) / qAndA.answers.size).roundToInt() - nCorrectChoices
-    val correctAnswers: List<Int> = qAndA.answers.map { it.toInt() }
-    val wrongChoicesPool: List<Int> = correctAnswers
-        .flatMap { answer -> ((answer - maxOffset)..(answer + maxOffset)).intersect(coveredChapters) }
-        .filterNot { it in correctAnswers }
-        .distinct()
-        .shuffled(random)
-
-    val specificChoices: List<Int> =
-        if (answerIsNone) wrongChoicesPool.take(nSpecificChoices)
-        else wrongChoicesPool.take(nSpecificChoices - 1) + correctAnswers.first()
-
-    val allChoices = specificChoices.sorted().map { it.toString() } + "none of these"
-    return MultiChoiceQuestion(qAndA, allChoices, nSpecificChoices)
+    val answerRefs: String,
+) {
+    val correctAnswers = answers.take(nCorrectAnswers)
+    val wrongAnswers = answers.drop(nCorrectAnswers)
 }
 
-data class MultiChoiceQuestion(val question: Question, val choices: List<String>, val noneIndex: Int) {
-    val correctChoice: Int = choices.indexOf(question.answers.first()).let { if (it < 0) noneIndex else it }
+private fun multiChoice2(qAndA: Question2, coveredChapters: IntRange, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
+    val allChoices: List<String> =
+        qAndA.wrongAnswers.shuffled(random).take(nChoices - 1) + qAndA.correctAnswers.single()
+    return MultiChoiceQuestion2(qAndA, allChoices.shuffled(random))
 }
 
-private fun writeRound5Events(practiceTest: PracticeTest, directory: File? = null): File {
+private data class MultiChoiceQuestion2(val question: Question2, val choices: List<String>) {
+    val correctChoice: Int = choices.indexOf(question.answers.first())//.let { if (it < 0) noneIndex else it }
+}
+
+private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null): File {
     val texFile: File = practiceTest.buildTexFileName(directory)
 
-    val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
+    val factsToFind: List<MultiChoiceQuestion2> = factsCluePool(practiceTest, nChoices = 3)
     texFile.writer().use { writer ->
-        toLatexInWhatChapter(writer, practiceTest, headingsToFind)
+        toLatexFactFinder(writer, practiceTest, factsToFind)
     }
 
     println("Wrote $texFile")
     return texFile
 }
 
-fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion> {
+private fun escapeLatex(s: String): String =
+    s.replace("_", "\\_")
+private fun factsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion2> {
+    val resourceName = "/${practiceTest.book.name.lowercase()}/manual-questions.tsv"
+    val resource: URL = object {}.javaClass.getResource(resourceName)
+        ?: throw Exception("Could not find resource '$resourceName'!")
     val content = practiceTest.content
-
-    val headings = content.headings()
-    val headingsByTitle: Map<String, List<Heading>> = headings.groupBy { it.title }
-
-    return headings.shuffled(practiceTest.random).take(practiceTest.numQuestions)
-        .map { heading ->
-            val answers = listOf(heading.chapterRange.first) +
-                headingsByTitle[heading.title]?.filterNot { it == heading }?.map { it.chapterRange.first }.orEmpty()
-            Question(heading.title, answers.map { it.toString() })
-        }.map { multiChoice(it, content.coveredChapters, practiceTest.random, nChoices) }
+    val questions: List<Question2> = parseTsv(resource.openStream()) { fields ->
+        val (ref, question, nCorrect) = fields
+        val choices = fields.drop(3)
+        Question2(escapeLatex(question), nCorrect.toInt(), choices.map { escapeLatex(it) }, ref)
+    }.filter { it.nCorrectAnswers == 1 } // for round two, only 1-answer questions used
+    return questions.shuffled(practiceTest.random).take(practiceTest.numQuestions)
+        .map { multiChoice2(it, content.coveredChapters, practiceTest.random, nChoices) }
 }
 
-fun toLatexInWhatChapter(
+private fun toLatexFactFinder(
     appendable: Appendable,
     practiceTest: PracticeTest,
-    questions: List<MultiChoiceQuestion>,
+    questions: List<MultiChoiceQuestion2>,
 ) {
     docHeader(appendable)
     val titleString = toLatexTest(appendable, practiceTest, questions)
@@ -121,9 +112,9 @@ private fun docHeader(appendable: Appendable) {
 private fun toLatexTest(
     appendable: Appendable,
     practiceTest: PracticeTest,
-    questions: List<MultiChoiceQuestion>
+    questions: List<MultiChoiceQuestion2>
 ): String {
-    val round = practiceTest.round
+    val round: Round = practiceTest.round
     val minutes: Int = round.minutesAtPaceFor(questions.size)
 
     val seedString = "%04d".format(practiceTest.randomSeed)
@@ -139,8 +130,8 @@ private fun toLatexTest(
         """
         \section*{$titleString}
 
-        Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${round.shortName} is found (begins) in ${practiceTest.book.fullName}$limitedTo.
+        Using your Bible, answer each of the following multiple-choice questions by marking the letter corresponding 
+        to the correct response on your answer sheet.  Questions are from ${practiceTest.book.fullName}$limitedTo.
         
         \vspace{0.1in}
         
@@ -160,7 +151,7 @@ private fun toLatexTest(
 private fun toLatexAnswerKey(
     appendable: Appendable,
     titleString: String,
-    questions: List<MultiChoiceQuestion>,
+    questions: List<MultiChoiceQuestion2>,
 ) {
     appendable.appendLine(
         """
@@ -171,11 +162,17 @@ private fun toLatexAnswerKey(
     )
     questions.forEach {
         val q = it.question
-        val ref: String =
-            if (q.answerRefs != null) q.answerRefs.first().toChapterAndVerse()
-            else "chapter " + q.answers.joinToString(" and ")
-        appendable.appendLine("""    \item ${'A' + it.correctChoice} ($ref)""")
+//        val ref: String? = q.answerRefs?.first()?.toChapterAndVerse()
+//            else "chapter " + q.answers.joinToString(" and ")
+        appendable.appendLine("""    \item ${'A' + it.correctChoice} (${q.answerRefs})""")
     }
     appendable.appendLine("""\end{enumerate}""")
     appendable.appendLine("""\end{multicols}""")
 }
+
+private fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
+    stream.bufferedReader().useLines { linesSeq ->
+        linesSeq.drop(headerLines.coerceAtLeast(0)).map { line ->
+            parseFun(line.split('\t'))
+        }.toList()
+    }

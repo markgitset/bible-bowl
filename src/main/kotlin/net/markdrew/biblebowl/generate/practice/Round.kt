@@ -1,15 +1,27 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.generate.practice.BibleUse.CLOSED
+import net.markdrew.biblebowl.generate.practice.BibleUse.OPEN
+
+enum class BibleUse { 
+    CLOSED, OPEN;
+    override fun toString(): String = name.lowercase().replaceFirstChar { name.first() }
+}
+
 enum class Round(
     val number: Int,
     val shortName: String,
     val longName: String,
     val questions: Int,
     val minutes: Int,
+    val bibleUse: BibleUse,
 ) {
-    FIND_THE_VERSE(1, "find-the-verse", "Find the Verse", 40, 25),
-    QUOTES(4, "quotes", "Quotes", 40, 15),
-    EVENTS(5, "events", "Events", 40, 10),
+    POWER(0, "power", "Power Round", 50, 25, CLOSED),
+    FIND_THE_VERSE(1, "verse-find", "Find the Verse", 40, 25, OPEN),
+    FACT_FINDER(2, "facts", "Fact Finder", 40, 20, OPEN),
+    IDENTIFICATION(3, "id", "Identification", 40, 20, OPEN),
+    QUOTES(4, "quotes", "In What Chapter - Quotes", 40, 15, CLOSED),
+    EVENTS(5, "events", "In What Chapter - Events", 40, 10, CLOSED),
     ;
 
     /**
