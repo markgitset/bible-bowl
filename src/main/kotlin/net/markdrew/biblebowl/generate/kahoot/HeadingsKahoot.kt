@@ -8,6 +8,7 @@ import net.markdrew.biblebowl.generate.practice.Round
 import net.markdrew.biblebowl.generate.practice.headingsCluePool
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.PracticeContent
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
@@ -25,16 +26,14 @@ private fun writeHeadingsKahoot(
     randomSeed: Int = Random.nextInt(1..9_999)
 ): File {
     val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val content: PracticeContent = BookData.readData(book, Paths.get(DATA_DIR)).practice(throughChapter)
 
-    val practiceTest = PracticeTest(Round.EVENTS, throughChapter, book, numQuestions)
-    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
+    val practiceTest = PracticeTest(Round.EVENTS, content, numQuestions)
 
-    val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, practiceTest, nChoices = 4)
+    val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 4)
 
     var fileName = "${book.name.lowercase()}-headings-kahoot"
-    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
+    if (!content.allChapters) fileName += "-to-ch-${content.coveredChapters.last}"
     fileName += "-%04d".format(randomSeed)
 
     val xlsxFile = File("$PRODUCTS_DIR/$bookName/kahoot/$fileName.xlsx")

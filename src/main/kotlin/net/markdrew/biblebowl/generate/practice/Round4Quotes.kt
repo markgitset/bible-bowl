@@ -12,16 +12,14 @@ fun main() {
 //    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
 //        writeRound4Quotes(Book.DEFAULT, numQuestions = 33, randomSeed = 1, throughChapter = lastChapter)
 //    }
-    writeRound4Quotes(PracticeTest(Round.QUOTES, throughChapter = 10, numQuestions = 20))
+    val content: PracticeContent = BookData.readData().practice(1..10)
+    writeRound4Quotes(PracticeTest(Round.QUOTES, content, numQuestions = 20))
 }
 
 private fun writeRound4Quotes(practiceTest: PracticeTest) {
     val bookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR))
 
-    val maxChapter: Int = bookData.chapters.lastEntry().value
-    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
-
-    val filteredCluePool: Map<IntRange, Int> = round4CluePool(bookData, lastIncludedChapter)
+    val filteredCluePool: Map<IntRange, Int> = round4CluePool(practiceTest)
     println("Final clue pools size is ${filteredCluePool.size}")
 
     val quotesToFind: List<MultiChoiceQuestion> = filteredCluePool.entries
@@ -29,28 +27,30 @@ private fun writeRound4Quotes(practiceTest: PracticeTest) {
         .map { (range, chapter) ->
             Question(
                 """“${bookData.text.substring(range)}”""",
-                chapter.toString(),
-                bookData.verseContaining(range.first)
+                listOf(chapter.toString()),
+                bookData.verseContaining(range.first)?.let { listOf(it) },
             )
-        }.map { multiChoice(it, lastIncludedChapter ?: maxChapter, practiceTest.random) }
+        }.map { multiChoice(it, practiceTest.content.coveredChapters, practiceTest.random) }
 
-    val latexFile = practiceTest.buildTexFileName(lastIncludedChapter)
+    val latexFile = practiceTest.buildTexFileName()
     latexFile.writer().use { writer ->
-        toLatexInWhatChapter(quotesToFind, writer, practiceTest, lastIncludedChapter)
+        toLatexInWhatChapter(quotesToFind, writer, practiceTest)
         println("Wrote $latexFile")
     }
     latexFile.toPdf()
 }
 
-private fun round4CluePool(bookData: BookData, lastIncludedChapter: Int?): Map<IntRange, Int> {
+private fun round4CluePool(practiceTest: PracticeTest): Map<IntRange, Int> {
+    val bookData = practiceTest.content.bookData
+    val chapters = practiceTest.content.coveredChapters
     var cluePool: DisjointRangeMap<Int> = DisjointRangeMap(bookData.chapters
             .maskedBy(identifySingleQuotes(bookData.text).gcdAlignment(identifyDoubleQuotes(bookData.text)))
             .maskedBy(bookData.sentences)
             .mapKeys { (range, _) ->
                 trim(bookData.text, range) { c -> c in " :,‘’“”\n" }
             }.filterNot { (range, _) -> range.isEmpty() })
-    if (lastIncludedChapter != null) {
-        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
+    if (!practiceTest.content.allChapters) {
+        val lastIncludedOffset: Int = bookData.chapterIndex[chapters.last]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
     val longEnoughClues = cluePool.filterKeys { it.length() >= 15 }

@@ -217,6 +217,12 @@ class BookData(val book: Book,
             drs
         }
 
+    fun practice(throughChapter: Int?): PracticeContent {
+        return practice(throughChapter?.let { 1..it } ?: chapterRange)
+    }
+
+    fun practice(chapters: IntRange = chapterRange): PracticeContent = PracticeContent(this, chapters)
+
     companion object {
 
         internal val wordsPattern = """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex()
@@ -268,7 +274,7 @@ class BookData(val book: Book,
             }.toMap().toSortedMap()
         }
 
-        fun readData(book: Book, inPath: Path = Paths.get(DATA_DIR)): BookData {
+        fun readData(book: Book = Book.DEFAULT, inPath: Path = Paths.get(DATA_DIR)): BookData {
             val bookDir = inPath.resolve(book.name.lowercase())
             val text = bookDir.resolve(textFileName(book)).toFile().readText()
             val verses = readVerses(bookDir.resolve(indexFileName(book, VERSE)))
@@ -285,7 +291,7 @@ class BookData(val book: Book,
 }
 
 fun main() {
-    val bookData = BookData.readData(Book.GEN, Paths.get(DATA_DIR))
+    val bookData = BookData.readData(Book.MAT, Paths.get(DATA_DIR))
 //    for (w in bookData.words) {
 //        if (bookData.chapterIndex[8]!!.encloses(w))
 //            println(bookData.excerpt(w))

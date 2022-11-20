@@ -3,8 +3,8 @@ package net.markdrew.biblebowl.generate.practice
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
@@ -15,33 +15,34 @@ import java.nio.file.Paths
 private const val VERSES_PER_PAGE = 20
 
 fun main() {
-    val bookData: BookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
+    val content: PracticeContent = BookData.readData().practice(1..12)
     val directory = File("matthew-round1-set")
-    val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in bookData.chapterRange) {
-        for (seed in seeds) {
-            writeFindTheVerse(
-                PracticeTest(Round.FIND_THE_VERSE, throughChapter, numQuestions = 20, randomSeed = seed),
-                bookData = bookData,
-                directory = directory
-            )
-        }
-    }
+    writeFindTheVerse(
+        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20),
+        directory = directory
+    )
+//    val seeds = setOf(10, 20, 30, 40, 50)
+//    for (throughChapter in bookData.chapterRange) {
+//        for (seed in seeds) {
+//            writeFindTheVerse(
+//                PracticeTest(Round.FIND_THE_VERSE, throughChapter, numQuestions = 20, randomSeed = seed),
+//                bookData = bookData,
+//                directory = directory
+//            )
+//        }
+//    }
 }
 
 private fun writeFindTheVerse(
     practiceTest: PracticeTest,
     minCharLength: Int = 15,
-    bookData: BookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR)),
     directory: File? = null,
 ): File {
-    require(practiceTest.book == bookData.book)
-
-    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
-
+    val content = practiceTest.content
+    val bookData = content.bookData
     var cluePool: DisjointRangeMap<Int> = bookData.oneVerseSentParts
-    if (lastIncludedChapter != null) {
-        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
+    if (!content.allChapters) {
+        val lastIncludedOffset: Int = bookData.chapterIndex[content.coveredChapters.last]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
 
@@ -58,9 +59,9 @@ private fun writeFindTheVerse(
         .entries.shuffled(practiceTest.random).take(practiceTest.numQuestions)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
-    val outputFile = practiceTest.buildTexFileName(lastIncludedChapter, directory)
+    val outputFile = practiceTest.buildTexFileName(directory)
     outputFile.writer().use { writer ->
-        versesToFind.toLatexInWhatChapter(writer, practiceTest, lastIncludedChapter)
+        versesToFind.toLatexInWhatChapter(writer, practiceTest)
     }
     return outputFile.toPdf()
 }
@@ -83,11 +84,12 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
 }
 
 fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
-                                               practiceTest: PracticeTest,
-                                               throughChapter: Int?) {
+                                               practiceTest: PracticeTest) {
     val seedString = "%04d".format(practiceTest.randomSeed)
     val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
-    val bookDesc = practiceTest.book.fullName + throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
+    val chapters = practiceTest.content.coveredChapters
+    val coverage = if (practiceTest.content.allChapters) "" else " (ONLY chapters ${chapters.first}-${chapters.last})"
+    val bookDesc = practiceTest.book.fullName + coverage
     val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 

@@ -16,27 +16,29 @@ fun main(args: Array<String>) {
     val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
     val bookData = BookData.readData(book)
 
-    printReverseHeadings(bookData)
-
-    // write out cumulative sets (i.e., chapters 1 to N)
-    val newHeadingsPerSet = 10
-    val idealNumberOfSets = bookData.headingCharRanges.size / newHeadingsPerSet.toFloat()
-    //println("idealNumberOfSets = $idealNumberOfSets")
-    val newChaptersPerSet = (bookData.chapters.size / idealNumberOfSets).roundToInt()
-    //println("newChaptersPerSet = $newChaptersPerSet")
-    for (chunk in bookData.chapterRange.chunked(newChaptersPerSet)) {
-//        println(1..chunk.last())
-        printHeadings(bookData, 1..chunk.last())
-    }
-//    println()
+//    printReverseHeadings(bookData)
+//
+//    // write out cumulative sets (i.e., chapters 1 to N)
+//    val newHeadingsPerSet = 10
+//    val idealNumberOfSets = bookData.headingCharRanges.size / newHeadingsPerSet.toFloat()
+//    //println("idealNumberOfSets = $idealNumberOfSets")
+//    val newChaptersPerSet = (bookData.chapters.size / idealNumberOfSets).roundToInt()
+//    //println("newChaptersPerSet = $newChaptersPerSet")
+//    for (chunk in bookData.chapterRange.chunked(newChaptersPerSet)) {
+////        println(1..chunk.last())
+//        printHeadings(bookData, 1..chunk.last())
+//    }
+////    println()
 
     // write out exclusive sets (i.e., chapters N to M)
-    val nChunks = 4
-    val chunkSize = bookData.chapterRange.last / nChunks
-    for (chunk in bookData.chapterRange.chunked(chunkSize)) {
-//        println(chunk.first()..chunk.last())
-        printHeadings(bookData, chunk.first()..chunk.last())
-    }
+//    val nChunks = 4
+//    val chunkSize = bookData.chapterRange.last / nChunks
+//    for (chunk in bookData.chapterRange.chunked(chunkSize)) {
+////        println(chunk.first()..chunk.last())
+//        printHeadings(bookData, chunk.first()..chunk.last())
+//    }
+
+    printHeadings(bookData, 9..12)
 }
 
 private fun makePath(bookData: BookData, fileType: String, chapterRange: IntRange): Path {

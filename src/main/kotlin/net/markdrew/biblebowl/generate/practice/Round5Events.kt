@@ -1,16 +1,19 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.Heading
+import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.chupacabra.core.DisjointRangeMap
 import java.io.File
-import java.nio.file.Paths
+import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 fun main() {
-    writeRound5Events(PracticeTest(Round.EVENTS, throughChapter = 10)).toPdf()
+    val practice: PracticeContent = BookData.readData().practice(1..13)
+    writeRound5Events(PracticeTest(Round.EVENTS, practice)).toPdf()
 //    for (lastChapter in setOf(30)) {
 //        writeRound5Events(Book.DEFAULT, throughChapter = lastChapter, randomSeed = 1).toPdf()
 //    }
@@ -19,103 +22,74 @@ fun main() {
 //    }
 }
 
-//private fun writeFullSet(book: Book = Book.DEFAULT): File {
-//    val bookName = book.name.lowercase()
-//    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-//
-//    val lastIncludedChapter: Int? = lastIncludedChapter(bookData, throughChapter)
-//
-//    val headingsToFind: List<MultiChoiceQuestion> =
-//        headingsCluePool(bookData, lastIncludedChapter, randomSeed, numQuestions, nChoices = 5)
-//
-//    var fileName = "${book.name.lowercase()}-events"
-//    if (lastIncludedChapter != null) fileName += "-to-ch-$throughChapter"
-//    fileName += "-%04d".format(randomSeed)
-//
-//    val texFile = File("$PRODUCTS_DIR/$bookName/practice/round5/$fileName.tex").also { it.parentFile.mkdirs() }
-//    texFile.writer().use { writer ->
-//        toLatexInWhatChapter(
-//            headingsToFind, writer, book, lastIncludedChapter, round = 5, clueType = "events", ROUND_5_PACE, randomSeed
-//        )
-//    }
-//
-//    println("Wrote $texFile")
-//    return texFile
-//}
+data class Question(
+    val question: String,
+    // the FIRST answer is assumed to be the arbitrarily chosen correct answer
+    val answers: List<String>,
+    val answerRefs: List<VerseRef>? = null,
+)
 
-data class Question(val question: String, val answer: String, val answerRef: VerseRef? = null)
+fun multiChoice(qAndA: Question, coveredChapters: IntRange, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
+    val nSpecificChoices = nChoices - 1 // nChoices minus 1 for the "none of these" answer
+    val answerIsNone = random.nextInt(1..nChoices) == 1 // i.e., 1/nChoices chance of the answer being none of these
+    val nCorrectChoices = if (answerIsNone) 0 else 1
+    val maxOffset = ((nSpecificChoices + 0.4) / qAndA.answers.size).roundToInt() - nCorrectChoices
+    val correctAnswers: List<Int> = qAndA.answers.map { it.toInt() }
+    val wrongChoicesPool: List<Int> = correctAnswers
+        .flatMap { answer -> ((answer - maxOffset)..(answer + maxOffset)).intersect(coveredChapters) }
+        .filterNot { it in correctAnswers }
+        .distinct()
+        .shuffled(random)
 
-fun multiChoice(qAndA: Question, chaptersInBook: Int, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
-    val chapter = qAndA.answer.toInt()
-    val nExplicitChoices = nChoices - 1
-    val minChapter = maxOf(1, chapter - nExplicitChoices)
-    val maxChapter = minOf(chaptersInBook, chapter + nExplicitChoices)
-    val startOffset: Int = random.nextInt(maxChapter - minChapter - 2)
-    val choices = (0 until nExplicitChoices).map { (minChapter + startOffset + it).toString() } + "none of these"
-    return MultiChoiceQuestion(qAndA, choices, nExplicitChoices)
+    val specificChoices: List<Int> =
+        if (answerIsNone) wrongChoicesPool.take(nSpecificChoices)
+        else wrongChoicesPool.take(nSpecificChoices - 1) + correctAnswers.first()
+
+    val allChoices = specificChoices.sorted().map { it.toString() } + "none of these"
+    return MultiChoiceQuestion(qAndA, allChoices, nSpecificChoices)
 }
 
 data class MultiChoiceQuestion(val question: Question, val choices: List<String>, val noneIndex: Int) {
-    val correctChoice: Int = choices.indexOf(question.answer).let { if (it < 0) noneIndex else it }
+    val correctChoice: Int = choices.indexOf(question.answers.first()).let { if (it < 0) noneIndex else it }
 }
 
 private fun writeRound5Events(practiceTest: PracticeTest): File {
-    val bookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR))
-    val lastIncludedChapter: Int? = practiceTest.lastIncludedChapter(bookData)
+    val texFile: File = practiceTest.buildTexFileName()
 
-    val texFile: File = practiceTest.buildTexFileName(lastIncludedChapter)
-
-    val headingsToFind: List<MultiChoiceQuestion> =
-        headingsCluePool(bookData, lastIncludedChapter, practiceTest, nChoices = 5)
+    val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
     texFile.writer().use { writer ->
-        toLatexInWhatChapter(headingsToFind, writer, practiceTest, lastIncludedChapter)
+        toLatexInWhatChapter(headingsToFind, writer, practiceTest)
     }
 
     println("Wrote $texFile")
     return texFile
 }
 
-fun headingsCluePool(
-    bookData: BookData,
-    lastIncludedChapter: Int?,
-    practiceTest: PracticeTest,
-    nChoices: Int,
-): List<MultiChoiceQuestion> {
-    var cluePool: DisjointRangeMap<String> = bookData.headingCharRanges
-    if (lastIncludedChapter != null) {
-        val lastIncludedOffset: Int = bookData.chapterIndex[lastIncludedChapter]?.last ?: throw Exception()
-        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
-    }
+fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion> {
+    val content = practiceTest.content
+    val headings = content.headings()
+    val headingsByTitle: Map<String, List<Heading>> = headings.groupBy { it.title }
 
-    return cluePool
-        .entries.shuffled(practiceTest.random).take(practiceTest.numQuestions)
-        .map { (range, heading) ->
-            Question(
-                heading,
-                bookData.chapters.intersectedBy(range).firstEntry().value.toString()
-            )
-        }.map { multiChoice(it, lastIncludedChapter ?: bookData.chapterRange.last, practiceTest.random, nChoices) }
+    return headings.shuffled(practiceTest.random).take(practiceTest.numQuestions)
+        .map { heading ->
+            val answers = listOf(heading.chapterRange.first) +
+                headingsByTitle[heading.title]?.filterNot { it == heading }?.map { it.chapterRange.first }.orEmpty()
+            Question(heading.title, answers.map { it.toString() })
+        }.map { multiChoice(it, content.coveredChapters, practiceTest.random, nChoices) }
 }
-
-//fun lastIncludedChapter(
-//    bookData: BookData,
-//    throughChapter: Int?,
-//): Int? = throughChapter?.let {
-//    val maxChapter = bookData.chapterRange.last
-//    require(it in 1..maxChapter) { "$throughChapter is not a valid chapter in ${bookData.book.fullName}!" }
-//    if (it == maxChapter) null else it
-//}
 
 fun toLatexInWhatChapter(
     questions: List<MultiChoiceQuestion>,
     appendable: Appendable,
     practiceTest: PracticeTest,
-    throughChapter: Int?,
     title: String = "In What Chapter - ${practiceTest.round.longName}",
     minutes: Int = practiceTest.round.minutesAtPaceFor(questions.size),
 ) {
     val seedString = "%04d".format(practiceTest.randomSeed)
-    val limitedTo: String = throughChapter?.let { " (ONLY chapters 1-$it)" }.orEmpty()
+    val content = practiceTest.content
+    val limitedTo: String =
+        if (content.allChapters) ""
+        else " (ONLY chapters ${content.coveredChapters.first}-${content.coveredChapters.last})"
     appendable.appendLine("""
         \documentclass{exam}
         \usepackage{nopageno}
@@ -131,7 +105,7 @@ fun toLatexInWhatChapter(
         \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round ${practiceTest.round.number}}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${practiceTest.round.shortName} is found in ${practiceTest.book.fullName}$limitedTo.
+        each of the following ${practiceTest.round.shortName} is found (begins) in ${practiceTest.book.fullName}$limitedTo.
         
         \vspace{0.1in}
         
@@ -153,7 +127,11 @@ fun toLatexInWhatChapter(
         \begin{enumerate}
     """.trimIndent())
     questions.forEach {
-        val ref: String = it.question.answerRef?.toChapterAndVerse() ?: "chapter ${it.question.answer}"
+        val ref: String = if (it.question.answerRefs != null) {
+            it.question.answerRefs.first().toChapterAndVerse()
+        } else {
+            "chapter " + it.question.answers.joinToString(" and ")
+        }
         appendable.appendLine("    \\item ${'A' + it.correctChoice} ($ref)")
     }
     appendable.appendLine("""
