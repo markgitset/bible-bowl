@@ -34,7 +34,7 @@ private fun writeRound4Quotes(practiceTest: PracticeTest) {
 
     val latexFile = practiceTest.buildTexFileName()
     latexFile.writer().use { writer ->
-        toLatexInWhatChapter(quotesToFind, writer, practiceTest)
+        toLatexInWhatChapter(writer, practiceTest, quotesToFind)
         println("Wrote $latexFile")
     }
     latexFile.toPdf()

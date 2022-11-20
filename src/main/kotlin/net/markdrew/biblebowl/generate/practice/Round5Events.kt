@@ -1,6 +1,5 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.Heading
@@ -12,13 +11,17 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    val practice: PracticeContent = BookData.readData().practice(1..13)
+    val bookData = BookData.readData()
+    val practice: PracticeContent = bookData.practice(1..13)
     writeRound5Events(PracticeTest(Round.EVENTS, practice)).toPdf()
-//    for (lastChapter in setOf(30)) {
-//        writeRound5Events(Book.DEFAULT, throughChapter = lastChapter, randomSeed = 1).toPdf()
-//    }
-//    for (i in 1..10) {
-//        writeRound5Events(Book.DEFAULT, randomSeed = i).toPdf()
+
+//    val seeds = setOf(10, 20, 30, 40, 50)
+//    val directory = File("matthew-round5-set")
+//    for (throughChapter in bookData.chapterRange.drop(5)) {
+//        val practice: PracticeContent = bookData.practice(1..throughChapter)
+//        for (seed in seeds) {
+//            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed), directory).toPdf()
+//        }
 //    }
 }
 
@@ -53,12 +56,12 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<String>
     val correctChoice: Int = choices.indexOf(question.answers.first()).let { if (it < 0) noneIndex else it }
 }
 
-private fun writeRound5Events(practiceTest: PracticeTest): File {
-    val texFile: File = practiceTest.buildTexFileName()
+private fun writeRound5Events(practiceTest: PracticeTest, directory: File? = null): File {
+    val texFile: File = practiceTest.buildTexFileName(directory)
 
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
     texFile.writer().use { writer ->
-        toLatexInWhatChapter(headingsToFind, writer, practiceTest)
+        toLatexInWhatChapter(writer, practiceTest, headingsToFind)
     }
 
     println("Wrote $texFile")
@@ -79,17 +82,26 @@ fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoic
 }
 
 fun toLatexInWhatChapter(
-    questions: List<MultiChoiceQuestion>,
     appendable: Appendable,
     practiceTest: PracticeTest,
-    title: String = "In What Chapter - ${practiceTest.round.longName}",
-    minutes: Int = practiceTest.round.minutesAtPaceFor(questions.size),
+    questions: List<MultiChoiceQuestion>,
 ) {
-    val seedString = "%04d".format(practiceTest.randomSeed)
-    val content = practiceTest.content
-    val limitedTo: String =
-        if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChapters.first}-${content.coveredChapters.last})"
+    docHeader(appendable)
+    val titleString = toLatexTest(appendable, practiceTest, questions)
+    newPage(appendable)
+    toLatexAnswerKey(appendable, titleString, questions)
+    docFooter(appendable)
+}
+
+private fun newPage(appendable: Appendable) {
+    appendable.appendLine("\n\\newpage\n")
+}
+
+private fun docFooter(appendable: Appendable) {
+    appendable.appendLine("""\end{document}""")
+}
+
+private fun docHeader(appendable: Appendable) {
     appendable.appendLine("""
         \documentclass{exam}
         \usepackage{nopageno}
@@ -102,7 +114,28 @@ fun toLatexInWhatChapter(
         
         \begin{document}
         
-        \section*{\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round ${practiceTest.round.number}}
+    """.trimIndent())
+}
+
+private fun toLatexTest(
+    appendable: Appendable,
+    practiceTest: PracticeTest,
+    questions: List<MultiChoiceQuestion>
+): String {
+    val minutes: Int = practiceTest.round.minutesAtPaceFor(questions.size)
+
+    val seedString = "%04d".format(practiceTest.randomSeed)
+    val titleString = "\\#$seedString In What Chapter - ${practiceTest.round.longName} " +
+            "\\textnormal{(Closed Bible, $minutes min)}" +
+            "\\hfill Round ${practiceTest.round.number}"
+
+    val content = practiceTest.content
+    val limitedTo: String =
+        if (content.allChapters) ""
+        else " (ONLY chapters ${content.coveredChapters.first}-${content.coveredChapters.last})"
+    appendable.appendLine(
+        """
+        \section*{$titleString}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
         each of the following ${practiceTest.round.shortName} is found (begins) in ${practiceTest.book.fullName}$limitedTo.
@@ -110,33 +143,37 @@ fun toLatexInWhatChapter(
         \vspace{0.1in}
         
         \begin{questions}
-    """.trimIndent())
+    """.trimIndent()
+    )
     questions.forEach { multiChoice ->
         appendable.appendLine("\\question ${multiChoice.question.question}").appendLine()
         appendable.appendLine("\\begin{oneparchoices}")
         for (choice in multiChoice.choices) appendable.appendLine("\\choice $choice")
         appendable.appendLine("\\end{oneparchoices}").appendLine()
     }
-    appendable.appendLine("""
-        \end{questions}
-        
-        \newpage
-        
-        \section*{ANSWER KEY\\\#$seedString $title \textnormal{(Closed Bible, $minutes min)}\hfill Round ${practiceTest.round.number}}
+    appendable.appendLine("\\end{questions}")
+    return titleString
+}
+
+private fun toLatexAnswerKey(
+    appendable: Appendable,
+    titleString: String,
+    questions: List<MultiChoiceQuestion>,
+) {
+    appendable.appendLine(
+        """
+        \section*{ANSWER KEY\\$titleString}
         \begin{multicols}{2}
         \begin{enumerate}
-    """.trimIndent())
+    """.trimIndent()
+    )
     questions.forEach {
-        val ref: String = if (it.question.answerRefs != null) {
-            it.question.answerRefs.first().toChapterAndVerse()
-        } else {
-            "chapter " + it.question.answers.joinToString(" and ")
-        }
-        appendable.appendLine("    \\item ${'A' + it.correctChoice} ($ref)")
+        val q = it.question
+        val ref: String =
+            if (q.answerRefs != null) q.answerRefs.first().toChapterAndVerse()
+            else "chapter " + q.answers.joinToString(" and ")
+        appendable.appendLine("""    \item ${'A' + it.correctChoice} ($ref)""")
     }
-    appendable.appendLine("""
-        \end{enumerate}
-        \end{multicols}
-        \end{document}
-    """.trimIndent())
+    appendable.appendLine("""\end{enumerate}""")
+    appendable.appendLine("""\end{multicols}""")
 }

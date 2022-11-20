@@ -21,7 +21,8 @@ data class PracticeTest(
         val bookName = content.bookData.book.name.lowercase()
         val dir = directory ?: File("$PRODUCTS_DIR/$bookName/practice/round${round.number}")
         val chapters = content.coveredChapters
-        val fileName = "$bookName-${round.shortName}-ch-${chapters.first}-${chapters.last}-%04d".format(randomSeed)
+        val fileName = "$bookName-${round.shortName}-chap%02dto%02d-seed%04d"
+            .format(chapters.first, chapters.last, randomSeed)
         dir.mkdirs()
         return File(dir, "$fileName.tex")
     }
