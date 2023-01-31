@@ -1,18 +1,18 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.20"
+    kotlin("jvm") version "1.8.0"
     application
 }
 
 tasks.withType<KotlinCompile>().configureEach {
     kotlinOptions {
-        jvmTarget = "18"
+        jvmTarget = "19"
     }
 }
 
 tasks.compileJava {
-    options.release.set(18)
+    options.release.set(19)
 }
 
 application {
@@ -20,7 +20,6 @@ application {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.github.crosswire:jsword:2.1")
@@ -43,7 +42,6 @@ tasks.named<Test>("test") {
 }
 
 repositories {
-    jcenter()
     mavenLocal()
     mavenCentral()
     maven("https://jitpack.io")
