@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.PracticeContent
@@ -15,12 +16,15 @@ import java.nio.file.Paths
 private const val VERSES_PER_PAGE = 20
 
 fun main() {
-    val content: PracticeContent = BookData.readData().practice(1..12)
-    val directory = File("matthew-round1-set")
-    writeFindTheVerse(
-        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20),
-        directory = directory
-    )
+    val content: PracticeContent = BookData.readData().practice(1..22)
+    showPdf(writeFindTheVerse(
+        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
+    ))
+//    val content: PracticeContent = BookData.readData().practice(1..14)
+//    showPdf(writeFindTheVerse(
+//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
+//    ))
+
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    for (throughChapter in bookData.chapterRange) {
 //        for (seed in seeds) {
@@ -42,21 +46,23 @@ private fun writeFindTheVerse(
     val bookData = content.bookData
     var cluePool: DisjointRangeMap<Int> = bookData.oneVerseSentParts
     if (!content.allChapters) {
-        val lastIncludedOffset: Int = bookData.chapterIndex[content.coveredChapters.last]?.last ?: throw Exception()
-        cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
+        cluePool = cluePool.enclosedBy(content.coveredOffsets)
     }
 
     // remove any ambiguous clues
-    cluePool = DisjointRangeMap(cluePool.entries
-        .groupBy { (range, _) -> bookData.text.substring(range).lowercase() }
-        .values
-        .mapNotNull { it.singleOrNull() }
-        .associate { (range, verse) -> range to verse }
-    )
+//    cluePool = DisjointRangeMap(cluePool.entries
+//        .groupBy { (range, _) -> bookData.text.substring(range).lowercase() }
+//        .also { it.forEach { println(it) } }
+//        .values
+//        .mapNotNull { it.singleOrNull() }
+//        .associate { (range, verse) -> range to verse }
+//    )
 
+    // TODO need a better disambiguation approach!
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
-        .entries.shuffled(practiceTest.random).take(practiceTest.numQuestions)
+        .entries.shuffled(practiceTest.random)
+        .take(practiceTest.numQuestions)
         .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
 
     val outputFile = practiceTest.buildTexFileName(directory)

@@ -15,6 +15,10 @@ data class PracticeContent internal constructor(
 
     val allChapters: Boolean = coveredChapters == bookData.chapterRange
 
+    val coveredOffsets: IntRange = with(bookData.chapterIndex) {
+        getValue(coveredChapters.first).first..getValue(coveredChapters.last).last
+    }
+
     fun headings(): List<Heading> = bookData.headings(coveredChapters)
 
 }

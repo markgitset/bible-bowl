@@ -37,6 +37,7 @@ class BookData(val book: Book,
         verses.entries.associate { (range, refNum) -> refNum to range }
     }
 
+    /** Character ranges by chapter number */
     val chapterIndex: Map<Int, IntRange> by lazy {
         chapters.entries.associate { (range, chapterNum) -> chapterNum to range }
     }
@@ -201,6 +202,14 @@ class BookData(val book: Book,
     fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.toRefNum()))
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
     fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
+
+    /**
+     * Returns all [VerseRef]s containing the words of the given phrase (ignoring case and punctuation)
+     */
+//    fun versesContainingPhrase(phraseCharOffsets: IntRange): List<VerseRef> {
+//        val phraseWords: List<String> = words.enclosedBy(phraseCharOffsets).map { text.substring(it).lowercase() }
+//        phraseWords.
+//    }
 
     fun findAll(vararg patterns: Regex): DisjointRangeSet =
         patterns.fold(DisjointRangeSet()) { drs, pattern ->
