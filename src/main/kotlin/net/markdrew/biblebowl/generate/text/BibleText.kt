@@ -145,7 +145,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             transition.beginning(VERSE)?.apply {
                 out.append(
                     formatVerseNum(
-                        VerseRef.fromRefNum(value as Int).verse,
+                        VerseRef.fromAbsoluteVerseNum(value as Int).verse,
                         transition.isPresent(POETRY)
                     )
                 )

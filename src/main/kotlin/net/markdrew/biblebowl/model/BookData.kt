@@ -33,7 +33,7 @@ class BookData(val book: Book,
                val poetry: DisjointRangeSet,
 ) {
 
-    val verseIndex: Map<Int, IntRange> by lazy {
+    val verseIndex: Map<AbsoluteVerseNum, IntRange> by lazy {
         verses.entries.associate { (range, refNum) -> refNum to range }
     }
 
@@ -199,7 +199,7 @@ class BookData(val book: Book,
     fun verseList(): List<ReferencedVerse> =
         verses.entries.map { (range, verseRefNum) -> ReferencedVerse(verseRefNum.toVerseRef(), text.substring(range)) }
 
-    fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.toRefNum()))
+    fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.absoluteVerse))
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
     fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
 
