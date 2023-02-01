@@ -3,6 +3,9 @@ package net.markdrew.biblebowl.model
 typealias AbsoluteVerseNum = Int
 fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this)
 
+typealias VerseRange = ClosedRange<VerseRef>
+//fun VerseRange.toString(separator: String): String = "${start.chapter}$separator${endInclusive.chapter}"
+
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
     init {

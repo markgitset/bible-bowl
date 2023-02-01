@@ -1,6 +1,7 @@
 package ws
 
 import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.biblebowl.ws.BookIndexer
 import net.markdrew.biblebowl.ws.Passage
 import net.markdrew.biblebowl.ws.PassageMeta
@@ -100,7 +101,7 @@ internal class BookIndexerTest {
                     1118..1371 to 1001026,
                     1375..1491 to 1001027,
                     1497..1730 to 1001028
-                ),
+                ).mapValues { (_, verseNum) -> verseNum.toVerseRef() },
                 verses
             )
 

@@ -7,6 +7,7 @@ import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toString
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
@@ -47,7 +48,7 @@ private fun writeFindTheVerse(
 ): File {
     val content = practiceTest.content
     val bookData = content.bookData
-    var cluePool: DisjointRangeMap<Int> = bookData.oneVerseSentParts
+    var cluePool: DisjointRangeMap<VerseRef> = bookData.oneVerseSentParts
     if (!content.allChapters) {
         cluePool = cluePool.enclosedBy(content.coveredOffsets)
     }
@@ -66,7 +67,7 @@ private fun writeFindTheVerse(
         .filterKeys { it.length() >= minCharLength }
         .entries.shuffled(practiceTest.random)
         .take(practiceTest.numQuestions)
-        .map { (range, verseNum) -> ReferencedVerse(verseNum.toVerseRef(), bookData.text.substring(range)) }
+        .map { (range, verseRef) -> ReferencedVerse(verseRef, bookData.text.substring(range)) }
 
     val outputFile = practiceTest.buildTexFileName(directory)
     outputFile.writer().use { writer ->

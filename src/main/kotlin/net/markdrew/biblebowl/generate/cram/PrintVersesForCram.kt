@@ -18,10 +18,10 @@ fun main(args: Array<String>) {
 
     val cramFile = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-verses.tsv")
     CardWriter(cramFile).use {
-        bookData.verses.forEach { (range, verseRefNum) ->
+        bookData.verses.forEach { (range, verseRef) ->
             val verseText = bookData.text.substring(range).normalizeWS()
             it.write(verseText,
-                "${bookData.headingCharRanges.valueEnclosing(range)}<br/>${verseRefNum.toVerseRef().toFullString()}")
+                "${bookData.headingCharRanges.valueEnclosing(range)}<br/>${verseRef.toFullString()}")
         }
     }
     println("Wrote data to: $cramFile")

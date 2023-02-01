@@ -121,7 +121,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                         bookData.verses.valueContaining(excerpt.excerptRange.first)
                             ?: bookData.verses.valueContaining(excerpt.excerptRange.first - 1)
                             ?: bookData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                        )?.toVerseRef()
+                        )
                 out.append(renderFootNote(verseRef!!, value as String))
             }
 

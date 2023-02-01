@@ -4,6 +4,7 @@ import net.markdrew.biblebowl.model.AbsoluteVerseNum
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
@@ -23,7 +24,7 @@ private data class Footnote(val noteNum: Int, val verseRef: String, val noteText
 
 class BookIndexer(val book: Book) {
     val buffer = StringBuilder()
-    val verses = DisjointRangeMap<AbsoluteVerseNum>()
+    val verses = DisjointRangeMap<VerseRef>()
     val headings = DisjointRangeMap<String>()
     val chapters = DisjointRangeMap<ChapterRef>()
     val paragraphs = DisjointRangeSet()
@@ -117,10 +118,15 @@ class BookIndexer(val book: Book) {
         currentHeading = ""
     }
 
-    private fun startVerse(chapter: ChapterRef, verseNum: AbsoluteVerseNum, text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {
+    private fun startVerse(
+        chapter: ChapterRef,
+        verseNum: AbsoluteVerseNum,
+        text: String,
+        noteOffsetsByNoteNumber: MutableMap<Int, Int>
+    ) {
         val verseStart = buffer.length
         appendTextContainingFootnoteRefs(text, noteOffsetsByNoteNumber)
-        verses[verseStart until buffer.trimEnd().length] = chapter.verse(verseNum).absoluteVerse
+        verses[verseStart until buffer.trimEnd().length] = chapter.verse(verseNum)
     }
 
     private fun appendTextContainingFootnoteRefs(text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {

@@ -40,7 +40,7 @@ internal fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
 fun buildNonLocalPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> =
     buildPhrasesIndex(bookData, maxPhraseLength).filter { pie ->
         pie.values.map { ref ->
-            val range: IntRange = bookData.verseIndex[ref.absoluteVerse] ?: throw Exception()
+            val range: IntRange = bookData.verseIndex[ref] ?: throw Exception()
             bookData.chapters.valueEnclosing(range) ?: throw Exception()
         }.distinct().size > 1
     }

@@ -11,7 +11,6 @@ import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
-import net.markdrew.biblebowl.ws.toIntRange
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.encloses
@@ -27,7 +26,7 @@ typealias CharOffset = Int
 
 class BookData(val book: Book,
                val text: String,
-               val verses: DisjointRangeMap<AbsoluteVerseNum>,
+               val verses: DisjointRangeMap<VerseRef>,
                val headingCharRanges: DisjointRangeMap<String>,
                val chapters: DisjointRangeMap<ChapterRef>,
                val paragraphs: DisjointRangeSet,
@@ -35,7 +34,7 @@ class BookData(val book: Book,
                val poetry: DisjointRangeSet,
 ) {
 
-    val verseIndex: Map<AbsoluteVerseNum, IntRange> by lazy {
+    val verseIndex: Map<VerseRef, IntRange> by lazy {
         verses.entries.associate { (range, refNum) -> refNum to range }
     }
 
@@ -60,7 +59,7 @@ class BookData(val book: Book,
     /**
      * Sentences (or sentence parts) that are guaranteed to NOT span more than one verse
      */
-    val oneVerseSentParts: DisjointRangeMap<AbsoluteVerseNum> by lazy { verses.maskedBy(sentences) }
+    val oneVerseSentParts: DisjointRangeMap<VerseRef> by lazy { verses.maskedBy(sentences) }
 
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
@@ -129,8 +128,8 @@ class BookData(val book: Book,
      * heading, would return that chapter heading.
      */
     fun smallestNamedRange(range: IntRange): String? {
-        val verseRefNum: Int? = verses.valueEnclosing(range)
-        if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerse()
+        val verseRef: VerseRef? = verses.valueEnclosing(range)
+        if (verseRef != null) return verseRef.toChapterAndVerse()
 
         val chapter: ChapterRef? = chapters.valueEnclosing(range)
         val heading: String? = headingCharRanges.valueEnclosing(range)
@@ -204,11 +203,11 @@ class BookData(val book: Book,
         enclosingSingleVerseSentence(range)?.let { excerpt(it) }
 
     fun verseList(): List<ReferencedVerse> =
-        verses.entries.map { (range, verseRefNum) -> ReferencedVerse(verseRefNum.toVerseRef(), text.substring(range)) }
+        verses.entries.map { (range, verseRef) -> ReferencedVerse(verseRef, text.substring(range)) }
 
-    fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.absoluteVerse))
-    fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
-    fun verseContaining(offset: CharOffset): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
+    fun getVerse(verseRef: VerseRef): String = text.substring(verseIndex.getValue(verseRef))
+    fun verseEnclosing(charRange: IntRange): VerseRef? = verses.valueEnclosing(charRange)
+    fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)
 
     /**
      * Returns all [VerseRef]s containing the words of the given phrase (ignoring case and punctuation)
@@ -254,10 +253,10 @@ class BookData(val book: Book,
 
         private fun textFileName(book: Book): String = book.name.lowercase() + ".txt"
 
-        private fun readVerses(inPath: Path): DisjointRangeMap<Int> = inPath.toFile().useLines { linesSeq ->
+        private fun readVerses(inPath: Path): DisjointRangeMap<VerseRef> = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
                 val (first, last, verseRefNum) = line.split('\t').map { it.toInt() }
-                first..last to verseRefNum
+                first..last to verseRefNum.toVerseRef()
             }.toMap(DisjointRangeMap())
         }
 

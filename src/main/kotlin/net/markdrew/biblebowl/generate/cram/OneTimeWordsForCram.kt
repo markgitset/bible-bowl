@@ -56,12 +56,12 @@ private fun writeCards(
         if (chapterRange == null) oneTimeWords
         else oneTimeWords.filter { bookData.charRangeFromChapterRange(chapterRange).encloses(it) }
     words.forEach { wordRange ->
-        val (verseRange, verseRefNum) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
+        val (verseRange, verseRef) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
         val verseText: String = bookData.text.substring(verseRange)
         val word = bookData.text.substring(wordRange)
         val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
         val heading = bookData.headingCharRanges.valueEnclosing(wordRange)
-        val verseRefString = verseRefNum.toVerseRef().toFullString()
+        val verseRefString = verseRef.toFullString()
         val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"
         writer.write(word, answer, hint = highlightedVerse)
     }
