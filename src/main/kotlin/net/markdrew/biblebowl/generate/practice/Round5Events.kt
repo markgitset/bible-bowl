@@ -3,9 +3,13 @@ package net.markdrew.biblebowl.generate.practice
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.VerseRef
+import net.markdrew.biblebowl.model.toString
+import net.markdrew.chupacabra.core.intersect
 import java.io.File
 import kotlin.math.roundToInt
 import kotlin.random.Random
@@ -13,7 +17,7 @@ import kotlin.random.nextInt
 
 fun main() {
     val bookData = BookData.readData()
-    val practice: PracticeContent = bookData.practice(1..14)
+    val practice: PracticeContent = bookData.practice(bookData.book.chapterRange(1, 14))
     showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).toPdf())
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
@@ -33,14 +37,17 @@ data class Question(
     val answerRefs: List<VerseRef>? = null,
 )
 
-fun multiChoice(qAndA: Question, coveredChapters: IntRange, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
+fun multiChoice(qAndA: Question, coveredChapters: ChapterRange, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
     val nSpecificChoices = nChoices - 1 // nChoices minus 1 for the "none of these" answer
     val answerIsNone = random.nextInt(1..nChoices) == 1 // i.e., 1/nChoices chance of the answer being none of these
     val nCorrectChoices = if (answerIsNone) 0 else 1
     val maxOffset = ((nSpecificChoices + 0.4) / qAndA.answers.size).roundToInt() - nCorrectChoices
     val correctAnswers: List<Int> = qAndA.answers.map { it.toInt() }
     val wrongChoicesPool: List<Int> = correctAnswers
-        .flatMap { answer -> ((answer - maxOffset)..(answer + maxOffset)).intersect(coveredChapters) }
+        .flatMap { answer ->
+            ((answer - maxOffset)..(answer + maxOffset))
+                .intersect(coveredChapters.start.chapter..coveredChapters.endInclusive.chapter)
+        }
         .filterNot { it in correctAnswers }
         .distinct()
         .shuffled(random)
@@ -77,9 +84,9 @@ fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoic
 
     return headings.shuffled(practiceTest.random).take(practiceTest.numQuestions)
         .map { heading ->
-            val answers = listOf(heading.chapterRange.first) +
-                headingsByTitle[heading.title]?.filterNot { it == heading }?.map { it.chapterRange.first }.orEmpty()
-            Question(heading.title, answers.map { it.toString() })
+            val answers: List<ChapterRef> = listOf(heading.chapterRange.start) +
+                headingsByTitle[heading.title]?.filterNot { it == heading }?.map { it.chapterRange.start }.orEmpty()
+            Question(heading.title, answers.map { it.chapter.toString() })
         }.map { multiChoice(it, content.coveredChapters, practiceTest.random, nChoices) }
 }
 
@@ -135,7 +142,7 @@ private fun toLatexTest(
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChapters.first}-${content.coveredChapters.last})"
+        else " (ONLY chapters ${content.coveredChapters.toString("-")})"
     appendable.appendLine(
         """
         \section*{$titleString}

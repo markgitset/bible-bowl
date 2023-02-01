@@ -42,7 +42,6 @@ tasks.named<Test>("test") {
 }
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven("https://jitpack.io")
 }

@@ -5,13 +5,17 @@ fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this
 
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
-    constructor(book: Book, chapter: Int, verse: Int) : this(ChapterRef(book, chapter), verse)
+    init {
+        require(verse > 0) { "Verse number cannot be less than 1!" }
+    }
 
     val absoluteVerse: AbsoluteVerseNum by lazy { 1_000 * chapterRef.absoluteChapter + verse }
 
     val chapter: Int get() = chapterRef.chapter
     val book: Book get() = chapterRef.book
     val bookName: String get() = chapterRef.bookName
+
+    constructor(book: Book, chapter: Int, verse: Int) : this(ChapterRef(book, chapter), verse)
 
     override fun compareTo(other: VerseRef): Int = absoluteVerse.compareTo(other.absoluteVerse)
 

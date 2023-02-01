@@ -25,10 +25,10 @@ class BookIndexer(val book: Book) {
     val buffer = StringBuilder()
     val verses = DisjointRangeMap<AbsoluteVerseNum>()
     val headings = DisjointRangeMap<String>()
-    val chapters = DisjointRangeMap<Int>()
+    val chapters = DisjointRangeMap<ChapterRef>()
     val paragraphs = DisjointRangeSet()
     val poetry = DisjointRangeSet()
-    val footnotes = sortedMapOf<Int, String>()
+    val footnotes = sortedMapOf<Int, String>() // char offset -> footnote text
 
     private var headingStart: Int = 0
     private var paragraphStart: Int = 0
@@ -47,7 +47,7 @@ class BookIndexer(val book: Book) {
 
     private fun indexChapter(chapterPassage: Passage) {
         val chapterStart = buffer.length
-        val currentChapter = chapterPassage.range.first.toVerseRef().chapter
+        val currentChapter = chapterPassage.range.first.toVerseRef().chapterRef
         var nextLineIsHeader = false
         var inFootnotes = false
         val noteOffsetsByNoteNumber = mutableMapOf<Int, Int>()
@@ -117,10 +117,10 @@ class BookIndexer(val book: Book) {
         currentHeading = ""
     }
 
-    private fun startVerse(chapter: Int, verseNum: Int, text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {
+    private fun startVerse(chapter: ChapterRef, verseNum: AbsoluteVerseNum, text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {
         val verseStart = buffer.length
         appendTextContainingFootnoteRefs(text, noteOffsetsByNoteNumber)
-        verses[verseStart until buffer.trimEnd().length] = ChapterRef(book, chapter).verse(verseNum).absoluteVerse
+        verses[verseStart until buffer.trimEnd().length] = chapter.verse(verseNum).absoluteVerse
     }
 
     private fun appendTextContainingFootnoteRefs(text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {

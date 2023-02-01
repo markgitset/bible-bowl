@@ -23,8 +23,8 @@ fun main(args: Array<String>) {
     printNameMatches(nameExcerpts, bookData)
 
     val stepByNChapters = 10
-    for (lastChapter in bookData.chapterRange) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.last) {
+    for (lastChapter in 1..bookData.chapterRange.endInclusive.chapter) {
+        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.endInclusive.chapter) {
             writeFile(bookData, nameExcerpts, lastChapter)
         }
     }

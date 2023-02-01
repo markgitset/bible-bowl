@@ -3,8 +3,9 @@ package net.markdrew.biblebowl.generate.practice
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
-import net.markdrew.biblebowl.model.VerseRef
+import net.markdrew.biblebowl.model.toString
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -12,7 +13,8 @@ import kotlin.random.Random
 
 fun main() {
     val bookData = BookData.readData()
-    val practice: PracticeContent = bookData.practice(1..13)
+    val chapters = 1..13
+    val practice = PracticeContent(bookData, bookData.book.chapterRange(chapters.first, chapters.last))
     showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)).toPdf(keepTexFiles = true))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
@@ -35,7 +37,7 @@ private data class Question2(
     val wrongAnswers = answers.drop(nCorrectAnswers)
 }
 
-private fun multiChoice2(qAndA: Question2, coveredChapters: IntRange, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
+private fun multiChoice2(qAndA: Question2, coveredChapters: ChapterRange, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
     val allChoices: List<String> =
         qAndA.wrongAnswers.shuffled(random).take(nChoices - 1) + qAndA.correctAnswers.single()
     return MultiChoiceQuestion2(qAndA, allChoices.shuffled(random))
@@ -125,7 +127,7 @@ private fun toLatexTest(
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChapters.first}-${content.coveredChapters.last})"
+        else " (ONLY chapters ${content.coveredChapters.toString("-")})"
     appendable.appendLine(
         """
         \section*{$titleString}

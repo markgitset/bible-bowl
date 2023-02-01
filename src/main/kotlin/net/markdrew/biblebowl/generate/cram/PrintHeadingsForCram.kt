@@ -4,11 +4,12 @@ import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.toString
 import net.markdrew.biblebowl.rangeLabel
 import net.markdrew.chupacabra.core.intersect
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.math.roundToInt
 
 
 fun main(args: Array<String>) {
@@ -38,20 +39,20 @@ fun main(args: Array<String>) {
 //        printHeadings(bookData, chunk.first()..chunk.last())
 //    }
 
-    printHeadings(bookData, 9..12)
+    printHeadings(bookData, book.chapterRange(9, 12))
 }
 
-private fun makePath(bookData: BookData, fileType: String, chapterRange: IntRange): Path {
+private fun makePath(bookData: BookData, fileType: String, chapterRange: ChapterRange): Path {
     val bookName = bookData.book.name.lowercase()
     val actualChapterRange = chapterRange.intersect(bookData.chapterRange)
     val suffix =
         if (actualChapterRange == bookData.chapterRange) ""
-        else rangeLabel("-chapter", actualChapterRange)
+        else rangeLabel("-chapter", with(actualChapterRange) { start.chapter..endInclusive.chapter })
     val dir: Path = Paths.get("$PRODUCTS_DIR/$bookName/cram").also { it.toFile().mkdirs() }
     return dir.resolve("$bookName-$fileType$suffix.tsv")
 }
 
-private fun printHeadings(bookData: BookData, chapterRange: IntRange = bookData.chapterRange) {
+private fun printHeadings(bookData: BookData, chapterRange: ChapterRange = bookData.chapterRange) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
     val cramHeadingsPath = makePath(bookData, "cram-headings", chapterRange)
     CardWriter(cramHeadingsPath).use { writer ->
@@ -60,7 +61,7 @@ private fun printHeadings(bookData: BookData, chapterRange: IntRange = bookData.
         }.forEach { (headingTitle, headingList) ->
             // format and write out the results
             val answerString = headingList.joinToString("<br/>OR<br/>") { heading ->
-                heading.chapterRange.toList().joinToString(" & ")
+                heading.chapterRange.toString(" & ")
             }
             writer.write(headingTitle, answerString)
         }
@@ -68,7 +69,7 @@ private fun printHeadings(bookData: BookData, chapterRange: IntRange = bookData.
     println("Wrote data to: $cramHeadingsPath")
 }
 
-private fun printReverseHeadings(bookData: BookData, chapterRange: IntRange = bookData.chapterRange) {
+private fun printReverseHeadings(bookData: BookData, chapterRange: ChapterRange = bookData.chapterRange) {
     val cramHeadingsPath = makePath(bookData, "cram-reverse-headings", chapterRange)
     CardWriter(cramHeadingsPath).use { writer ->
         bookData.chapters

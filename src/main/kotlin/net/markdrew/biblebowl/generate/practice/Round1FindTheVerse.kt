@@ -1,25 +1,28 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.toString
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
 import java.io.File
-import java.nio.file.Paths
 
 private const val VERSES_PER_PAGE = 20
 
 fun main() {
-    val content: PracticeContent = BookData.readData().practice(1..22)
-    showPdf(writeFindTheVerse(
-        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
-    ))
+    val readData = BookData.readData()
+    val content = PracticeContent(readData, readData.book.chapterRange(1, 22))
+    showPdf(
+        writeFindTheVerse(
+            PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
+        )
+    )
 //    val content: PracticeContent = BookData.readData().practice(1..14)
 //    showPdf(writeFindTheVerse(
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
@@ -93,8 +96,8 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
                                                practiceTest: PracticeTest) {
     val seedString = "%04d".format(practiceTest.randomSeed)
     val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
-    val chapters = practiceTest.content.coveredChapters
-    val coverage = if (practiceTest.content.allChapters) "" else " (ONLY chapters ${chapters.first}-${chapters.last})"
+    val chapters: ChapterRange = practiceTest.content.coveredChapters
+    val coverage = if (practiceTest.content.allChapters) "" else " (ONLY chapters ${chapters.toString("-")})"
     val bookDesc = practiceTest.book.fullName + coverage
     val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""

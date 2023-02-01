@@ -7,6 +7,7 @@ import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.encloses
 import java.io.File
@@ -22,11 +23,11 @@ fun main(args: Array<String>) {
 
     val stepByNChapters = 10
     val oneTimeWords: List<IntRange> = oneTimeWords(bookData)
-    for (lastChapter in bookData.chapterRange) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.last) {
-            writeFile(bookData, oneTimeWords, 1..lastChapter)
+    for (lastChapter in 1..bookData.chapterRange.endInclusive.chapter) {
+        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.endInclusive.chapter) {
+            writeFile(bookData, oneTimeWords, book.chapterRange(1, lastChapter))
             val firstChapter = lastChapter - stepByNChapters + 1
-            if (firstChapter > 1) writeFile(bookData, oneTimeWords, firstChapter..lastChapter)
+            if (firstChapter > 1) writeFile(bookData, oneTimeWords, book.chapterRange(firstChapter, lastChapter))
         }
     }
 }
@@ -34,7 +35,7 @@ fun main(args: Array<String>) {
 private fun writeFile(
     bookData: BookData,
     oneTimeWords: List<IntRange>,
-    chapterRange: IntRange
+    chapterRange: ChapterRange,
 ) {
     val bookName = bookData.book.name.lowercase()
     val scopeString = bookData.chapterRangeOrEmpty("-chapters-", chapterRange)
@@ -49,7 +50,7 @@ private fun writeCards(
     writer: CardWriter,
     oneTimeWords: List<IntRange>,
     bookData: BookData,
-    chapterRange: IntRange?
+    chapterRange: ChapterRange?
 ) {
     val words: List<IntRange> =
         if (chapterRange == null) oneTimeWords

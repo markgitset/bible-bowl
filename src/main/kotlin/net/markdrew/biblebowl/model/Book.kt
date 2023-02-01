@@ -72,6 +72,9 @@ enum class Book(val fullName: String) {
 
     val number = ordinal + 1
 
+    fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)
+    fun chapterRange(first: Int, last: Int): ChapterRange = chapterRef(first)..chapterRef(last)
+
     companion object {
         val DEFAULT = MAT
         fun fromNumber(n: Int): Book = values()[n-1]

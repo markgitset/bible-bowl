@@ -23,13 +23,15 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.SortedMap
 
+typealias CharOffset = Int
+
 class BookData(val book: Book,
                val text: String,
-               val verses: DisjointRangeMap<Int>,
+               val verses: DisjointRangeMap<AbsoluteVerseNum>,
                val headingCharRanges: DisjointRangeMap<String>,
-               val chapters: DisjointRangeMap<Int>,
+               val chapters: DisjointRangeMap<ChapterRef>,
                val paragraphs: DisjointRangeSet,
-               val footnotes: SortedMap<Int, String>,
+               val footnotes: SortedMap<CharOffset, String>,
                val poetry: DisjointRangeSet,
 ) {
 
@@ -38,7 +40,7 @@ class BookData(val book: Book,
     }
 
     /** Character ranges by chapter number */
-    val chapterIndex: Map<Int, IntRange> by lazy {
+    val chapterIndex: Map<ChapterRef, IntRange> by lazy {
         chapters.entries.associate { (range, chapterNum) -> chapterNum to range }
     }
 
@@ -48,7 +50,9 @@ class BookData(val book: Book,
 
     val headings: List<Heading> by lazy {
         headingCharRanges.map { (headingCharRange, headingTitle) ->
-            val chapterRange: IntRange = chapters.valuesIntersectedBy(headingCharRange).toIntRange()
+            val chapterRefs: List<ChapterRef> = chapters.valuesIntersectedBy(headingCharRange)
+            require(chapterRefs.size <= 2) { "Not set up to handle headings intersecting more than 2 chapters!" }
+            val chapterRange = chapterRefs.min()..chapterRefs.max()
             Heading(headingTitle, chapterRange)
         }
     }
@@ -56,7 +60,7 @@ class BookData(val book: Book,
     /**
      * Sentences (or sentence parts) that are guaranteed to NOT span more than one verse
      */
-    val oneVerseSentParts: DisjointRangeMap<Int> by lazy { verses.maskedBy(sentences) }
+    val oneVerseSentParts: DisjointRangeMap<AbsoluteVerseNum> by lazy { verses.maskedBy(sentences) }
 
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
@@ -128,17 +132,17 @@ class BookData(val book: Book,
         val verseRefNum: Int? = verses.valueEnclosing(range)
         if (verseRefNum != null) return verseRefNum.toVerseRef().toChapterAndVerse()
 
-        val chapter: Int? = chapters.valueEnclosing(range)
+        val chapter: ChapterRef? = chapters.valueEnclosing(range)
         val heading: String? = headingCharRanges.valueEnclosing(range)
-        if (heading != null) return "Chapter $chapter: $heading"
+        if (heading != null) return "Chapter ${chapter?.chapter}: $heading"
 
-        if (chapter != null) return "Chapter $chapter"
+        if (chapter != null) return "Chapter ${chapter.chapter}"
 
         return null
     }
 
     /** The range of chapters in this book */
-    val chapterRange: IntRange by lazy {
+    val chapterRange: ChapterRange by lazy {
         val values = chapters.values
         val min = values.minOrNull() ?: throw Exception("Should never happen!")
         val max = values.maxOrNull() ?: throw Exception("Should never happen!")
@@ -148,9 +152,9 @@ class BookData(val book: Book,
     /**
      * Returns the character range corresponding to the given chapter range
      */
-    fun charRangeFromChapterRange(selectedChaptersRange: IntRange): IntRange {
+    fun charRangeFromChapterRange(selectedChaptersRange: ChapterRange): IntRange {
         val chapters = chapterRange.intersect(selectedChaptersRange) // ensure a valid chapter range
-        return chapterIndex.getValue(chapters.first).first..chapterIndex.getValue(chapters.last).last
+        return chapterIndex.getValue(chapters.start).first..chapterIndex.getValue(chapters.endInclusive).last
     }
 
     /**
@@ -158,26 +162,29 @@ class BookData(val book: Book,
      */
     fun charRangeThroughChapter(lastChapter: Int?): IntRange =
         if (lastChapter == null) text.indices
-        else charRangeFromChapterRange(1..lastChapter)
+        else charRangeFromChapterRange(ChapterRef(book, 1)..ChapterRef(book, lastChapter))
 
     /**
      * Returns chapter [[Heading]]s that intersect the given chapter range
      */
-    fun headings(chapterRange: IntRange): List<Heading> = headings.filter { it.chapterRange.first in chapterRange }
+    fun headings(chapterRange: ChapterRange): List<Heading> =
+        headings.filter { it.chapterRange.start in chapterRange }
 
     /**
      * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
      * otherwise an empty string
      */
     fun maxChapterOrEmpty(prefix: String = "", maxChapter: Int?, suffix: String = ""): String =
-        maxChapter?.takeIf { it < chapterRange.last }?.let { prefix + it + suffix }.orEmpty()
+        maxChapter?.takeIf { it < chapterRange.endInclusive.chapter }?.let { prefix + it + suffix }.orEmpty()
 
     /**
      * Returns the given chapter range (with optional prefix/suffix) if it is less than all chapters of the book,
      * otherwise an empty string
      */
-    fun chapterRangeOrEmpty(prefix: String = "", range: IntRange?, suffix: String = ""): String =
-        range?.takeIf { it != chapterRange }?.let { prefix + it.first + "-" + it.last + suffix }.orEmpty()
+    fun chapterRangeOrEmpty(prefix: String = "", range: ChapterRange?, suffix: String = ""): String =
+        range?.takeIf { it != chapterRange }
+            ?.let { prefix + it + suffix }
+            .orEmpty()
 
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
@@ -201,7 +208,7 @@ class BookData(val book: Book,
 
     fun getVerse(verseReference: VerseRef): String = text.substring(verseIndex.getValue(verseReference.absoluteVerse))
     fun verseEnclosing(range: IntRange): VerseRef? = verses.valueEnclosing(range)?.toVerseRef()
-    fun verseContaining(offset: Int): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
+    fun verseContaining(offset: CharOffset): VerseRef? = verses.valueContaining(offset)?.toVerseRef()
 
     /**
      * Returns all [VerseRef]s containing the words of the given phrase (ignoring case and punctuation)
@@ -226,11 +233,10 @@ class BookData(val book: Book,
             drs
         }
 
-    fun practice(throughChapter: Int?): PracticeContent {
-        return practice(throughChapter?.let { 1..it } ?: chapterRange)
-    }
+    fun practice(throughChapter: Int?): PracticeContent =
+        practice(throughChapter?.let { book.chapterRange(1, it) } ?: chapterRange)
 
-    fun practice(chapters: IntRange = chapterRange): PracticeContent = PracticeContent(this, chapters)
+    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = PracticeContent(this, chapters)
 
     companion object {
 
@@ -255,10 +261,10 @@ class BookData(val book: Book,
             }.toMap(DisjointRangeMap())
         }
 
-        private fun readChapters(inPath: Path): DisjointRangeMap<Int> = inPath.toFile().useLines { linesSeq ->
+        private fun readChapters(inPath: Path, book: Book): DisjointRangeMap<ChapterRef> = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
                 val (first, last, chapterNum) = line.split('\t').map { it.toInt() }
-                first..last to chapterNum
+                first..last to ChapterRef(book, chapterNum)
             }.toMap(DisjointRangeMap())
         }
 
@@ -288,7 +294,7 @@ class BookData(val book: Book,
             val text = bookDir.resolve(textFileName(book)).toFile().readText()
             val verses = readVerses(bookDir.resolve(indexFileName(book, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(book, HEADING)))
-            val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)))
+            val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)), book)
             val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(book, PARAGRAPH)))
             val footnotes = readFootnotes(bookDir.resolve(indexFileName(book, FOOTNOTE)))
             val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(book, POETRY, plural = false)))
@@ -316,7 +322,7 @@ fun main() {
         setAnnotations(AnalysisUnit.UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
     }
     for (tr in annotatedDoc.textRuns()) {
-        if (bookData.chapterIndex[8]!!.encloses(tr.range)) {
+        if (bookData.chapterIndex[ChapterRef(Book.MAT, 8)]!!.encloses(tr.range)) {
             println("${bookData.excerpt(tr.range).excerptText} $tr")
         }
     }

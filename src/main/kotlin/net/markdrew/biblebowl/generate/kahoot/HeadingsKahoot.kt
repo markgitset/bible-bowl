@@ -33,7 +33,7 @@ private fun writeHeadingsKahoot(
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 4)
 
     var fileName = "${book.name.lowercase()}-headings-kahoot"
-    if (!content.allChapters) fileName += "-to-ch-${content.coveredChapters.last}"
+    if (!content.allChapters) fileName += "-to-ch-${content.coveredChapters.endInclusive}"
     fileName += "-%04d".format(randomSeed)
 
     val xlsxFile = File("$PRODUCTS_DIR/$bookName/kahoot/$fileName.xlsx")

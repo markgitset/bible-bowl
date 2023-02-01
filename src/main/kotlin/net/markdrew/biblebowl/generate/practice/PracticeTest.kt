@@ -22,7 +22,7 @@ data class PracticeTest(
         val dir = directory ?: File("$PRODUCTS_DIR/$bookName/practice/round${round.number}")
         val chapters = content.coveredChapters
         val fileName = "$bookName-${round.shortName}-chap%02dto%02d-seed%04d"
-            .format(chapters.first, chapters.last, randomSeed)
+            .format(chapters.start.chapter, chapters.endInclusive.chapter, randomSeed)
         dir.mkdirs()
         return File(dir, "$fileName.tex")
     }
