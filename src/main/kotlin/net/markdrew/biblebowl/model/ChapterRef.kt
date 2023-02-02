@@ -13,7 +13,7 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
     }
 
     val bookName: String get() = book.fullName
-    val absoluteChapter: AbsoluteChapterNum by lazy { 1_000 * book.number + chapter }
+    val absoluteChapter: AbsoluteChapterNum by lazy { BCV_FACTOR * book.number + chapter }
 
     override fun compareTo(other: ChapterRef): Int = absoluteChapter.compareTo(other.absoluteChapter)
 
@@ -23,7 +23,7 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
 
     companion object {
         fun fromAbsoluteChapterNum(refNum: AbsoluteChapterNum): ChapterRef =
-            ChapterRef(Book.fromNumber(refNum / 1_000), refNum % 1_000)
+            ChapterRef(Book.fromNumber(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
     }
 
 }

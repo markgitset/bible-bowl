@@ -71,9 +71,11 @@ enum class Book(val fullName: String) {
     REV("Revelation");
 
     val number = ordinal + 1
+    val lastChapterRef = ChapterRef(this, BCV_FACTOR - 1)
 
     fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)
     fun chapterRange(first: Int, last: Int): ChapterRange = chapterRef(first)..chapterRef(last)
+    fun allChapters(): ChapterRange = chapterRef(1)..lastChapterRef
 
     companion object {
         val DEFAULT = MAT

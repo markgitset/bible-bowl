@@ -2,6 +2,8 @@
 /.gradle
 /build
 /products
+/sile
+/speedpublisher
 /tmp
 /*.gz
 /*.tsv
