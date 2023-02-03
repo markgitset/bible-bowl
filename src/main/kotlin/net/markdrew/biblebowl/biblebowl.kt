@@ -15,3 +15,7 @@ const val BANNER = """
 fun rangeLabel(singular: String, range: IntRange, separator: String = "-", plural: String = "${singular}s"): String =
     if (range.count() == 1) "$singular$separator${range.first}"
     else "$plural$separator${range.first}-${range.last}"
+
+private val runOfNonLetterOrDigit = """[^0-9a-z]+""".toRegex()
+
+fun normalizeFileName(name: String): String = runOfNonLetterOrDigit.replace(name.lowercase(), "-")

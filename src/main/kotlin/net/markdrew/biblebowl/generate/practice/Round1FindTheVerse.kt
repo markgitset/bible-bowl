@@ -3,13 +3,14 @@ package net.markdrew.biblebowl.generate.practice
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toString
-import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
 import java.io.File
@@ -17,8 +18,8 @@ import java.io.File
 private const val VERSES_PER_PAGE = 20
 
 fun main() {
-    val readData = BookData.readData()
-    val content = PracticeContent(readData, readData.book.chapterRange(1, 22))
+    val readData = StudyData.readData()
+    val content = PracticeContent(readData, readData.chapterRangeOfNChapters(22))
     showPdf(
         writeFindTheVerse(
             PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
@@ -47,7 +48,7 @@ private fun writeFindTheVerse(
     directory: File? = null,
 ): File {
     val content = practiceTest.content
-    val bookData = content.bookData
+    val bookData = content.studyData
     var cluePool: DisjointRangeMap<VerseRef> = bookData.oneVerseSentParts
     if (!content.allChapters) {
         cluePool = cluePool.enclosedBy(content.coveredOffsets)
@@ -99,7 +100,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
     val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
     val chapters: ChapterRange = practiceTest.content.coveredChapters
     val coverage = if (practiceTest.content.allChapters) "" else " (ONLY chapters ${chapters.toString("-")})"
-    val bookDesc = practiceTest.book.fullName + coverage
+    val bookDesc = practiceTest.studySet.name + coverage
     val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 

@@ -2,20 +2,20 @@ package net.markdrew.biblebowl.model
 
 import net.markdrew.chupacabra.core.encloses
 
-data class PracticeContent internal constructor(val bookData: BookData, val coveredChapters: ChapterRange) {
+data class PracticeContent internal constructor(val studyData: StudyData, val coveredChapters: ChapterRange) {
 
     init {
-        require(bookData.chapterRange.encloses(coveredChapters)) {
-            "Requested chapter range (${bookData.chapterRange}) must be within $coveredChapters!"
+        require(studyData.chapterRange.encloses(coveredChapters)) {
+            "Requested chapter range (${studyData.chapterRange}) must be within $coveredChapters!"
         }
     }
 
-    val allChapters: Boolean = coveredChapters == bookData.chapterRange
+    val allChapters: Boolean = coveredChapters == studyData.chapterRange
 
-    val coveredOffsets: IntRange = with(bookData.chapterIndex) {
+    val coveredOffsets: IntRange = with(studyData.chapterIndex) {
         getValue(coveredChapters.start).first..getValue(coveredChapters.endInclusive).last
     }
 
-    fun headings(): List<Heading> = bookData.headings(coveredChapters)
+    fun headings(): List<Heading> = studyData.headings(coveredChapters)
 
 }

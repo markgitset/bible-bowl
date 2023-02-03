@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.BANNER
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -9,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 fun main() {
 
-    println("Bible Bowl!")
+    println(BANNER)
 
     val retrofit: Retrofit = Retrofit.Builder()
             .baseUrl("https://api.esv.org/")
@@ -21,11 +22,7 @@ fun main() {
 
 //    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
 //    val call: Call<PassageText> = service.text("Jud-Rev1:12",
-    val call: Call<PassageText> = service.text("Gen3:14-16",
-        includePassageReferences = false,
-        includeShortCopyright = false,
-        includePassageHorizontalLines = false
-    )
+    val call: Call<PassageText> = service.text("Gen3:14-16")
     val passage: PassageText? = call.execute().body()
     passage?.passages?.forEach { println(it) }
 

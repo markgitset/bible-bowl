@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -48,14 +49,14 @@ interface EsvService {
     @Headers("Authorization: Token 20e9b0330b3824603c4e2696c75d51c92529babc")
     @GET("v3/passage/text")
     fun text(@Query("q") query: String,
-             @Query("include-passage-references") includePassageReferences: Boolean = true,
+             @Query("include-passage-references") includePassageReferences: Boolean = false,
              @Query("include-first-verse-numbers") includeFirstVerseNumbers: Boolean = true,
              @Query("include-verse-numbers") includeVerseNumbers: Boolean = true,
              @Query("include-footnotes") includeFootnotes: Boolean = true,
              @Query("include-footnote-body") includeFootnoteBody: Boolean = true,
-             @Query("include-short-copyright") includeShortCopyright: Boolean = true,
+             @Query("include-short-copyright") includeShortCopyright: Boolean = false,
              @Query("include-copyright") includeCopyright: Boolean = false,
-             @Query("include-passage-horizontal-lines") includePassageHorizontalLines: Boolean = true,
+             @Query("include-passage-horizontal-lines") includePassageHorizontalLines: Boolean = false,
              @Query("include-heading-horizontal-lines") includeHeadingHorizontalLines: Boolean = true,
              @Query("horizontal-line-length") horizontalLineLength: Int = 55,
              @Query("include-headings") includeHeadings: Boolean = true,
@@ -63,7 +64,7 @@ interface EsvService {
              @Query("indent-using") indentUsing: String = "space",
              @Query("indent-paragraphs") indentParagraphs: Int = 2,
              @Query("indent-poetry") indentPoetry: Boolean = true,
-             @Query("indent-poetry-lines") indentPoetryLines: Int = 4,
+             @Query("indent-poetry-lines") indentPoetryLines: Int = INDENT_POETRY_LINES,
              @Query("indent-declares") indentDeclares: Int = 40,
              @Query("indent-psalm-doxology") indentPsalmDoxology: Int = 30,
              @Query("line-length") lineLength: Int = 0): Call<PassageText>

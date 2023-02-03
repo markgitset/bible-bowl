@@ -2,9 +2,9 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.toString
 import java.io.File
 import java.io.InputStream
@@ -12,9 +12,8 @@ import java.net.URL
 import kotlin.random.Random
 
 fun main() {
-    val bookData = BookData.readData()
-    val chapters = 1..13
-    val practice = PracticeContent(bookData, bookData.book.chapterRange(chapters.first, chapters.last))
+    val studyData = StudyData.readData()
+    val practice = PracticeContent(studyData, studyData.chapterRangeOfNChapters(13))
     showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)).toPdf(keepTexFiles = true))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
@@ -62,7 +61,7 @@ private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null
 private fun escapeLatex(s: String): String =
     s.replace("_", "\\_")
 private fun factsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion2> {
-    val resourceName = "/${practiceTest.book.name.lowercase()}/manual-questions.tsv"
+    val resourceName = "/${practiceTest.studySet.name.lowercase()}/manual-questions.tsv"
     val resource: URL = object {}.javaClass.getResource(resourceName)
         ?: throw Exception("Could not find resource '$resourceName'!")
     val content = practiceTest.content
@@ -133,7 +132,7 @@ private fun toLatexTest(
         \section*{$titleString}
 
         Using your Bible, answer each of the following multiple-choice questions by marking the letter corresponding 
-        to the correct response on your answer sheet.  Questions are from ${practiceTest.book.fullName}$limitedTo.
+        to the correct response on your answer sheet.  Questions are from ${practiceTest.studySet.name}$limitedTo.
         
         \vspace{0.1in}
         

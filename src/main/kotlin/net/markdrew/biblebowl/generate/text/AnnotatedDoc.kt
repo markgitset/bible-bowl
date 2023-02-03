@@ -4,6 +4,8 @@ import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.generate.excerpt
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.intersect
@@ -78,6 +80,24 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
 }
 
 fun BookData.toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc<AnalysisUnit> =
+    AnnotatedDoc(text, AnalysisUnit.BOOK).apply {
+        fun addAnns(unit: AnalysisUnit, map: DisjointRangeMap<*>) {
+            if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, map)
+        }
+        fun addAnns(unit: AnalysisUnit, set: DisjointRangeSet) {
+            if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, set)
+        }
+        addAnns(AnalysisUnit.VERSE, verses)
+        addAnns(AnalysisUnit.HEADING, headingCharRanges)
+        addAnns(AnalysisUnit.CHAPTER, chapters)
+        addAnns(AnalysisUnit.PARAGRAPH, paragraphs)
+        addAnns(AnalysisUnit.POETRY, poetry)
+        addAnns(AnalysisUnit.SENTENCE, sentences)
+        addAnns(AnalysisUnit.WORD, words)
+        if (AnalysisUnit.FOOTNOTE in annotationTypes || annotationTypes.isEmpty()) setAnnotations(AnalysisUnit.FOOTNOTE, footnotes)
+    }
+
+fun StudyData.toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc<AnalysisUnit> =
     AnnotatedDoc(text, AnalysisUnit.BOOK).apply {
         fun addAnns(unit: AnalysisUnit, map: DisjointRangeMap<*>) {
             if (unit in annotationTypes || annotationTypes.isEmpty()) setAnnotations(unit, map)

@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.PracticeContent
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.identifyDoubleQuotes
 import net.markdrew.biblebowl.model.identifySingleQuotes
 import net.markdrew.biblebowl.model.trim
@@ -25,7 +26,7 @@ fun main() {
 }
 
 private fun writeRound4Quotes(practiceTest: PracticeTest): File {
-    val bookData = BookData.readData(practiceTest.book, Paths.get(DATA_DIR))
+    val bookData = StudyData.readData(practiceTest.studySet, Paths.get(DATA_DIR))
 
     val filteredCluePool: Map<IntRange, ChapterRef> = round4CluePool(practiceTest)
     println("Final clue pools size is ${filteredCluePool.size}")
@@ -49,7 +50,7 @@ private fun writeRound4Quotes(practiceTest: PracticeTest): File {
 }
 
 private fun round4CluePool(practiceTest: PracticeTest): Map<IntRange, ChapterRef> {
-    val bookData = practiceTest.content.bookData
+    val bookData = practiceTest.content.studyData
     val chapters = practiceTest.content.coveredChapters
     var cluePool: DisjointRangeMap<ChapterRef> = DisjointRangeMap(bookData.chapters
             .maskedBy(identifySingleQuotes(bookData.text).gcdAlignment(identifyDoubleQuotes(bookData.text)))

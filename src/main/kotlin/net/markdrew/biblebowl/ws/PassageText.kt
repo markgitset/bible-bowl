@@ -5,9 +5,7 @@ import com.google.gson.annotations.SerializedName
 /*
  * Builds an IntRange from the first two values of a List<Int>
  */
-fun List<Int>.toIntRange(): IntRange = (min()..max()).also {
-    require(this.toSet() == it.toSet())
-}
+fun List<Int>.toIntRange(): IntRange = with (take(2)) { min()..max() }
 
 data class PassageMeta(val canonical: String,
                        @SerializedName("chapter_start") val chapterStart: List<Int>,

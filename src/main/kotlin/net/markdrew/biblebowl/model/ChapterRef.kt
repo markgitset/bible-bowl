@@ -21,7 +21,13 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
 
     fun toFullString(): String = "$bookName $chapter"
 
+    // for serialization
+    override fun toString(): String = "$book$chapter"
+
     companion object {
+        // strict parsing for deserialization
+        fun valueOf(s: String): ChapterRef = ChapterRef(Book.valueOf(s.take(3)), s.drop(3).toInt())
+
         fun fromAbsoluteChapterNum(refNum: AbsoluteChapterNum): ChapterRef =
             ChapterRef(Book.fromNumber(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
     }

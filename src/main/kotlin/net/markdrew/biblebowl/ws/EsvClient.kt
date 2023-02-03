@@ -2,15 +2,15 @@ package net.markdrew.biblebowl.ws
 
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Headers
-import retrofit2.http.Query
 
 /**
  * @param includePassageReferences Include a line at the top displaying the reference of the passage.
@@ -46,14 +46,14 @@ import retrofit2.http.Query
  * @param lineLength How long may a line be before it is wrapped? Use 0 for unlimited line lengths.
  * Must be an integer. Default 0.
  */
-class EsvClient(val includePassageReferences: Boolean = true,
+class EsvClient(val includePassageReferences: Boolean = false,
                 val includeFirstVerseNumbers: Boolean = true,
                 val includeVerseNumbers: Boolean = true,
                 val includeFootnotes: Boolean = true,
                 val includeFootnoteBody: Boolean = true,
-                val includeShortCopyright: Boolean = true,
+                val includeShortCopyright: Boolean = false,
                 val includeCopyright: Boolean = false,
-                val includePassageHorizontalLines: Boolean = true,
+                val includePassageHorizontalLines: Boolean = false,
                 val includeHeadingHorizontalLines: Boolean = true,
                 val horizontalLineLength: Int = 55,
                 val includeHeadings: Boolean = true,
@@ -106,6 +106,25 @@ class EsvClient(val includePassageReferences: Boolean = true,
                 val nextChapterV1: VerseRef? = chapter.meta.nextChapter?.first()?.toVerseRef()
                 chapterNum = if (nextChapterV1?.book == book) nextChapterV1.chapter else null
                 chapter
+            }
+        }
+    }
+
+    fun bookByChapters(studySet: StudySet): Sequence<Passage> =
+        studySet.chapterRanges.asSequence().flatMap { rangeByChapters(it) }
+
+    fun rangeByChapters(chapterRange: ChapterRange): Sequence<Passage> {
+        var chapterRef: ChapterRef? = chapterRange.start
+        return generateSequence {
+            if (chapterRef == null) null
+            else {
+                val chapter: Passage = queryPassage("$chapterRef")
+                val nextChapterV1: VerseRef? = chapter.meta.nextChapter?.first()?.toVerseRef()
+                if (nextChapterV1 == null) null
+                else {
+                    chapterRef = if (nextChapterV1.chapterRef in chapterRange) nextChapterV1.chapterRef else null
+                    chapter
+                }
             }
         }
     }

@@ -148,7 +148,7 @@ private fun toLatexTest(
         \section*{$titleString}
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${round.shortName} is found (begins) in ${practiceTest.book.fullName}$limitedTo.
+        each of the following ${round.shortName} is found (begins) in ${practiceTest.studySet.name}$limitedTo.
         
         \vspace{0.1in}
         

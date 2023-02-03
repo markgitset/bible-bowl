@@ -1,10 +1,15 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.chupacabra.core.DisjointRangeMap
 
 fun oneTimeWords(bookData: BookData): List<IntRange> = bookData.words
     .groupBy { bookData.text.substring(it).lowercase() }
+    .filterValues { it.size == 1 }.values.flatten()
+
+fun oneTimeWords(studyData: StudyData): List<IntRange> = studyData.words
+    .groupBy { studyData.text.substring(it).lowercase() }
     .filterValues { it.size == 1 }.values.flatten()
 
 data class OneSectionWord<T>(

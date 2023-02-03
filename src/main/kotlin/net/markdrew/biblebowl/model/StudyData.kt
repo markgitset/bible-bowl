@@ -22,16 +22,17 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.SortedMap
 
-typealias CharOffset = Int
+//typealias CharOffset = Int
 
-class BookData(val book: Book,
-               val text: String,
-               val verses: DisjointRangeMap<VerseRef>,
-               val headingCharRanges: DisjointRangeMap<String>,
-               val chapters: DisjointRangeMap<ChapterRef>,
-               val paragraphs: DisjointRangeSet,
-               val footnotes: SortedMap<CharOffset, String>,
-               val poetry: DisjointRangeSet,
+class StudyData(
+    val studySet: StudySet,
+    val text: String,
+    val verses: DisjointRangeMap<VerseRef>,
+    val headingCharRanges: DisjointRangeMap<String>,
+    val chapters: DisjointRangeMap<ChapterRef>,
+    val paragraphs: DisjointRangeSet,
+    val footnotes: SortedMap<CharOffset, String>,
+    val poetry: DisjointRangeSet,
 ) {
 
     val verseIndex: Map<VerseRef, IntRange> by lazy {
@@ -66,8 +67,8 @@ class BookData(val book: Book,
     val words: DisjointRangeSet by lazy { findAll(wordsPattern) }
 
     fun writeData(outPath: Path) {
-        val outDir = outPath.resolve(book.name.lowercase())
-        writeText(outDir.resolve(textFileName(book)))
+        val outDir = outPath.resolve(studySet.simpleName)
+        writeText(outDir.resolve(studySet.simpleName + ".txt"))
         writeVerseIndex(outDir.resolve(fileName(VERSE)))
         writeHeadingsIndex(outDir.resolve(fileName(HEADING)))
         writeChaptersIndex(outDir.resolve(fileName(CHAPTER)))
@@ -77,7 +78,7 @@ class BookData(val book: Book,
     }
 
     private fun fileName(unit: AnalysisUnit, plural: Boolean = true): String =
-        indexFileName(book, unit, plural)
+        indexFileName(studySet, unit, plural)
 
     private fun writeText(outPath: Path) {
         val outFile: File = outPath.toFile()
@@ -87,8 +88,8 @@ class BookData(val book: Book,
     }
 
     private fun writeVerseIndex(outPath: Path) {
-        writeIterable(outPath, verses.entries) { (range, verseRefNum) ->
-            println("${range.first}\t${range.last}\t${verseRefNum}")
+        writeIterable(outPath, verses.entries) { (range, verseRef) ->
+            println("${range.first}\t${range.last}\t${verseRef.absoluteVerse}")
         }
     }
 
@@ -99,8 +100,8 @@ class BookData(val book: Book,
     }
 
     private fun writeChaptersIndex(outPath: Path) {
-        writeIterable(outPath, chapters.entries) { (range, chapter) ->
-            println("${range.first}\t${range.last}\t$chapter")
+        writeIterable(outPath, chapters.entries) { (range, chapterRef) ->
+            println("${range.first}\t${range.last}\t$chapterRef")
         }
     }
 
@@ -148,6 +149,11 @@ class BookData(val book: Book,
         min..max
     }
 
+    val numberOfChapters: Int = chapters.size
+
+    fun chapterRangeOfNChapters(nChapters: Int, offset: Int = 0): ChapterRange =
+        with (chapters.values.drop(offset).take(nChapters)) { first()..last() }
+
     /**
      * Returns the character range corresponding to the given chapter range
      */
@@ -161,7 +167,7 @@ class BookData(val book: Book,
      */
     fun charRangeThroughChapter(lastChapter: Int?): IntRange =
         if (lastChapter == null) text.indices
-        else charRangeFromChapterRange(ChapterRef(book, 1)..ChapterRef(book, lastChapter))
+        else 0..chapters.entries.drop(lastChapter - 1).first().key.last
 
     /**
      * Returns chapter [[Heading]]s that intersect the given chapter range
@@ -232,10 +238,15 @@ class BookData(val book: Book,
             drs
         }
 
-    fun practice(throughChapter: Int?): PracticeContent =
-        practice(throughChapter?.let { book.chapterRange(1, it) } ?: chapterRange)
+    fun practice(throughChapter: Int?): PracticeContent {
+        if (throughChapter == null) return practice(chapterRange)
+        require(throughChapter > 0)
+        val firstChapterRef: ChapterRef = chapters.values.first()
+        val lastChapterRef: ChapterRef = chapters.values.drop(throughChapter - 1).first()
+        return practice(firstChapterRef..lastChapterRef)
+    }
 
-    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = TODO()//PracticeContent(this, chapters)
+    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = PracticeContent(this, chapters)
 
     companion object {
 
@@ -248,10 +259,10 @@ class BookData(val book: Book,
             println("Wrote data to: $outPath")
         }
 
-        private fun indexFileName(book: Book, unit: AnalysisUnit, plural: Boolean = true): String =
-            "${book.name.lowercase()}-${unit.name.lowercase()}${if (plural) "s" else ""}.tsv"
+        private fun indexFileName(studySet: StudySet, unit: AnalysisUnit, plural: Boolean = true): String =
+            "${studySet.simpleName}-${unit.name.lowercase()}${if (plural) "s" else ""}.tsv"
 
-        private fun textFileName(book: Book): String = book.name.lowercase() + ".txt"
+//        private fun textFileName(studySet: StudySet): String = book.name.lowercase() + ".txt"
 
         private fun readVerses(inPath: Path): DisjointRangeMap<VerseRef> = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
@@ -260,12 +271,13 @@ class BookData(val book: Book,
             }.toMap(DisjointRangeMap())
         }
 
-        private fun readChapters(inPath: Path, book: Book): DisjointRangeMap<ChapterRef> = inPath.toFile().useLines { linesSeq ->
-            linesSeq.map { line ->
-                val (first, last, chapterNum) = line.split('\t').map { it.toInt() }
-                first..last to ChapterRef(book, chapterNum)
-            }.toMap(DisjointRangeMap())
-        }
+        private fun readChapters(inPath: Path, studySet: StudySet): DisjointRangeMap<ChapterRef> =
+            inPath.toFile().useLines { linesSeq ->
+                linesSeq.map { line ->
+                    val (first, last, chapterRef) = line.split('\t')
+                    first.toInt()..last.toInt() to ChapterRef.valueOf(chapterRef)
+                }.toMap(DisjointRangeMap())
+            }
 
         private fun readHeadings(inPath: Path): DisjointRangeMap<String> = inPath.toFile().useLines { linesSeq ->
             linesSeq.map { line ->
@@ -288,16 +300,16 @@ class BookData(val book: Book,
             }.toMap().toSortedMap()
         }
 
-        fun readData(book: Book = Book.DEFAULT, inPath: Path = Paths.get(DATA_DIR)): BookData {
-            val bookDir = inPath.resolve(book.name.lowercase())
-            val text = bookDir.resolve(textFileName(book)).toFile().readText()
-            val verses = readVerses(bookDir.resolve(indexFileName(book, VERSE)))
-            val headings = readHeadings(bookDir.resolve(indexFileName(book, HEADING)))
-            val chapters = readChapters(bookDir.resolve(indexFileName(book, CHAPTER)), book)
-            val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(book, PARAGRAPH)))
-            val footnotes = readFootnotes(bookDir.resolve(indexFileName(book, FOOTNOTE)))
-            val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(book, POETRY, plural = false)))
-            return BookData(book, text, verses, headings, chapters, paragraphs, footnotes, poetry)
+        fun readData(studySet: StudySet = StandardStudySet.DEFAULT, inPath: Path = Paths.get(DATA_DIR)): StudyData {
+            val bookDir = inPath.resolve(studySet.simpleName)
+            val text = bookDir.resolve(studySet.simpleName + ".txt").toFile().readText()
+            val verses = readVerses(bookDir.resolve(indexFileName(studySet, VERSE)))
+            val headings = readHeadings(bookDir.resolve(indexFileName(studySet, HEADING)))
+            val chapters = readChapters(bookDir.resolve(indexFileName(studySet, CHAPTER)), studySet)
+            val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(studySet, PARAGRAPH)))
+            val footnotes = readFootnotes(bookDir.resolve(indexFileName(studySet, FOOTNOTE)))
+            val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(studySet, POETRY, plural = false)))
+            return StudyData(studySet, text, verses, headings, chapters, paragraphs, footnotes, poetry)
         }
 
     }
@@ -305,24 +317,24 @@ class BookData(val book: Book,
 }
 
 fun main() {
-    val bookData = BookData.readData(Book.MAT, Paths.get(DATA_DIR))
-//    for (w in bookData.words) {
-//        if (bookData.chapterIndex[8]!!.encloses(w))
-//            println(bookData.excerpt(w))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+//    for (w in StudyData.words) {
+//        if (StudyData.chapterIndex[8]!!.encloses(w))
+//            println(StudyData.excerpt(w))
 //    } // worked
-//    for (w in oneTimeWords(bookData)) {
-//        if (bookData.chapterIndex[8]!!.encloses(w))
-//            println(bookData.excerpt(w))
+//    for (w in oneTimeWords(StudyData)) {
+//        if (StudyData.chapterIndex[8]!!.encloses(w))
+//            println(StudyData.excerpt(w))
 //    } // worked
 
-    val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
+    val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
         CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE
     ).apply {
-        setAnnotations(AnalysisUnit.UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
+        setAnnotations(AnalysisUnit.UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
     }
     for (tr in annotatedDoc.textRuns()) {
-        if (bookData.chapterIndex[ChapterRef(Book.MAT, 8)]!!.encloses(tr.range)) {
-            println("${bookData.excerpt(tr.range).excerptText} $tr")
+        if (studyData.chapterIndex[ChapterRef(Book.MAT, 8)]!!.encloses(tr.range)) {
+            println("${studyData.excerpt(tr.range).excerptText} $tr")
         }
     }
 }
