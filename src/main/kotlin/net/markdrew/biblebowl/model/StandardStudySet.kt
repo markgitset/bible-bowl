@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.model
 
+import java.lang.IllegalArgumentException
+
 enum class StandardStudySet(val set: StudySet) {
     GENESIS(StudySet(Book.GEN, "gen")),
     MATTHEW(StudySet(Book.MAT, "matt")),
@@ -33,5 +35,23 @@ enum class StandardStudySet(val set: StudySet) {
 
     companion object {
         val DEFAULT: StudySet = MATTHEW.set
+
+        // lenient parsing for user input, e.g.
+        fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =
+            if (queryName == null) {
+                default
+            } else {
+                val standardStudySet: StandardStudySet? = try {
+                    StandardStudySet.valueOf(queryName.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    val lowerQueryName = queryName.lowercase()
+                    StandardStudySet.values().firstOrNull { sss ->
+                        setOf(sss.name, sss.set.simpleName, sss.set.name).any {
+                            it.lowercase().startsWith(lowerQueryName)
+                        }
+                    }
+                }
+                standardStudySet?.set ?: default
+            }
     }
 }

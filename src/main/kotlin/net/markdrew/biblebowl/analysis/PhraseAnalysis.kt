@@ -2,12 +2,12 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.IndexEntry
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.enclose
 import java.nio.file.Paths
-import java.util.*
+import java.util.Collections
 
 typealias PhraseIndexEntry = IndexEntry<List<String>, VerseRef>
 
@@ -16,8 +16,8 @@ fun <E> List<E>.containsSublist(subList: List<E>): Boolean = this.indexOfSublist
 
 fun main() {
     // phrase frequencies
-    val bookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
-    val phrasesIndex = buildPhrasesIndex(bookData, maxPhraseLength = 23)
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val phrasesIndex = buildPhrasesIndex(studyData, maxPhraseLength = 23)
     printPhraseFrequencies(phrasesIndex)
 }
 
@@ -37,18 +37,18 @@ internal fun PhraseIndexEntry.subsumes(other: PhraseIndexEntry): Boolean =
             // it's found in a superset of the other phrase's places
             other.values.toSet().subtract(this.values).isEmpty()
 
-fun buildNonLocalPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> =
-    buildPhrasesIndex(bookData, maxPhraseLength).filter { pie ->
+fun buildNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int): List<PhraseIndexEntry> =
+    buildPhrasesIndex(studyData, maxPhraseLength).filter { pie ->
         pie.values.map { ref ->
-            val range: IntRange = bookData.verseIndex[ref] ?: throw Exception()
-            bookData.chapters.valueEnclosing(range) ?: throw Exception()
+            val range: IntRange = studyData.verseIndex[ref] ?: throw Exception()
+            studyData.chapters.valueEnclosing(range) ?: throw Exception()
         }.distinct().size > 1
     }
 
-fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseIndexEntry> {
+fun buildPhrasesIndex(studyData: StudyData, maxPhraseLength: Int): List<PhraseIndexEntry> {
     val phrasesIndex = mutableListOf<PhraseIndexEntry>()
     for (nWords in maxPhraseLength downTo 2) {
-        val nGramIndex = buildNGramIndex(bookData, nWords, stopWords = STOP_WORDS).filter { nGram ->
+        val nGramIndex = buildNGramIndex(studyData, nWords, stopWords = STOP_WORDS).filter { nGram ->
             phrasesIndex.none { phraseEntry -> phraseEntry.subsumes(nGram) }
         }
         phrasesIndex.addAll(nGramIndex)
@@ -57,13 +57,14 @@ fun buildPhrasesIndex(bookData: BookData, maxPhraseLength: Int): List<PhraseInde
     return phrasesIndex.filter { entry -> phrasesIndex.none { it != entry && it.subsumes(entry) } }
 }
 
-fun buildNGramIndex(bookData: BookData,
-                    nWords: Int,
-                    stopWords: Set<String> = setOf(),
-                    frequencyRange: IntRange = 2..Int.MAX_VALUE,
-                    minGoWords: Int = 2): List<PhraseIndexEntry> {
-    val windowed: Sequence<Pair<List<String>, IntRange>> = bookData.words.asSequence()
-        .map { bookData.excerpt(it) }
+fun buildNGramIndex(
+    studyData: StudyData,
+    nWords: Int,
+    stopWords: Set<String> = setOf(),
+    frequencyRange: IntRange = 2..Int.MAX_VALUE,
+    minGoWords: Int = 2): List<PhraseIndexEntry> {
+    val windowed: Sequence<Pair<List<String>, IntRange>> = studyData.words.asSequence()
+        .map { studyData.excerpt(it) }
         .windowed(nWords) { excerpts ->
             val words = excerpts.map { it.excerptText.lowercase() }
             if (words.count { it !in stopWords } < minGoWords) null
@@ -74,7 +75,7 @@ fun buildNGramIndex(bookData: BookData,
         /*phrase !in stopWords &&*/ ranges.size in frequencyRange
     }.map { (phrase, ranges) ->
         PhraseIndexEntry(phrase, ranges.map { phraseRange ->
-            bookData.verseEnclosing(phraseRange.first..phraseRange.first) ?: throw Exception("Couldn't find verse enclosing $phraseRange!")
+            studyData.verseEnclosing(phraseRange.first..phraseRange.first) ?: throw Exception("Couldn't find verse enclosing $phraseRange!")
         })
     }
 }

@@ -6,26 +6,27 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printNameFrequencies
 import net.markdrew.biblebowl.analysis.printNameMatches
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
 
     println(BANNER)
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
-    val nameExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
+    val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
     printNameFrequencies(nameExcerpts)
-    printNameMatches(nameExcerpts, bookData)
+    printNameMatches(nameExcerpts, studyData)
 
     val stepByNChapters = 10
-    for (lastChapter in 1..bookData.chapterRange.endInclusive.chapter) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.endInclusive.chapter) {
-            writeFile(bookData, nameExcerpts, lastChapter)
+    for (lastChapter in 1..studyData.chapterRange.endInclusive.chapter) {
+        if (lastChapter % stepByNChapters == 0 || lastChapter == studyData.chapterRange.endInclusive.chapter) {
+            writeFile(studyData, nameExcerpts, lastChapter)
         }
     }
 //
@@ -37,28 +38,28 @@ fun main(args: Array<String>) {
 }
 
 private fun writeFile(
-    bookData: BookData,
+    studyData: StudyData,
     nameExcerpts: Sequence<Excerpt>,
     lastChapter: Int,
 ) {
-    val bookName = bookData.book.name.lowercase()
-    val scopeString = bookData.maxChapterOrEmpty("-chapters-1-", lastChapter)
+    val bookName = studyData.studySet.simpleName
+    val scopeString = studyData.maxChapterOrEmpty("-chapters-1-", lastChapter)
     val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram")
         .resolve("$bookName-cram-name-blanks$scopeString.tsv")
-    val validCharRange: IntRange = bookData.charRangeThroughChapter(lastChapter)
+    val validCharRange: IntRange = studyData.charRangeThroughChapter(lastChapter)
     CardWriter(cramNameBlanksPath).use {
-        it.write(toCards(nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }, bookData))
+        it.write(toCards(nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }, studyData))
     }
     println("Wrote $cramNameBlanksPath")
 }
 
-private fun toCards(nameExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> =
+private fun toCards(nameExcerpts: Sequence<Excerpt>, studyData: StudyData): List<Card> =
     nameExcerpts.groupBy { excerpt ->
-        bookData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception()
+        studyData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception()
     }.map { (sentRange, nameExcerpts) ->
         FillInTheBlank(
             sentRange,
             nameExcerpts,
-            bookData.verseEnclosing(sentRange.excerptRange) ?: throw Exception()
+            studyData.verseEnclosing(sentRange.excerptRange) ?: throw Exception()
         ).toCramCard()
     }

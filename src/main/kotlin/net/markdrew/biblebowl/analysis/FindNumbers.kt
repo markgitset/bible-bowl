@@ -1,3 +1,5 @@
+@file:Suppress("RegExpUnnecessaryNonCapturingGroup")
+
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
@@ -8,6 +10,7 @@ import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import org.intellij.lang.annotations.Language
 import java.nio.file.Paths
@@ -55,11 +58,11 @@ fun main(args: Array<String>) {
 public fun findNumbers(text: String): Sequence<Excerpt> =
     NUMBER_REGEX.findAll(text).map { Excerpt(it.value, it.range) }
 
-public fun buildNumbersIndex(bookData: BookData): List<WordIndexEntry> =
-    NUMBER_REGEX.findAll(bookData.text).map { Excerpt(it.value, it.range) }
+public fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
+    NUMBER_REGEX.findAll(studyData.text).map { Excerpt(it.value, it.range) }
         .groupBy { it.excerptText.lowercase() }
         .map { (key, excerpts) ->
-            WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
+            WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
 
 private fun toCards(numberExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {

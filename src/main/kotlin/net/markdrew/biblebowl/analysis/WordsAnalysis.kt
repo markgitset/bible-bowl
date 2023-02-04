@@ -2,8 +2,8 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.IndexEntry
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.nio.file.Paths
 
@@ -17,8 +17,8 @@ val STOP_WORDS: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "
 
 fun main() {
     // word frequencies
-    val bookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
-    val wordIndex: List<WordIndexEntry> = buildWordIndex(bookData, STOP_WORDS, frequencyRange = 2..Int.MAX_VALUE)
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val wordIndex: List<WordIndexEntry> = buildWordIndex(studyData, STOP_WORDS, frequencyRange = 2..Int.MAX_VALUE)
     printWordFrequencies(wordIndex)
     printWordIndex(wordIndex)
 }
@@ -36,9 +36,10 @@ private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
         }
 }
 
-fun buildWordIndex(bookData: BookData,
-                   stopWords: Set<String> = setOf(),
-                   frequencyRange: IntRange? = null): List<WordIndexEntry> =
+fun buildWordIndex(
+    bookData: StudyData,
+    stopWords: Set<String> = setOf(),
+    frequencyRange: IntRange? = null): List<WordIndexEntry> =
     bookData.wordIndex
         .filter { (word, ranges) ->
             word !in stopWords && frequencyRange?.contains(ranges.size) ?: true

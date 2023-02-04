@@ -13,6 +13,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import net.markdrew.chupacabra.core.enclose
 import net.markdrew.chupacabra.core.encloses
 import net.markdrew.chupacabra.core.intersect
 import net.markdrew.chupacabra.core.toDisjointRangeSet
@@ -34,6 +35,13 @@ class StudyData(
     val footnotes: SortedMap<CharOffset, String>,
     val poetry: DisjointRangeSet,
 ) {
+
+    val books: DisjointRangeMap<Book> by lazy {
+        chapters.entries
+            .groupingBy { (_, chapterRef) -> chapterRef.book }
+            .aggregate { _, accumulator: IntRange?, (charRange), _ -> accumulator?.enclose(charRange) ?: charRange }
+            .entries.associateTo(DisjointRangeMap()) { (book, charRange) -> charRange to book }
+    }
 
     val verseIndex: Map<VerseRef, IntRange> by lazy {
         verses.entries.associate { (range, refNum) -> refNum to range }
@@ -65,6 +73,13 @@ class StudyData(
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
     val words: DisjointRangeSet by lazy { findAll(wordsPattern) }
+
+    val isMultiBook: Boolean by lazy { books.size > 1 }
+
+    val verseRefFormat: (VerseRef) -> String by lazy {
+        if (isMultiBook) VerseRef::toBriefString
+        else VerseRef::toChapterAndVerse
+    }
 
     fun writeData(outPath: Path) {
         val outDir = outPath.resolve(studySet.simpleName)

@@ -23,6 +23,7 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
     override fun compareTo(other: VerseRef): Int = absoluteVerse.compareTo(other.absoluteVerse)
 
     fun toFullString(): String = "${chapterRef.toFullString()}:$verse"
+    fun toBriefString(): String = "${chapterRef.toBriefString()}:$verse"
     fun toChapterAndVerse(): String = "${chapterRef.chapter}:$verse"
 
     companion object {

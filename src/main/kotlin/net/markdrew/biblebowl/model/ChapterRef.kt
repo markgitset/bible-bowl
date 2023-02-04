@@ -19,7 +19,11 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
 
     fun verse(verseNum: Int): VerseRef = VerseRef(this, verseNum)
 
+    fun verseRange(fromVerseNum: Int = 1, toVerseNum: Int = BCV_FACTOR - 1): VerseRange =
+        verse(fromVerseNum)..verse(toVerseNum)
+
     fun toFullString(): String = "$bookName $chapter"
+    fun toBriefString(): String = "${book.briefName} $chapter"
 
     // for serialization
     override fun toString(): String = "$book$chapter"

@@ -22,7 +22,7 @@ fun main() {
 
 //    val call: Call<PassageText> = service.text("Rev13,Rev13:1",
 //    val call: Call<PassageText> = service.text("Jud-Rev1:12",
-    val call: Call<PassageText> = service.text("Gen3:14-16")
+    val call: Call<PassageText> = service.text("1 Samuel2")
     val passage: PassageText? = call.execute().body()
     passage?.passages?.forEach { println(it) }
 

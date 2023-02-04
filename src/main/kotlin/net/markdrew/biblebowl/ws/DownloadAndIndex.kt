@@ -7,11 +7,9 @@ import net.markdrew.biblebowl.model.StudySet
 import java.nio.file.Paths
 
 fun main(vararg args: String) {
-    val setName: String? = args.getOrNull(0)
-    val studySet: StudySet = setName?.let { StandardStudySet.valueOf(it.uppercase()).set } ?: StandardStudySet.DEFAULT
-    val client = EsvClient()
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val indexer = EsvIndexer(studySet)
-    val studyData: StudyData = indexer.indexBook(client.bookByChapters(studySet))
+    val studyData: StudyData = indexer.indexBook(EsvClient().bookByChapters(studySet))
     studyData.writeData(Paths.get(DATA_DIR))
 }
 //fun main(vararg args: String) {

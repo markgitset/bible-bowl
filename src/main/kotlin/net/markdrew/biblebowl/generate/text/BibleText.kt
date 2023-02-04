@@ -1,6 +1,5 @@
 package net.markdrew.biblebowl.generate.text
 
-import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
@@ -17,31 +16,35 @@ import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
+import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
-import java.nio.file.Paths
 
 private val divineNames = setOf("God", "Jesus", "Christ", "Holy Spirit", "Immanuel", "Father", "Spirit of God",
     "Son of God", "Son of Man", "Son of David", "Lord of the harvest", "Spirit of your Father", "Son")
 
 fun main(args: Array<String>) {
-    val book = Book.parse(args.firstOrNull())
+    val studySet = StandardStudySet.parse(args.firstOrNull())
+    val studyData = StudyData.readData(studySet)
     val customHighlights = mapOf(
         "divineColor" to divineNames.map { it.toRegex() }.toSet(),
         "namesColor" to setOf("John the Baptist".toRegex()),
     )
-    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
+//    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-//    writeBibleText(book, TextOptions(names = true, numbers = true, uniqueWords = true,
-//                                     customHighlights = customHighlights))
+    writeBibleText(
+        studyData,
+        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+    )
 }
 
 data class TextOptions(
@@ -61,39 +64,47 @@ data class TextOptions(
     }
 }
 
-private fun writeBibleText(book: Book, opts: TextOptions) {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-    val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-${opts.fileNameSuffix}.tex")
-    BibleTextRenderer(opts).renderToFile(latexFile, bookData)
+fun writeBibleText(studyData: StudyData, opts: TextOptions) {
+    val name = studyData.studySet.simpleName
+    val latexFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.tex")
+    BibleTextRenderer(opts).renderToFile(latexFile, studyData)
     println("Wrote $latexFile")
-    latexFile.toPdf(twice = true)
+    latexFile.toPdf(twice = true, keepTexFiles = true, showStdIo = false)
 }
+//
+//fun writeBibleText(book: Book, opts: TextOptions) {
+//    val bookName = book.name.lowercase()
+//    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+//    val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-${opts.fileNameSuffix}.tex")
+//    BibleTextRenderer(opts).renderToFile(latexFile, bookData)
+//    println("Wrote $latexFile")
+//    latexFile.toPdf(twice = true)
+//}
 
 class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
-    fun renderToFile(file: File, bookData: BookData) {
+    fun renderToFile(file: File, studyData: StudyData) {
         file.parentFile.mkdirs()
         file.writer().use {
-            renderText(it, bookData)
+            renderText(it, studyData)
         }
     }
 
-    private fun renderText(out: Appendable, bookData: BookData) {
-        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = bookData.toAnnotatedDoc(
-            CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
+    private fun renderText(out: Appendable, studyData: StudyData) {
+        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
+            BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
         ).apply {
             val regexAnnotationsRangeMap: DisjointRangeMap<String> =
                 opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
                     drm.apply {
-                        putAll(bookData.findAll(*patterns.toTypedArray()).associateWith { color })
+                        putAll(studyData.findAll(*patterns.toTypedArray()).associateWith { color })
                     }
                 }
             setAnnotations(REGEX, regexAnnotationsRangeMap)
-            if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(bookData)))
+            if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
             if (opts.names) {
                 val namesRangeSet = DisjointRangeSet(
-                    findNames(bookData, exceptNames = divineNames.toTypedArray())
+                    findNames(studyData, exceptNames = divineNames.toTypedArray())
                         .map { it.excerptRange }.toList()
                 )
                 // remove any ranges that intersect with custom regex ranges
@@ -101,7 +112,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 setAnnotations(NAME, deconflicted)
             }
             if (opts.numbers) {
-                val numbersRangeSet = DisjointRangeSet(findNumbers(bookData.text).map { it.excerptRange }.toList())
+                val numbersRangeSet = DisjointRangeSet(findNumbers(studyData.text).map { it.excerptRange }.toList())
                 setAnnotations(NUMBER, numbersRangeSet)
             }
         }
@@ -144,15 +155,21 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             // endings
 
             if (transition.isEnded(PARAGRAPH) && !transition.isPresent(POETRY)) out.appendLine()
-            if (transition.isEnded(BOOK)) postamble(out)
+            if (transition.isEnded(STUDY_SET)) postamble(out)
             if (transition.isEnded(POETRY)) out.appendLine("\\end{verse}\n")
             if (opts.chapterBreaksPage && transition.isEnded(CHAPTER)) out.appendLine("\\clearpage")
 
             // beginnings
 
-            if (transition.isBeginning(BOOK)) preamble(out, bookData.book.fullName)
+            if (transition.isBeginning(STUDY_SET)) preamble(out, studyData.studySet.name)
 
-            transition.beginning(CHAPTER)?.apply { out.appendChapterTitle(value as Int) }
+            transition.beginning(BOOK)?.apply { out.appendBookTitle(value as Book) }
+
+            transition.beginning(CHAPTER)?.apply {
+                val chapterRef = value as ChapterRef
+                val book = if (studyData.isMultiBook) chapterRef.book else null
+                out.appendChapterTitle(chapterRef, book)
+            }
 
             transition.beginning(HEADING)?.apply { out.appendHeadingTitle(value as String) }
 
@@ -161,7 +178,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             transition.beginning(VERSE)?.apply {
                 out.append(
                     formatVerseNum(
-                        VerseRef.fromAbsoluteVerseNum(value as Int).verse,
+                        (value as VerseRef).verse,
                         transition.isPresent(POETRY)
                     )
                 )
@@ -262,7 +279,9 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
                 \newcommand\myname[2][]{\myhl[namesColor]{#2}}
 
                 % custom command for chapter titles
-                \newcommand{\mychapter}[1]{\section*{CHAPTER #1}}
+                % Use \mychapter{1} for "CHAPTER 1" OR
+                % use \mychapter[EXODUS]{1} for "EXODUS 1"
+                \newcommand{\mychapter}[2][CHAPTER]{\section*{#1 #2}}
                 
                 % restart footnote numbering on each page
                 %\usepackage{perpage}
@@ -298,8 +317,14 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
         appendLine()
     }
 
-    private fun Appendable.appendChapterTitle(chapterNum: Int) {
-        appendLine("\n\n\\mychapter{$chapterNum}")
+    private fun Appendable.appendChapterTitle(chapterRef: ChapterRef, book: Book? = null) {
+        append("\n\n\\mychapter")
+        if (book != null) append("[${book.fullName.uppercase()}]")
+        appendLine("{${chapterRef.chapter}}")
+    }
+
+    private fun Appendable.appendBookTitle(book: Book) {
+        //appendLine("\n\n\\mychapter{${book.fullName}}")
     }
 
 }

@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.ws
 
+import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.AbsoluteVerseNum
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.BookData
@@ -37,6 +38,9 @@ class EsvIndexer(val studySet: StudySet) {
         return StudyData(studySet, buffer.toString(), verses, headings, chapters, paragraphs, footnotes, poetry)
     }
 
+    // It seems that there are [INDENT_POETRY_LINES] spaces on a line by themselves after each poetry block
+    private val postPoetryLine = " ".repeat(INDENT_POETRY_LINES)
+
     private fun indexChapter(chapterPassage: Passage) {
         val chapterStart = buffer.length
         val currentChapter = chapterPassage.range.first.toVerseRef().chapterRef
@@ -52,7 +56,8 @@ class EsvIndexer(val studySet: StudySet) {
                 if (prevLineWasBlank) // poetry section ends with 2 blank lines
                     poetry.add(potentialPoetryStart until buffer.length)
                 else if (potentialPoetryStart >= 0 && !inFootnotes) {
-                    prevLineWasBlank = true
+                    prevLineWasBlank = line == postPoetryLine
+                    if (!prevLineWasBlank) potentialPoetryStart = -1
                     continue
                 }
                 potentialPoetryStart = -1

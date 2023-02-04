@@ -10,19 +10,17 @@ import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
 import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-    writeNumbersIndex(Book.DEFAULT, STOP_WORDS)
+    writeNumbersIndex(StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR)))
 }
 
-private fun writeNumbersIndex(book: Book, stopWords: Set<String>) {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-    val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(bookData).map { wordIndexEntry ->
+fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
+    val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(studyData).map { wordIndexEntry ->
         WordIndexEntryC(
             wordIndexEntry.key,
             wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) ->
@@ -30,17 +28,19 @@ private fun writeNumbersIndex(book: Book, stopWords: Set<String>) {
             }
         )
     }
-    val dir = File("$PRODUCTS_DIR/$bookName/indices").also { it.mkdirs() }
-    val file = dir.resolve("$bookName-index-numbers.tex")
+    val fullName = studyData.studySet.name
+    val simpleName = studyData.studySet.simpleName
+    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val file = dir.resolve("$simpleName-index-numbers.tex")
     file.writer().use { writer ->
-        writeDoc(writer, "${book.fullName} Numbers Index",
-            docPreface = "The following is a complete index of all numbers in the whole book of ${book.fullName}"//, " +
+        writeDoc(writer, "$fullName Numbers Index",
+            docPreface = "The following is a complete index of all numbers in $fullName"//, " +
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {
 
             val index: List<WordIndexEntryC> =
                 indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3) { formatVerseRefWithCount(it) }
+            writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())
 
             writer.appendLine("""\newpage""")
 
@@ -48,12 +48,12 @@ private fun writeNumbersIndex(book: Book, stopWords: Set<String>) {
                 .map { IndexEntry(it.key, listOf(it.values.sumOf { withCount -> withCount.count })) }
 //                .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
-            writeIndex(writer, freqs, "Numbers in ${book.fullName} in Order of Increasing Frequency",
-                       indexPreface = "Each name here occurs in the book of ${book.fullName} " +
+            writeIndex(writer, freqs, "Numbers in $fullName in Order of Increasing Frequency",
+                       indexPreface = "Each number here occurs in $fullName " +
                                "the number of times shown next to it.",//  One-time numbers are omitted for brevity.",
-                       columns = 5)
+                       columns = 4)
         }
     }
-    file.toPdf()
+    file.toPdf(keepTexFiles = true)
 //    println("Wrote $file")
 }

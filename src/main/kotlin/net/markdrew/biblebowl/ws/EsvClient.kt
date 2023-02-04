@@ -116,9 +116,10 @@ class EsvClient(val includePassageReferences: Boolean = false,
     fun rangeByChapters(chapterRange: ChapterRange): Sequence<Passage> {
         var chapterRef: ChapterRef? = chapterRange.start
         return generateSequence {
-            if (chapterRef == null) null
-            else {
-                val chapter: Passage = queryPassage("$chapterRef")
+            chapterRef?.let {
+                println("Querying $chapterRef...")
+                val query = with (it.verseRange()) { "${start.absoluteVerse}-${endInclusive.absoluteVerse}"}
+                val chapter: Passage = queryPassage(query)
                 val nextChapterV1: VerseRef? = chapter.meta.nextChapter?.first()?.toVerseRef()
                 if (nextChapterV1 == null) null
                 else {
@@ -126,6 +127,9 @@ class EsvClient(val includePassageReferences: Boolean = false,
                     chapter
                 }
             }
+//            if (chapterRef == null) null
+//            else {
+//            }
         }
     }
 

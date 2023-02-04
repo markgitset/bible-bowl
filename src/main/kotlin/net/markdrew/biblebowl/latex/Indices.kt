@@ -21,8 +21,8 @@ fun <K, V> writeIndex(writer: Writer,
         
     """.trimIndent())
     entries.forEach {
-        writer.append("""\textbf{${formatKey(it.key)}},  """)
-        it.values.joinTo(writer, postfix = "\n\n", transform = formatValue)
+        writer.append("""\par\textbf{${formatKey(it.key)}},  """)
+        it.values.joinTo(writer, postfix = "\n", transform = formatValue)
     }
     writer.appendLine("""
         \end{hangparas}
@@ -31,7 +31,13 @@ fun <K, V> writeIndex(writer: Writer,
     """.trimIndent())
 }
 
-fun writeDoc(writer: Writer, docTitle: String, docPreface: String? = null, writeContent: (Writer) -> Unit) {
+fun writeDoc(
+    writer: Writer,
+    docTitle: String,
+    docPreface: String? = null,
+    allowParagraphBreaks: Boolean = true,
+    writeContent: (Writer) -> Unit
+) {
     writer.appendLine("""
         \documentclass[10pt, letter paper]{article} 
         
@@ -40,6 +46,14 @@ fun writeDoc(writer: Writer, docTitle: String, docPreface: String? = null, write
         \usepackage{multicol}
         \usepackage{hanging}
 
+    """.trimIndent())
+    if (!allowParagraphBreaks) writer.appendLine("""
+        % the next two lines prevent breaks within paragraphs
+        \widowpenalties 1 10000
+        \raggedbottom
+
+    """.trimIndent())
+    writer.appendLine("""
         \begin{document}
 
         \begin{center}\section*{$docTitle}\end{center}

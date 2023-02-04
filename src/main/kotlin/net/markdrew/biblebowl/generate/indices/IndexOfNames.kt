@@ -7,53 +7,55 @@ import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.generate.formatVerseRefWithCount
+import net.markdrew.biblebowl.generate.noBreak
+import net.markdrew.biblebowl.generate.withCount
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
 import java.io.File
 import java.nio.file.Paths
 
 fun main() {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    writeNamesList(Book.DEFAULT)
-    writeNamesIndex(Book.DEFAULT)
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    writeNamesList(studyData)
+    writeNamesIndex(studyData)
 }
 
-private fun writeNamesList(book: Book) {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-    val names: Sequence<String> = findNames(bookData).map { it.excerptText }.sorted()
-    val dir = File("$PRODUCTS_DIR/$bookName/lists").also { it.mkdirs() }
-    val file = dir.resolve("$bookName-list-names.txt")
+private fun writeNamesList(studyData: StudyData) {
+    val studyName = studyData.studySet.simpleName
+    val names: Sequence<String> = findNames(studyData).map { it.excerptText }.sorted()
+    val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
+    val file = dir.resolve("$studyName-list-names.txt")
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
     }
 }
 
-private fun writeNamesIndex(book: Book) {
-    val bookName = book.name.lowercase()
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
-    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(bookData)
+public fun writeNamesIndex(studyData: StudyData) {
+    val studyName = studyData.studySet.simpleName
+    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData)
         .map { wordIndexEntry ->
             WordIndexEntryC(
                 wordIndexEntry.key,
                 wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) -> WithCount(verseRef, count) }
             )
         }
-    val dir = File("$PRODUCTS_DIR/$bookName/indices").also { it.mkdirs() }
-    val file = dir.resolve("$bookName-index-names.tex")
+    val dir = File("$PRODUCTS_DIR/$studyName/indices").also { it.mkdirs() }
+    val file = dir.resolve("$studyName-index-names.tex")
+    val name = studyData.studySet.name
     file.writer().use { writer ->
-        writeDoc(writer, "${book.fullName} Names Index",
-            docPreface = "The following is a complete index of all names in the whole book of ${book.fullName}"//, " +
+        writeDoc(writer, "$name Names Index",
+            docPreface = "The following is a complete index of all names in  $name"//, " +
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {
 
             val index: List<WordIndexEntryC> = indexEntries.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3) { formatVerseRefWithCount(it) }
+            writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())
 
             writer.appendLine("""\newpage""")
 
@@ -61,11 +63,11 @@ private fun writeNamesIndex(book: Book) {
                 .map { IndexEntry(it.key, listOf(it.values.sumOf { withCount -> withCount.count })) }
                 .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
-            writeIndex(writer, freqs, "Names in ${book.fullName} in Order of Increasing Frequency",
-                       indexPreface = "Each name here occurs in the book of ${book.fullName} " +
+            writeIndex(writer, freqs, "Names in $name in Order of Increasing Frequency",
+                       indexPreface = "Each name here occurs in $name " +
                                "the number of times shown next to it.  One-time names are omitted for brevity.",
                        columns = 5)
         }
     }
-    file.toPdf()
+    file.toPdf(keepTexFiles = true)
 }

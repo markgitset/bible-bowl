@@ -52,11 +52,11 @@ data class PassageText(val query: String,
 
     fun parsedRanges(): List<IntRange> = parsed.map { it.toIntRange() }
 
-    fun toList(): List<Passage> = canonical.split("; ").mapIndexed { i, canon ->
+    fun toList(): List<Passage> = if (parsed.isEmpty()) emptyList() else canonical.split("; ").mapIndexed { i, canon ->
         Passage(canon, parsedRanges()[i], passageMeta[i], passages[i])
     }
 
-    fun single() = toList().single()
+    fun single(): Passage = toList().single()
 
 }
 

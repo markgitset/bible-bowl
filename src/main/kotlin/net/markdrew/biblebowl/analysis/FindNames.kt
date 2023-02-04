@@ -4,9 +4,10 @@ import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
 import java.nio.file.Paths
@@ -17,40 +18,40 @@ private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "ome
 
 private val ENGLISH_WORDS: Dictionary by lazy { DictionaryParser.parse("not-names.txt") }
 
-fun buildNamesIndex(bookData: BookData,
+fun buildNamesIndex(studyData: StudyData,
                     frequencyRange: IntRange? = null,
                     vararg exceptNames: String): List<WordIndexEntry> =
-    nameCandidates(bookData, exceptNames).map { excerpts ->
+    nameCandidates(studyData, exceptNames).map { excerpts ->
         val key = excerpts.first().excerptText
-        WordIndexEntry(key, excerpts.map { bookData.verseEnclosing(it.excerptRange) ?: throw Exception() })
+        WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
     }
 
-fun findNames(bookData: BookData, vararg exceptNames: String): Sequence<Excerpt> =
-    nameCandidates(bookData, exceptNames)
+fun findNames(studyData: StudyData, vararg exceptNames: String): Sequence<Excerpt> =
+    nameCandidates(studyData, exceptNames)
         .flatten()
         .sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange })
         .asSequence()
 
-private fun isName(bookData: BookData, wordRange: IntRange): Boolean {
+private fun isName(studyData: StudyData, wordRange: IntRange): Boolean {
 
     // lower-cased words can't be names
-    val word = bookData.excerpt(wordRange).disown().excerptText
+    val word = studyData.excerpt(wordRange).disown().excerptText
     if (word.first().isLowerCase()) return false
 
     val lowerWord = word.lowercase()
     if (lowerWord in STOP_NAMES) return false
 
     val englishWord = lowerWord in ENGLISH_WORDS
-    val firstWordInSentence = isFirstWordInSentence(bookData, wordRange)
+    val firstWordInSentence = isFirstWordInSentence(studyData, wordRange)
 
     return !englishWord
 }
 
-private fun isFirstWordInSentence(bookData: BookData, wordRange: IntRange): Boolean {
-    val precededByQuote = wordRange.first > 0 && bookData.text[wordRange.first - 1] in "“‘'\""
+private fun isFirstWordInSentence(studyData: StudyData, wordRange: IntRange): Boolean {
+    val precededByQuote = wordRange.first > 0 && studyData.text[wordRange.first - 1] in "“‘'\""
     if (precededByQuote) return true
 
-    val sentenceRange: IntRange = bookData.enclosingSentence(wordRange)
+    val sentenceRange: IntRange = studyData.enclosingSentence(wordRange)
         ?: throw Exception("Word range not in a sentence range!")
     // Identify the first word in the enclosing sentence (sentence could start with quotes)
 //    val firstWordInSent: IntRange = bookData.words.enclosedBy(sentenceRange).first()
@@ -58,10 +59,10 @@ private fun isFirstWordInSentence(bookData: BookData, wordRange: IntRange): Bool
     return wordRange.first == sentenceRange.first
 }
 
-private fun nameCandidates(bookData: BookData, exceptNames: Array<out String>): Collection<List<Excerpt>> =
-    bookData.words
-        .filter { isName(bookData, it) }
-        .map { bookData.excerpt(it).disown() } // non-possessive word Excerpts
+private fun nameCandidates(studyData: StudyData, exceptNames: Array<out String>): Collection<List<Excerpt>> =
+    studyData.words
+        .filter { isName(studyData, it) }
+        .map { studyData.excerpt(it).disown() } // non-possessive word Excerpts
         .filter { it.excerptText !in exceptNames }
         .groupBy { it.excerptText.lowercase() } // Map<String, List<Excerpt>>
         .filterKeys { it !in STOP_NAMES } // remove stop names
@@ -81,12 +82,12 @@ fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
         }
 }
 
-fun printNameMatches(nameExcerpts: Sequence<Excerpt>, bookData: BookData) {
+fun printNameMatches(nameExcerpts: Sequence<Excerpt>, studyData: StudyData) {
     nameExcerpts.forEachIndexed { i, numExcerpt ->
         val (nameString, nameRange) = numExcerpt
-        val sentRange: Excerpt? = bookData.sentenceContext(nameRange)
+        val sentRange: Excerpt? = studyData.sentenceContext(nameRange)
         val sentenceString: String = sentRange?.formatRange(nameRange, blankOut())?.normalizeWS().orEmpty()
-        val ref: VerseRef? = bookData.verseEnclosing(nameRange)
+        val ref: VerseRef? = studyData.verseEnclosing(nameRange)
         println("%3d  %15s %15s    %s".format(i, ref?.toChapterAndVerse(), nameString, sentenceString))
     }
 }
@@ -94,14 +95,14 @@ fun printNameMatches(nameExcerpts: Sequence<Excerpt>, bookData: BookData) {
 fun main(args: Array<String>) {
 
     println(BANNER)
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
 //    val dict = DictionaryParser.parse("words_alpha.txt")
     val dict = DictionaryParser.parse("english.txt")
-    val nameExcerpts: Sequence<Excerpt> = findNames(bookData, "god", "jesus", "christ")
+    val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
         .filter { it.excerptText.lowercase() in dict }
 
 //    printNameFrequencies(nameExcerpts)
-    printNameMatches(nameExcerpts, bookData)
+    printNameMatches(nameExcerpts, studyData)
 }

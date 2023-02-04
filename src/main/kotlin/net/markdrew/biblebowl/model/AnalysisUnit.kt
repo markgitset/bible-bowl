@@ -15,4 +15,5 @@ enum class AnalysisUnit {
     NAME,
     NUMBER,
     REGEX,
+    STUDY_SET,
 }
