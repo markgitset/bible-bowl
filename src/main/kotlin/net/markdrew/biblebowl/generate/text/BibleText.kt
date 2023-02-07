@@ -115,14 +115,30 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
             // since footnotes are zero-width and follow the text to which they refer,
             // we need to handle them before any endings
             transition.beginning(FOOTNOTE)?.apply {
-                val verseRef = (
-                        // subtract/add one from footnote offset to find verse in case
-                        // the footnote occurs at the end/beginning of the verse
-                        bookData.verses.valueContaining(excerpt.excerptRange.first)
-                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first - 1)
-                            ?: bookData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                        )
+                val outerAnns: List<Annotation<AnalysisUnit>> =
+                    transition.continuing.filter { it.key in setOf(REGEX, NAME, NUMBER) }
+                // assume/hope that only one of these ever matches
+                val outerAnn: Annotation<AnalysisUnit>? = if (outerAnns.isEmpty()) null else outerAnns.single()
+
+                // before inserting a footnote, need to end highlighting
+                if (outerAnn?.key == REGEX) out.append('}')
+                if (opts.names && outerAnn?.key == NAME) out.append('}')
+                if (opts.numbers && outerAnn?.key == NUMBER) out.append('}')
+
+                // subtract/add one from footnote offset to find verse in case
+                // the footnote occurs at the end/beginning of the verse
+                val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
+                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
+                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
                 out.append(renderFootNote(verseRef!!, value as String))
+
+                // after inserting a footnote, need to resume highlighting
+                if (opts.names && outerAnn?.key == NAME) out.append("""\myname{""")
+                if (opts.numbers && outerAnn?.key == NUMBER) out.append("""\mynumber{""")
+                if (outerAnn?.key == REGEX) {
+                    val color = outerAnn.value
+                    out.append("""\myhl[$color]{""")
+                }
             }
 
             // endings
