@@ -2,11 +2,11 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.PracticeContent
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toString
 import net.markdrew.chupacabra.core.intersect
@@ -16,14 +16,14 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    val bookData = BookData.readData()
-    val practice: PracticeContent = bookData.practice(bookData.book.chapterRange(1, 14))
+    val studyData = StudyData.readData()
+    val practice: PracticeContent = studyData.practice(14)
     showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).toPdf())
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
-//    for (throughChapter in bookData.chapterRange.drop(5)) {
-//        val practice: PracticeContent = bookData.practice(1..throughChapter)
+//    for (throughChapter in studyData.chapterRange.drop(5)) {
+//        val practice: PracticeContent = studyData.practice(1..throughChapter)
 //        for (seed in seeds) {
 //            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed), directory).toPdf()
 //        }

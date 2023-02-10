@@ -7,10 +7,10 @@ import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.cram.Card
 import net.markdrew.biblebowl.generate.cram.FillInTheBlank
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import org.intellij.lang.annotations.Language
 import java.nio.file.Paths
@@ -41,16 +41,16 @@ val NUMBER_REGEX = COMBINED_NUMBER_PATTERN.toRegex(RegexOption.IGNORE_CASE)
 fun main(args: Array<String>) {
 
     println("Bible Bowl!")
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
-    val numberExcerpts: Sequence<Excerpt> = findNumbers(bookData.text)
-    printNumberMatches(numberExcerpts, bookData)
+    val numberExcerpts: Sequence<Excerpt> = findNumbers(studyData.text)
+    printNumberMatches(numberExcerpts, studyData)
 
 //    val bookName = book.name.lowercase()
 //    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
 //    CardWriter(cramNumberBlanksPath).use {
-//        it.write(toCards(numberExcerpts, bookData))
+//        it.write(toCards(numberExcerpts, studyData))
 //    }
 
 }
@@ -65,25 +65,25 @@ public fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
 
-private fun toCards(numberExcerpts: Sequence<Excerpt>, bookData: BookData): List<Card> {
+private fun toCards(numberExcerpts: Sequence<Excerpt>, studyData: StudyData): List<Card> {
     return numberExcerpts.groupBy { excerpt -> Pair(
-        bookData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception(),
+        studyData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception(),
         excerpt.excerptText.lowercase()
     ) }.map { (sentTextPair, numExcerpts) ->
         FillInTheBlank(
             sentTextPair.first,
             numExcerpts,
-            bookData.verseEnclosing(sentTextPair.first.excerptRange) ?: throw Exception()
+            studyData.verseEnclosing(sentTextPair.first.excerptRange) ?: throw Exception()
         ).toCramCard()
     }
 }
 
-private fun printNumberMatches(numberExcerpts: Sequence<Excerpt>, bookData: BookData) {
+private fun printNumberMatches(numberExcerpts: Sequence<Excerpt>, studyData: StudyData) {
     numberExcerpts.forEachIndexed { i, numExcerpt ->
         val (numString, numRange) = numExcerpt
-        val sentRange: Excerpt? = bookData.sentenceContext(numRange)
+        val sentRange: Excerpt? = studyData.sentenceContext(numRange)
         val sentenceString: String = sentRange?.formatRange(numRange, blankOut())?.normalizeWS().orEmpty()
-        val ref: VerseRef? = bookData.verseEnclosing(numRange)
+        val ref: VerseRef? = studyData.verseEnclosing(numRange)
         println("%3d  %7s %20s    %s".format(i, ref?.toChapterAndVerse(), numString, sentenceString))
     }
 }

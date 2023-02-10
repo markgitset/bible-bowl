@@ -1,9 +1,10 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.model.Excerpt
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class FindNumbersKtTest {
 

@@ -37,15 +37,15 @@ private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
 }
 
 fun buildWordIndex(
-    bookData: StudyData,
+    studyData: StudyData,
     stopWords: Set<String> = setOf(),
     frequencyRange: IntRange? = null): List<WordIndexEntry> =
-    bookData.wordIndex
+    studyData.wordIndex
         .filter { (word, ranges) ->
             word !in stopWords && frequencyRange?.contains(ranges.size) ?: true
         }.map { (word, ranges) ->
             WordIndexEntry(word, ranges.map { wordRange ->
-                bookData.verseEnclosing(wordRange) ?: throw Exception("Couldn't find verse enclosing $wordRange!")
+                studyData.verseEnclosing(wordRange) ?: throw Exception("Couldn't find verse enclosing $wordRange!")
             })
         }
 

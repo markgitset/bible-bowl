@@ -3,8 +3,8 @@ package net.markdrew.biblebowl.generate.text
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
-import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.analysis.findNumbers
+import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
@@ -74,9 +74,9 @@ fun writeBibleText(studyData: StudyData, opts: TextOptions) {
 //
 //fun writeBibleText(book: Book, opts: TextOptions) {
 //    val bookName = book.name.lowercase()
-//    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+//    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 //    val latexFile = File("$PRODUCTS_DIR/$bookName/text/$bookName-bible-text-${opts.fileNameSuffix}.tex")
-//    BibleTextRenderer(opts).renderToFile(latexFile, bookData)
+//    BibleTextRenderer(opts).renderToFile(latexFile, studyData)
 //    println("Wrote $latexFile")
 //    latexFile.toPdf(twice = true)
 //}

@@ -54,7 +54,7 @@ private fun isFirstWordInSentence(studyData: StudyData, wordRange: IntRange): Bo
     val sentenceRange: IntRange = studyData.enclosingSentence(wordRange)
         ?: throw Exception("Word range not in a sentence range!")
     // Identify the first word in the enclosing sentence (sentence could start with quotes)
-//    val firstWordInSent: IntRange = bookData.words.enclosedBy(sentenceRange).first()
+//    val firstWordInSent: IntRange = studyData.words.enclosedBy(sentenceRange).first()
 //    return wordRange == firstWordInSent
     return wordRange.first == sentenceRange.first
 }

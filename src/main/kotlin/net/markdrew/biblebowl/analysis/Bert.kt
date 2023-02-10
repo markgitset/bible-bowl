@@ -1,22 +1,19 @@
 package analysis
 
-import org.tensorflow.SavedModelBundle
-import java.lang.AutoCloseable
-import org.tensorflow.Tensor
-import java.nio.file.Paths
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.common.collect.Lists
 import com.google.common.io.Resources
+import org.tensorflow.SavedModelBundle
+import org.tensorflow.Tensor
 import java.io.File
 import java.io.IOException
-import java.lang.RuntimeException
 import java.net.URL
 import java.nio.IntBuffer
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.Comparator
-import java.util.zip.ZipInputStream
+import java.nio.file.Paths
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import kotlin.io.path.ExperimentalPathApi
 
 /**

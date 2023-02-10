@@ -1,16 +1,16 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
-import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import java.nio.file.Paths
 
 fun main(vararg args: String) {
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
     fun verseOfPosition(position: Int): String =
-        bookData.verses.valueContaining(position)?.toChapterAndVerse().orEmpty()
-    bookData.sentences.filter { bookData.verseEnclosing(it) == null }
+        studyData.verses.valueContaining(position)?.toChapterAndVerse().orEmpty()
+    studyData.sentences.filter { studyData.verseEnclosing(it) == null }
         .forEach { println("${verseOfPosition(it.first)}..${verseOfPosition(it.last)}") }
 }

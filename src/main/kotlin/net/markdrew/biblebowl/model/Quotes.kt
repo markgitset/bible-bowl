@@ -1,10 +1,8 @@
 package net.markdrew.biblebowl.model
 
-import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.toMathString
-import java.nio.file.Paths
 
 fun identifyDelimited(text: String, startChar: Char, endPattern: String): DisjointRangeSet {
     var start: Int
@@ -30,12 +28,12 @@ fun identifyQuotes(text: String): DisjointRangeSet = DisjointRangeSet(
 )
 
 fun main() {
-    val bookData = BookData.readData(Book.DEFAULT, Paths.get(DATA_DIR))
-//    for (r in identifySingleQuotes(bookData.text)) {
-//        println(r.toMathString() + """ "${bookData.text.substring(r).normalizeWS()}"""")
+    val studyData = StudyData.readData()
+//    for (r in identifySingleQuotes(studyData.text)) {
+//        println(r.toMathString() + """ "${studyData.text.substring(r).normalizeWS()}"""")
 //    }
 //    println()
-    for (r in identifyQuotes(bookData.text)) {
-        println(r.toMathString() + """ "${bookData.text.substring(r).normalizeWS()}"""")
+    for (r in identifyQuotes(studyData.text)) {
+        println(r.toMathString() + """ "${studyData.text.substring(r).normalizeWS()}"""")
     }
 }

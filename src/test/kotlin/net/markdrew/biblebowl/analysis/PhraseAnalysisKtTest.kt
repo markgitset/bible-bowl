@@ -1,7 +1,5 @@
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.analysis.PhraseIndexEntry
-import net.markdrew.biblebowl.analysis.subsumes
 import net.markdrew.biblebowl.model.Book.REV
 import net.markdrew.biblebowl.model.VerseRef
 import org.junit.jupiter.api.Assertions.assertFalse

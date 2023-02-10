@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
 //
 //    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
 //    CardWriter(cramNameBlanksPath).use {
-//        it.write(toCards(nameExcerpts, bookData))
+//        it.write(toCards(nameExcerpts, studyData))
 //    }
 
 }

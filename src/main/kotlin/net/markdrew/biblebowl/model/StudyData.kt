@@ -23,7 +23,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.SortedMap
 
-//typealias CharOffset = Int
+typealias CharOffset = Int
 
 class StudyData(
     val studySet: StudySet,
@@ -205,6 +205,12 @@ class StudyData(
         range?.takeIf { it != chapterRange }
             ?.let { prefix + it + suffix }
             .orEmpty()
+
+    /**
+     * For multi-book sets, these are relative chapters, not necessarily book chapters
+     */
+    fun chapterRange(first: Int, last: Int): ChapterRange =
+        with (chapters.values.toList()) { this[first]..this[last] }
 
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }

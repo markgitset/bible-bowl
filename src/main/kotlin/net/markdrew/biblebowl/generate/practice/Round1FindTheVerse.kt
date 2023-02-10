@@ -3,8 +3,6 @@ package net.markdrew.biblebowl.generate.practice
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -25,17 +23,17 @@ fun main() {
             PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
         )
     )
-//    val content: PracticeContent = BookData.readData().practice(1..14)
+//    val content: PracticeContent = StudyData.readData().practice(1..14)
 //    showPdf(writeFindTheVerse(
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
 //    ))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
-//    for (throughChapter in bookData.chapterRange) {
+//    for (throughChapter in studyData.chapterRange) {
 //        for (seed in seeds) {
 //            writeFindTheVerse(
 //                PracticeTest(Round.FIND_THE_VERSE, throughChapter, numQuestions = 20, randomSeed = seed),
-//                bookData = bookData,
+//                studyData = studyData,
 //                directory = directory
 //            )
 //        }
@@ -48,15 +46,15 @@ private fun writeFindTheVerse(
     directory: File? = null,
 ): File {
     val content = practiceTest.content
-    val bookData = content.studyData
-    var cluePool: DisjointRangeMap<VerseRef> = bookData.oneVerseSentParts
+    val studyData = content.studyData
+    var cluePool: DisjointRangeMap<VerseRef> = studyData.oneVerseSentParts
     if (!content.allChapters) {
         cluePool = cluePool.enclosedBy(content.coveredOffsets)
     }
 
     // remove any ambiguous clues
 //    cluePool = DisjointRangeMap(cluePool.entries
-//        .groupBy { (range, _) -> bookData.text.substring(range).lowercase() }
+//        .groupBy { (range, _) -> studyData.text.substring(range).lowercase() }
 //        .also { it.forEach { println(it) } }
 //        .values
 //        .mapNotNull { it.singleOrNull() }
@@ -68,7 +66,7 @@ private fun writeFindTheVerse(
         .filterKeys { it.length() >= minCharLength }
         .entries.shuffled(practiceTest.random)
         .take(practiceTest.numQuestions)
-        .map { (range, verseRef) -> ReferencedVerse(verseRef, bookData.text.substring(range)) }
+        .map { (range, verseRef) -> ReferencedVerse(verseRef, studyData.text.substring(range)) }
 
     val outputFile = practiceTest.buildTexFileName(directory)
     outputFile.writer().use { writer ->

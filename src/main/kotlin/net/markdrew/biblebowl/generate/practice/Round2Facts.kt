@@ -18,8 +18,8 @@ fun main() {
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
-//    for (throughChapter in bookData.chapterRange.drop(5)) {
-//        val practice: PracticeContent = bookData.practice(1..throughChapter)
+//    for (throughChapter in studyData.chapterRange.drop(5)) {
+//        val practice: PracticeContent = studyData.practice(1..throughChapter)
 //        for (seed in seeds) {
 //            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed), directory).toPdf()
 //        }

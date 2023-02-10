@@ -1,7 +1,5 @@
 package net.markdrew.biblebowl.model
 
-import java.lang.IllegalArgumentException
-
 enum class Book(val fullName: String, val briefName: String = fullName) {
     GEN("Genesis", "Gen"),
     EXO("Exodus", "Exo"),

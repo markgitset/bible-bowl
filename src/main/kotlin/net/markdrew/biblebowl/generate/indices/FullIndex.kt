@@ -6,7 +6,6 @@ import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildWordIndex
-import net.markdrew.biblebowl.generate.formatVerseRefWithCount
 import net.markdrew.biblebowl.generate.noBreak
 import net.markdrew.biblebowl.generate.withCount
 import net.markdrew.biblebowl.latex.IndexEntry

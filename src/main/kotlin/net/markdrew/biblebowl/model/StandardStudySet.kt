@@ -1,7 +1,5 @@
 package net.markdrew.biblebowl.model
 
-import java.lang.IllegalArgumentException
-
 enum class StandardStudySet(val set: StudySet) {
     GENESIS(StudySet(Book.GEN, "gen")),
     MATTHEW(StudySet(Book.MAT, "matt")),

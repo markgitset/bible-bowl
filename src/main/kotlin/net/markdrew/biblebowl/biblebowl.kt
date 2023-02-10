@@ -1,14 +1,12 @@
 package net.markdrew.biblebowl
 
-import net.markdrew.biblebowl.analysis.STOP_WORDS
+import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.writeBibleText
-import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.writeNumbersIndex
 import net.markdrew.biblebowl.indices.writeNamesIndex
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet

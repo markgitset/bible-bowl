@@ -17,7 +17,7 @@ fun main(vararg args: String) {
 //    val book: Book = bookName?.let { Book.valueOf(it.uppercase()) } ?: Book.DEFAULT
 //    val client = EsvClient()
 //    val indexer = BookIndexer(book)
-//    val bookData: BookData = indexer.indexBook(client.bookByChapters(book))
-//    bookData.writeData(Paths.get(DATA_DIR))
+//    val studyData: StudyData = indexer.indexBook(client.bookByChapters(book))
+//    studyData.writeData(Paths.get(DATA_DIR))
 //}
 

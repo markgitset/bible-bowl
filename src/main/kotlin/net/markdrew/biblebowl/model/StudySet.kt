@@ -1,7 +1,5 @@
 package net.markdrew.biblebowl.model
 
-import net.markdrew.biblebowl.model.Book.*
-
 data class StudySet(val name: String, val simpleName: String, val chapterRanges: List<ChapterRange>) {
 
     init {

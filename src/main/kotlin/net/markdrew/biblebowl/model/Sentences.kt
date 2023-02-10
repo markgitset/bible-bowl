@@ -2,7 +2,7 @@ package net.markdrew.biblebowl.model
 
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.text.BreakIterator
-import java.util.*
+import java.util.Locale
 
 fun identifySentences(text: String): DisjointRangeSet {
     val boundary: BreakIterator = BreakIterator.getSentenceInstance(Locale.US)

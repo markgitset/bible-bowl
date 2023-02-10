@@ -7,8 +7,8 @@ data class OneTimeWordData(val wordRange: IntRange, val sent: String, val wordSe
 
 @ExperimentalPathApi
 fun main() {
-//    val bookData = BookData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
-//    val oneTimeWords: List<IntRange> = oneTimeWords(bookData)
+//    val studyData = StudyData.readData(Paths.get(DATA_DIR), Book.DEFAULT)
+//    val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
 
     Bert.load("com/robrua/nlp/easy-bert/bert-cased-L-12-H-768-A-12").use { bert ->
         val embedTokens: Array<FloatArray> = bert.embedTokens("It's hard to believe this actually works.")

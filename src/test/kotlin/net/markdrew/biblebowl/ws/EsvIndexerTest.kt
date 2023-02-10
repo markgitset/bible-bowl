@@ -1,16 +1,15 @@
 package ws
 
-import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.toVerseRef
-import net.markdrew.biblebowl.ws.BookIndexer
+import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
 import net.markdrew.biblebowl.ws.PassageMeta
 import net.markdrew.chupacabra.core.DisjointRangeMap
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-import org.junit.jupiter.api.Assertions.*
-
-internal class BookIndexerTest {
+internal class EsvIndexerTest {
 
     private val testMeta = PassageMeta(
         canonical = "Genesis 1:1–10",
@@ -66,7 +65,7 @@ internal class BookIndexerTest {
 
     @Test
     fun indexChapter() {
-        val indexer = BookIndexer(Book.GEN)
+        val indexer = EsvIndexer(StandardStudySet.GENESIS.set)
         with(indexer.indexBook(sequenceOf(testPassage))) {
 
             //println(text)

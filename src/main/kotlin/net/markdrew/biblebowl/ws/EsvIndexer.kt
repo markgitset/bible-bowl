@@ -2,8 +2,6 @@ package net.markdrew.biblebowl.ws
 
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.model.AbsoluteVerseNum
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet

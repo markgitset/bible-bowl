@@ -1,15 +1,9 @@
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.chupacabra.core.DisjointRangeMap
 
-fun oneTimeWords(bookData: BookData): List<IntRange> = bookData.words
-    .groupBy { bookData.text.substring(it).lowercase() }
-    .filterValues { it.size == 1 }.values.flatten()
-
-fun oneTimeWords(studyData: StudyData): List<IntRange> = studyData.words
-    .groupBy { studyData.text.substring(it).lowercase() }
+fun oneTimeWords(studyData: StudyData): List<IntRange> = studyData.wordIndex
     .filterValues { it.size == 1 }.values.flatten()
 
 data class OneSectionWord<T>(
@@ -23,9 +17,9 @@ data class OneSectionWord<T>(
  * Build list of one-section words (where the sections could be chapters or headings)
  */
 fun <T : Any> oneSectionWords(
-    bookData: BookData,
+    studyData: StudyData,
     sectionMap: DisjointRangeMap<T>
-): List<OneSectionWord<T>> = bookData.wordIndex
+): List<OneSectionWord<T>> = studyData.wordIndex
     .filterValues { ranges -> ranges.size > 1 } // remove one-time words
     .filterValues { ranges ->
         ranges.map { sectionMap.valueEnclosing(it) }.distinct().count() == 1  // only entries all in same section

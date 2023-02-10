@@ -5,10 +5,10 @@ import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ChapterRange
-import net.markdrew.biblebowl.model.toVerseRef
+import net.markdrew.biblebowl.model.StandardStudySet
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
 import java.io.File
 import java.nio.file.Paths
@@ -18,30 +18,27 @@ fun highlightVerse(target: String, verse: String): String =
 
 fun main(args: Array<String>) {
     println(BANNER)
-    val book: Book = Book.parse(args.getOrNull(0), Book.DEFAULT)
-    val bookData = BookData.readData(book, Paths.get(DATA_DIR))
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
     val stepByNChapters = 10
-    val oneTimeWords: List<IntRange> = oneTimeWords(bookData)
-    for (lastChapter in 1..bookData.chapterRange.endInclusive.chapter) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == bookData.chapterRange.endInclusive.chapter) {
-            writeFile(bookData, oneTimeWords, book.chapterRange(1, lastChapter))
-            val firstChapter = lastChapter - stepByNChapters + 1
-            if (firstChapter > 1) writeFile(bookData, oneTimeWords, book.chapterRange(firstChapter, lastChapter))
-        }
+    val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
+    val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
+    for (chapterRange in chapterChunks) {
+        writeFile(studyData, oneTimeWords, chapterRange)
     }
 }
 
 private fun writeFile(
-    bookData: BookData,
+    studyData: StudyData,
     oneTimeWords: List<IntRange>,
     chapterRange: ChapterRange,
 ) {
-    val bookName = bookData.book.name.lowercase()
-    val scopeString = bookData.chapterRangeOrEmpty("-chapters-", chapterRange)
-    val uniqueWordsFile = File("$PRODUCTS_DIR/$bookName/cram", "$bookName-cram-one-words$scopeString.tsv")
+    val simpleName = studyData.studySet.simpleName
+    val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
+    val uniqueWordsFile = File("$PRODUCTS_DIR/$simpleName/cram", "$simpleName-cram-one-words$scopeString.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
-        writeCards(writer, oneTimeWords, bookData, chapterRange)
+        writeCards(writer, oneTimeWords, studyData, chapterRange)
     }
     println("Wrote $uniqueWordsFile")
 }
@@ -49,18 +46,18 @@ private fun writeFile(
 private fun writeCards(
     writer: CardWriter,
     oneTimeWords: List<IntRange>,
-    bookData: BookData,
+    studyData: StudyData,
     chapterRange: ChapterRange?
 ) {
     val words: List<IntRange> =
         if (chapterRange == null) oneTimeWords
-        else oneTimeWords.filter { bookData.charRangeFromChapterRange(chapterRange).encloses(it) }
+        else oneTimeWords.filter { studyData.charRangeFromChapterRange(chapterRange).encloses(it) }
     words.forEach { wordRange ->
-        val (verseRange, verseRef) = bookData.verses.entryEnclosing(wordRange) ?: throw Exception()
-        val verseText: String = bookData.text.substring(verseRange)
-        val word = bookData.text.substring(wordRange)
+        val (verseRange, verseRef) = studyData.verses.entryEnclosing(wordRange) ?: throw Exception()
+        val verseText: String = studyData.text.substring(verseRange)
+        val word = studyData.text.substring(wordRange)
         val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
-        val heading = bookData.headingCharRanges.valueEnclosing(wordRange)
+        val heading = studyData.headingCharRanges.valueEnclosing(wordRange)
         val verseRefString = verseRef.toFullString()
         val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"
         writer.write(word, answer, hint = highlightedVerse)

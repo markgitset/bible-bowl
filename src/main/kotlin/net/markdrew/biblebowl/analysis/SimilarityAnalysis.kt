@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.model.BookData
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.StringSubsequenceKernel
 import net.markdrew.chupacabra.core.levenshtein
@@ -11,8 +11,8 @@ import kotlin.math.min
 
 fun main() {
     // phrase frequencies
-    val bookData = BookData.readData()
-    val similaritiesIndex: Map<VerseRef, TopNMap<Double, VerseRef>> = buildSimilaritiesIndex(bookData)
+    val studyData = StudyData.readData()
+    val similaritiesIndex: Map<VerseRef, TopNMap<Double, VerseRef>> = buildSimilaritiesIndex(studyData)
     printSimilarities(similaritiesIndex)
 }
 
@@ -24,10 +24,10 @@ class TopNMap<K, V>(val topN: Int) : TreeMap<K, V>() {
     }
 }
 
-fun buildSimilaritiesIndex(bookData: BookData): Map<VerseRef, TopNMap<Double, VerseRef>> {
+fun buildSimilaritiesIndex(studyData: StudyData): Map<VerseRef, TopNMap<Double, VerseRef>> {
     val topNSize = 3
     val ssk = StringSubsequenceKernel()
-    val verses: List<ReferencedVerse> = bookData.verseList()
+    val verses: List<ReferencedVerse> = studyData.verseList()
     val tmpMap: Map<VerseRef, TopNMap<Double, VerseRef>> = buildMap {
         for (v in verses) {
             put(v.reference, TopNMap(topNSize))
