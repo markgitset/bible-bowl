@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printNameFrequencies
 import net.markdrew.biblebowl.analysis.printNameMatches
+import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -24,10 +25,9 @@ fun main(args: Array<String>) {
     printNameMatches(nameExcerpts, studyData)
 
     val stepByNChapters = 10
-    for (lastChapter in 1..studyData.chapterRange.endInclusive.chapter) {
-        if (lastChapter % stepByNChapters == 0 || lastChapter == studyData.chapterRange.endInclusive.chapter) {
-            writeFile(studyData, nameExcerpts, lastChapter)
-        }
+    val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
+    for (chapterRange in chapterChunks) {
+        writeCramNameBlanks(studyData, nameExcerpts, chapterRange)
     }
 //
 //    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
@@ -37,18 +37,18 @@ fun main(args: Array<String>) {
 
 }
 
-private fun writeFile(
+fun writeCramNameBlanks(
     studyData: StudyData,
     nameExcerpts: Sequence<Excerpt>,
-    lastChapter: Int,
+    chapterRange: ChapterRange = studyData.chapterRange,
 ) {
     val bookName = studyData.studySet.simpleName
-    val scopeString = studyData.maxChapterOrEmpty("-chapters-1-", lastChapter)
+    val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
     val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram")
         .resolve("$bookName-cram-name-blanks$scopeString.tsv")
-    val validCharRange: IntRange = studyData.charRangeThroughChapter(lastChapter)
-    CardWriter(cramNameBlanksPath).use {
-        it.write(toCards(nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }, studyData))
+    val validCharRange: IntRange = studyData.charRangeFromChapterRange(chapterRange)
+    CardWriter(cramNameBlanksPath).use { cardWriter ->
+        cardWriter.write(toCards(nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }, studyData))
     }
     println("Wrote $cramNameBlanksPath")
 }

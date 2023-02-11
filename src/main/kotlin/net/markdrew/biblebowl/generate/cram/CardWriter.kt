@@ -11,7 +11,8 @@ class CardWriter(private val writer: Writer = stdout(), private val delimiter: C
 
     constructor(file: File,
                 delimiter: Char = DEFAULT_DELIMITER,
-                charset: Charset = Charsets.UTF_8) : this(file.writer(charset), delimiter)
+                charset: Charset = Charsets.UTF_8)
+            : this(file.also { it.parentFile.mkdirs() }.writer(charset), delimiter)
 
     constructor(path: Path,
                 delimiter: Char = DEFAULT_DELIMITER,

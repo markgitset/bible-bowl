@@ -18,7 +18,7 @@ data class OneSectionWord<T>(
  */
 fun <T : Any> oneSectionWords(
     studyData: StudyData,
-    sectionMap: DisjointRangeMap<T>
+    sectionMap: DisjointRangeMap<T>,
 ): List<OneSectionWord<T>> = studyData.wordIndex
     .filterValues { ranges -> ranges.size > 1 } // remove one-time words
     .filterValues { ranges ->

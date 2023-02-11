@@ -40,7 +40,7 @@ fun main(args: Array<String>) {
 //        printHeadings(studyData, chunk.first()..chunk.last())
 //    }
 
-    printHeadings(studyData, studyData.chapterRange(9, 12))
+    writeCramHeadings(studyData, studyData.chapterRange(9, 12))
 }
 
 private fun makePath(studyData: StudyData, fileType: String, chapterRange: ChapterRange): Path {
@@ -53,7 +53,7 @@ private fun makePath(studyData: StudyData, fileType: String, chapterRange: Chapt
     return dir.resolve("$setName-$fileType$suffix.tsv")
 }
 
-private fun printHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
+fun writeCramHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
     val cramHeadingsPath = makePath(studyData, "cram-headings", chapterRange)
     CardWriter(cramHeadingsPath).use { writer ->
@@ -70,14 +70,14 @@ private fun printHeadings(studyData: StudyData, chapterRange: ChapterRange = stu
     println("Wrote data to: $cramHeadingsPath")
 }
 
-private fun printReverseHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
+fun writeCramReverseHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
     val cramHeadingsPath = makePath(studyData, "cram-reverse-headings", chapterRange)
     CardWriter(cramHeadingsPath).use { writer ->
         studyData.chapters
             .filterValues { it in chapterRange }
-            .map { (chapterRange, chapter) ->
+            .map { (chapterRange, chapterRef) ->
                 val headings: List<String> = studyData.headingCharRanges.valuesIntersectedBy(chapterRange)
-                writer.write("${chapter.bookName} $chapter", headings.joinToString("<br/>"))
+                writer.write(chapterRef.toFullString(), headings.joinToString("<br/>"))
             }
     }
     println("Wrote data to: $cramHeadingsPath")

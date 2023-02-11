@@ -16,7 +16,7 @@ data class FillInTheBlank(val clue: Excerpt, val answers: List<Excerpt>, val ver
             else answers.joinToString("<br/>") { it.excerptText }
         return Card(
             blankedClueString,
-            "$answersString<br/>(${verseRef.toChapterAndVerse()})"
+            "$answersString<br/>(${verseRef.toFullString()})"
         )
     }
 

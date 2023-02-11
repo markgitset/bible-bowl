@@ -13,8 +13,12 @@ fun main(args: Array<String>) {
 
     println("Bible Bowl!")
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val setName = studySet.simpleName
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    writeCramVerses(studyData)
+}
+
+fun writeCramVerses(studyData: StudyData) {
+    val setName = studyData.studySet.simpleName
 
     val cramFile = Paths.get("$PRODUCTS_DIR/$setName/cram").resolve("$setName-cram-verses.tsv")
     CardWriter(cramFile).use {

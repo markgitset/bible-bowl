@@ -25,14 +25,14 @@ fun main(args: Array<String>) {
     val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
     val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
     for (chapterRange in chapterChunks) {
-        writeFile(studyData, oneTimeWords, chapterRange)
+        writeCramOneTimeWords(studyData, oneTimeWords, chapterRange)
     }
 }
 
-private fun writeFile(
+fun writeCramOneTimeWords(
     studyData: StudyData,
     oneTimeWords: List<IntRange>,
-    chapterRange: ChapterRange,
+    chapterRange: ChapterRange = studyData.chapterRange,
 ) {
     val simpleName = studyData.studySet.simpleName
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)

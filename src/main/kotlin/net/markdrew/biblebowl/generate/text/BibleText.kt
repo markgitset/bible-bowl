@@ -64,7 +64,7 @@ data class TextOptions(
     }
 }
 
-fun writeBibleText(studyData: StudyData, opts: TextOptions) {
+fun writeBibleText(studyData: StudyData, opts: TextOptions = TextOptions()) {
     val name = studyData.studySet.simpleName
     val latexFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)

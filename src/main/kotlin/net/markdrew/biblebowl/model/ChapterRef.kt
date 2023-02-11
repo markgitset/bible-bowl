@@ -4,7 +4,10 @@ typealias AbsoluteChapterNum = Int
 fun AbsoluteChapterNum.toChapterRef(): ChapterRef = ChapterRef.fromAbsoluteChapterNum(this)
 
 typealias ChapterRange = ClosedRange<ChapterRef>
-fun ChapterRange.toString(separator: String): String = "${start.chapter}$separator${endInclusive.chapter}"
+fun ChapterRange.toString(separator: String): String {
+    require(!isEmpty()) { "Chapter range is empty!" }
+    return start.toFullString() + if (start == endInclusive) "" else "$separator${endInclusive.chapter}"
+}
 
 data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef> {
 

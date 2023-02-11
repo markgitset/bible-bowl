@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.generate.cram
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneSectionWords
+import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -38,28 +39,30 @@ fun mergeCards(vararg cardMaps: Map<Card, IntRange>): Collection<Card> =
 /**
  * Build list of one-section word cards (where the sections could be chapters or headings)
  */
-private fun oneSectionWordCards(studyData: StudyData,
-                                sectionMap: DisjointRangeMap<out Any>,
-                                sectionPrefix: String = ""): Map<Card, IntRange> =
+private fun <T : Any> oneSectionWordCards(
+    studyData: StudyData,
+    sectionMap: DisjointRangeMap<T>,
+    formatSection: (T) -> String = { it.toString() },
+): Map<Card, IntRange> =
     oneSectionWords(studyData, sectionMap).associate { (word, ranges, section, sectionRange) ->
-        println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
+        //println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
         val verseListString = ranges.joinToString {
-            studyData.verses.valueEnclosing(it)?.toChapterAndVerse() ?: throw Exception()
+            studyData.verses.valueEnclosing(it)?.toFullString() ?: throw Exception()
         }
-        val cardBack = listOf(
-            sectionPrefix + section,
-            "(${ranges.size} times: $verseListString)"
-        ).joinToString("<br/>")
+        val cardBack = listOf(formatSection(section), "(${ranges.size} times: $verseListString)").joinToString("<br/>")
         Card(word, cardBack) to sectionRange
     }
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val simpleName = studySet.simpleName
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    writeCramFewTimeWords(studyData)
+}
 
+fun writeCramFewTimeWords(studyData: StudyData) {
     // build one-chapter words
-    val oneChapterWordCards: Map<Card, IntRange> = oneSectionWordCards(studyData, studyData.chapters, "Chapter ")
+    val oneChapterWordCards: Map<Card, IntRange> =
+        oneSectionWordCards(studyData, studyData.chapters, ChapterRef::toFullString)
 
     // build one-heading words
     val oneHeadingWordCards: Map<Card, IntRange> = oneSectionWordCards(studyData, studyData.headingCharRanges)
@@ -69,6 +72,7 @@ fun main(args: Array<String>) {
         .sortedBy { it.front }
 
     // write 'em out
+    val simpleName = studyData.studySet.simpleName
     val outFile = File("$PRODUCTS_DIR/$simpleName/cram", "$simpleName-cram-local-words.tsv")
     CardWriter.writeCards(fewTimeWordCards, outFile)
     println("Wrote local words cards to $outFile")

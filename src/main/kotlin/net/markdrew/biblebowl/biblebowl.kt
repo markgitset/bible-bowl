@@ -1,5 +1,13 @@
 package net.markdrew.biblebowl
 
+import net.markdrew.biblebowl.analysis.findNames
+import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.generate.cram.writeCramFewTimeWords
+import net.markdrew.biblebowl.generate.cram.writeCramHeadings
+import net.markdrew.biblebowl.generate.cram.writeCramNameBlanks
+import net.markdrew.biblebowl.generate.cram.writeCramOneTimeWords
+import net.markdrew.biblebowl.generate.cram.writeCramReverseHeadings
+import net.markdrew.biblebowl.generate.cram.writeCramVerses
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.text.TextOptions
@@ -7,6 +15,7 @@ import net.markdrew.biblebowl.generate.text.writeBibleText
 import net.markdrew.biblebowl.generate.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.writeNumbersIndex
 import net.markdrew.biblebowl.indices.writeNamesIndex
+import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -41,6 +50,8 @@ fun normalizeFileName(name: String): String = runOfNonLetterOrDigit.replace(name
  * Build a whole set of resources
  */
 fun main(args: Array<String>) {
+    print(BANNER)
+
     // parse the study set from the arguments
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
 
@@ -58,18 +69,23 @@ fun main(args: Array<String>) {
         }
     }
 
-    // write the highlighted text
+    // Write LaTEX-set PDFs of the text
+    writeBibleText(studyData)
     writeBibleText(studyData, TextOptions(names = true, numbers = true, uniqueWords = true))
 
-    // write the one-time words index
+    // Write PDF indices
     writeOneTimeWordsIndex(studyData)
-    // write the full word index
     writeFullIndex(studyData)
-    // write the numbers index
     writeNumbersIndex(studyData)
-    // write the names index
     writeNamesIndex(studyData)
-    // write the non-local reoccurring phrases index
     writeNonLocalPhrasesIndex(studyData)
 
+    // Write Cram resources
+    writeCramVerses(studyData)
+    writeCramHeadings(studyData)
+    writeCramReverseHeadings(studyData)
+    writeCramOneTimeWords(studyData, oneTimeWords(studyData))
+    val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
+    writeCramNameBlanks(studyData, nameExcerpts)
+    writeCramFewTimeWords(studyData)
 }
