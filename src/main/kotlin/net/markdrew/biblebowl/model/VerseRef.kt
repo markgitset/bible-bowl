@@ -22,15 +22,32 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
 
     override fun compareTo(other: VerseRef): Int = absoluteVerse.compareTo(other.absoluteVerse)
 
-    fun toFullString(): String = "${chapterRef.toFullString()}:$verse"
-    fun toBriefString(): String = "${chapterRef.toBriefString()}:$verse"
-    fun toChapterAndVerse(): String = "${chapterRef.chapter}:$verse"
+    fun format(bookFormat: BookFormat): String = "${chapterRef.format(bookFormat)}:$verse"
 
     companion object {
         fun fromAbsoluteVerseNum(refNum: AbsoluteVerseNum): VerseRef =
             VerseRef(ChapterRef.fromAbsoluteChapterNum(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
     }
 
+}
+
+fun Iterable<VerseRef>.format(bookFormat: BookFormat): String {
+    require(distinctBy { it.book }.size <= 1 || bookFormat != NO_BOOK_FORMAT) {
+        "Don't use NO_BOOK_FORMAT for multi-book verse lists!"
+    }
+    val versesByBook: Map<Book, List<VerseRef>> = groupingBy(VerseRef::book)
+        .aggregate { _, accumulator: MutableList<VerseRef>?, verseRef, _ ->
+            accumulator?.apply { add(verseRef) } ?: mutableListOf(verseRef)
+        }
+    return versesByBook.entries.joinToString("; ") { (book, inBookVerseRefs) ->
+        inBookVerseRefs.groupingBy(VerseRef::chapterRef)
+            .aggregate { _, accumulator: StringBuilder?, verseRef, _ ->
+                if (accumulator == null) StringBuilder(verseRef.format(NO_BOOK_FORMAT))
+                else accumulator.append(",").append(verseRef.verse)
+            }
+            .values
+            .joinToString("; ", prefix = bookFormat(book) + " ")
+        }.trim() // trim() removes leading space in the NO_BOOK_FORMAT case
 }
 
 fun main() {

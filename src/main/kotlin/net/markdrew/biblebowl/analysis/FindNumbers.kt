@@ -8,6 +8,7 @@ import net.markdrew.biblebowl.generate.cram.Card
 import net.markdrew.biblebowl.generate.cram.FillInTheBlank
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -84,6 +85,6 @@ private fun printNumberMatches(numberExcerpts: Sequence<Excerpt>, studyData: Stu
         val sentRange: Excerpt? = studyData.sentenceContext(numRange)
         val sentenceString: String = sentRange?.formatRange(numRange, blankOut())?.normalizeWS().orEmpty()
         val ref: VerseRef? = studyData.verseEnclosing(numRange)
-        println("%3d  %7s %20s    %s".format(i, ref?.toChapterAndVerse(), numString, sentenceString))
+        println("%3d  %7s %20s    %s".format(i, ref?.format(NO_BOOK_FORMAT), numString, sentenceString))
     }
 }

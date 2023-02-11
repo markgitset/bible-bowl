@@ -71,6 +71,7 @@ enum class Book(val fullName: String, val briefName: String = fullName) {
     val number = ordinal + 1
     val lastChapterRef = ChapterRef(this, BCV_FACTOR - 1)
 
+    fun verseRef(chapter: Int, verse: Int): VerseRef = chapterRef(chapter).verse(verse)
     fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)
     fun chapterRange(first: Int, last: Int): ChapterRange = chapterRef(first)..chapterRef(last)
     fun allChapters(): ChapterRange = chapterRef(1)..lastChapterRef

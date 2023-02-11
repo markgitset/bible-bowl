@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.IndexEntry
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -32,7 +33,7 @@ private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
     buildWordIndex
         .sortedBy { it.key }
         .forEach { (word, verseList) ->
-            verseList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { it.toChapterAndVerse() }
+            verseList.joinTo(System.out, prefix = "$word: ", postfix = "\n") { it.format(NO_BOOK_FORMAT) }
         }
 }
 

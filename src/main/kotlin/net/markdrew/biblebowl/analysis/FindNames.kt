@@ -5,6 +5,7 @@ import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -88,7 +89,7 @@ fun printNameMatches(nameExcerpts: Sequence<Excerpt>, studyData: StudyData) {
         val sentRange: Excerpt? = studyData.sentenceContext(nameRange)
         val sentenceString: String = sentRange?.formatRange(nameRange, blankOut())?.normalizeWS().orEmpty()
         val ref: VerseRef? = studyData.verseEnclosing(nameRange)
-        println("%3d  %15s %15s    %s".format(i, ref?.toChapterAndVerse(), nameString, sentenceString))
+        println("%3d  %15s %15s    %s".format(i, ref?.format(NO_BOOK_FORMAT), nameString, sentenceString))
     }
 }
 

@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -58,7 +59,7 @@ private fun writeCards(
         val word = studyData.text.substring(wordRange)
         val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
         val heading = studyData.headingCharRanges.valueEnclosing(wordRange)
-        val verseRefString = verseRef.toFullString()
+        val verseRefString = verseRef.format(FULL_BOOK_FORMAT)
         val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"
         writer.write(word, answer, hint = highlightedVerse)
     }

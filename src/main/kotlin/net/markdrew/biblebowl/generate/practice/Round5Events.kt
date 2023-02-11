@@ -5,6 +5,7 @@ import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -180,7 +181,7 @@ private fun toLatexAnswerKey(
     questions.forEach {
         val q = it.question
         val ref: String =
-            if (q.answerRefs != null) q.answerRefs.first().toChapterAndVerse()
+            if (q.answerRefs != null) q.answerRefs.first().format(NO_BOOK_FORMAT)
             else "chapter " + q.answers.joinToString(" and ")
         appendable.appendLine("""    \item ${'A' + it.correctChoice} ($ref)""")
     }

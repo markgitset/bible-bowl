@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.generate.cram
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeSet
 
@@ -16,7 +17,7 @@ data class FillInTheBlank(val clue: Excerpt, val answers: List<Excerpt>, val ver
             else answers.joinToString("<br/>") { it.excerptText }
         return Card(
             blankedClueString,
-            "$answersString<br/>(${verseRef.toFullString()})"
+            "$answersString<br/>(${verseRef.format(FULL_BOOK_FORMAT)})"
         )
     }
 

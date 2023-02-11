@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.analysis
 
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -34,7 +35,7 @@ fun buildSimilaritiesIndex(studyData: StudyData): Map<VerseRef, TopNMap<Double, 
         }
     }
     for (i in verses.indices) {
-        println(verses[i].reference.toFullString())
+        println(verses[i].reference.format(FULL_BOOK_FORMAT))
         val topNMap: TopNMap<Double, VerseRef> = tmpMap.getValue(verses[i].reference)
         for (j in verses.indices.drop(i + 1)) {
 //            topNMap[ssk.normalizedKernel(2, verses[i].verse, verses[j].verse)] = verses[j].reference
@@ -48,9 +49,9 @@ fun buildSimilaritiesIndex(studyData: StudyData): Map<VerseRef, TopNMap<Double, 
 
 private fun printSimilarities(indexEntries: Map<VerseRef, TopNMap<Double, VerseRef>>) {
     indexEntries.toSortedMap().forEach { (ref, topNMap) ->
-        println(ref.toFullString())
+        println(ref.format(FULL_BOOK_FORMAT))
         topNMap.forEach { (similarity, simRef) ->
-            println("\t%5.2f  %s".format(similarity, simRef.toFullString()))
+            println("\t%5.2f  %s".format(similarity, simRef.format(FULL_BOOK_FORMAT)))
         }
     }
 }

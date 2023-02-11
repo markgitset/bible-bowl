@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.generate.cram
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -77,7 +78,7 @@ fun writeCramReverseHeadings(studyData: StudyData, chapterRange: ChapterRange = 
             .filterValues { it in chapterRange }
             .map { (chapterRange, chapterRef) ->
                 val headings: List<String> = studyData.headingCharRanges.valuesIntersectedBy(chapterRange)
-                writer.write(chapterRef.toFullString(), headings.joinToString("<br/>"))
+                writer.write(chapterRef.format(FULL_BOOK_FORMAT), headings.joinToString("<br/>"))
             }
     }
     println("Wrote data to: $cramHeadingsPath")

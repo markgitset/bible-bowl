@@ -10,8 +10,6 @@ import net.markdrew.biblebowl.generate.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.generate.cram.writeCramVerses
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
-import net.markdrew.biblebowl.generate.text.TextOptions
-import net.markdrew.biblebowl.generate.text.writeBibleText
 import net.markdrew.biblebowl.generate.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.writeNumbersIndex
 import net.markdrew.biblebowl.indices.writeNamesIndex
@@ -70,8 +68,8 @@ fun main(args: Array<String>) {
     }
 
     // Write LaTEX-set PDFs of the text
-    writeBibleText(studyData)
-    writeBibleText(studyData, TextOptions(names = true, numbers = true, uniqueWords = true))
+//    writeBibleText(studyData)
+//    writeBibleText(studyData, TextOptions(names = true, numbers = true, uniqueWords = true))
 
     // Write PDF indices
     writeOneTimeWordsIndex(studyData)

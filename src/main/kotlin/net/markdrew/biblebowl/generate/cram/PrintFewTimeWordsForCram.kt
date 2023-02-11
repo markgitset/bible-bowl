@@ -3,10 +3,11 @@ package net.markdrew.biblebowl.generate.cram
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneSectionWords
-import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import net.markdrew.biblebowl.model.format
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.encloses
 import java.io.File
@@ -46,9 +47,9 @@ private fun <T : Any> oneSectionWordCards(
 ): Map<Card, IntRange> =
     oneSectionWords(studyData, sectionMap).associate { (word, ranges, section, sectionRange) ->
         //println("""%20s occurs %2d times in %s""".format(""""$word"""", ranges.size, sectionPrefix + section))
-        val verseListString = ranges.joinToString {
-            studyData.verses.valueEnclosing(it)?.toFullString() ?: throw Exception()
-        }
+        val verseListString = ranges.map {
+            studyData.verses.valueEnclosing(it) ?: throw Exception()
+        }.format(FULL_BOOK_FORMAT)
         val cardBack = listOf(formatSection(section), "(${ranges.size} times: $verseListString)").joinToString("<br/>")
         Card(word, cardBack) to sectionRange
     }
@@ -62,7 +63,7 @@ fun main(args: Array<String>) {
 fun writeCramFewTimeWords(studyData: StudyData) {
     // build one-chapter words
     val oneChapterWordCards: Map<Card, IntRange> =
-        oneSectionWordCards(studyData, studyData.chapters, ChapterRef::toFullString)
+        oneSectionWordCards(studyData, studyData.chapters) { it.format(FULL_BOOK_FORMAT) }
 
     // build one-heading words
     val oneHeadingWordCards: Map<Card, IntRange> = oneSectionWordCards(studyData, studyData.headingCharRanges)

@@ -77,8 +77,8 @@ class StudyData(
     val isMultiBook: Boolean by lazy { books.size > 1 }
 
     val verseRefFormat: (VerseRef) -> String by lazy {
-        if (isMultiBook) VerseRef::toBriefString
-        else VerseRef::toChapterAndVerse
+        if (isMultiBook) { verseRef: VerseRef -> verseRef.format(BRIEF_BOOK_FORMAT) }
+        else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }
     }
 
     fun writeData(outPath: Path) {
@@ -116,7 +116,7 @@ class StudyData(
 
     private fun writeChaptersIndex(outPath: Path) {
         writeIterable(outPath, chapters.entries) { (range, chapterRef) ->
-            println("${range.first}\t${range.last}\t$chapterRef")
+            println("${range.first}\t${range.last}\t${chapterRef.serialize()}")
         }
     }
 
@@ -145,7 +145,7 @@ class StudyData(
      */
     fun smallestNamedRange(range: IntRange): String? {
         val verseRef: VerseRef? = verses.valueEnclosing(range)
-        if (verseRef != null) return verseRef.toChapterAndVerse()
+        if (verseRef != null) return verseRef.format(NO_BOOK_FORMAT)
 
         val chapter: ChapterRef? = chapters.valueEnclosing(range)
         val heading: String? = headingCharRanges.valueEnclosing(range)
@@ -296,7 +296,7 @@ class StudyData(
             inPath.toFile().useLines { linesSeq ->
                 linesSeq.map { line ->
                     val (first, last, chapterRef) = line.split('\t')
-                    first.toInt()..last.toInt() to ChapterRef.valueOf(chapterRef)
+                    first.toInt()..last.toInt() to ChapterRef.deserialize(chapterRef)
                 }.toMap(DisjointRangeMap())
             }
 

@@ -4,6 +4,7 @@ import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.StudyData
@@ -141,7 +142,7 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \begin{enumerate}
     """.trimIndent())
     this.forEach {
-        appendable.appendLine("    \\item ${it.reference.toFullString()}")
+        appendable.appendLine("    \\item ${it.reference.format(FULL_BOOK_FORMAT)}")
     }
     appendable.appendLine("""
         \end{enumerate}

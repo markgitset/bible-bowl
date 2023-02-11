@@ -21,6 +21,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -308,7 +309,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
     private fun renderFootNote(verseRef: VerseRef, note: String): String {
         val formattedNote = note.replace(Regex("""\*([^*]+)\*"""), """\\textit{$1}""")
-        return """\footnote{${verseRef.toFullString()} $formattedNote}"""
+        return """\footnote{${verseRef.format(FULL_BOOK_FORMAT)} $formattedNote}"""
     }
 
     private fun Appendable.appendHeadingTitle(headingTitle: String) {
