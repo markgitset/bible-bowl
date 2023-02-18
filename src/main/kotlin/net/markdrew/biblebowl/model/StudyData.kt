@@ -58,10 +58,8 @@ class StudyData(
 
     val headings: List<Heading> by lazy {
         headingCharRanges.map { (headingCharRange, headingTitle) ->
-            val chapterRefs: List<ChapterRef> = chapters.valuesIntersectedBy(headingCharRange)
-            require(chapterRefs.size <= 2) { "Not set up to handle headings intersecting more than 2 chapters!" }
-            val chapterRange = chapterRefs.min()..chapterRefs.max()
-            Heading(headingTitle, chapterRange)
+            val verseRefs: List<VerseRef> = verses.valuesIntersectedBy(headingCharRange)
+            Heading(headingTitle, verseRefs.first()..verseRefs.last())
         }
     }
 
@@ -188,7 +186,7 @@ class StudyData(
      * Returns chapter [[Heading]]s that intersect the given chapter range
      */
     fun headings(chapterRange: ChapterRange): List<Heading> =
-        headings.filter { it.chapterRange.start in chapterRange }
+        headings.filter { it.verseRange.start.chapterRef in chapterRange }
 
     /**
      * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,

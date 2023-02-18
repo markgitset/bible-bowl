@@ -7,7 +7,9 @@ import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toString
 import net.markdrew.chupacabra.core.DisjointRangeMap
@@ -16,9 +18,10 @@ import java.io.File
 
 private const val VERSES_PER_PAGE = 20
 
-fun main() {
-    val readData = StudyData.readData()
-    val content = PracticeContent(readData, readData.chapterRangeOfNChapters(22))
+fun main(args: Array<String>) {
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet)
+    val content = PracticeContent(studyData, studyData.chapterRangeOfNChapters(22))
     showPdf(
         writeFindTheVerse(
             PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)

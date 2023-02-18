@@ -4,7 +4,15 @@ typealias AbsoluteVerseNum = Int
 fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this)
 
 typealias VerseRange = ClosedRange<VerseRef>
-//fun VerseRange.toString(separator: String): String = "${start.verse}$separator${endInclusive.verse}"
+fun VerseRange.toChapterRange(): ChapterRange = start.chapterRef..endInclusive.chapterRef
+fun VerseRange.format(bookFormat: BookFormat, separator: String = "-", compact: Boolean = true): String {
+    val endString: String = when {
+        compact && endInclusive.chapterRef == start.chapterRef -> endInclusive.verse.toString()
+        compact && endInclusive.book == start.book -> endInclusive.format(NO_BOOK_FORMAT)
+        else -> endInclusive.format(bookFormat)
+    }
+    return "${start.format(bookFormat)}$separator${endString}"
+}
 
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 

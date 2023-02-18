@@ -9,10 +9,13 @@ import net.markdrew.biblebowl.generate.cram.writeCramOneTimeWords
 import net.markdrew.biblebowl.generate.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.generate.cram.writeCramVerses
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
+import net.markdrew.biblebowl.generate.indices.writeHeadingsCsv
+import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
+import net.markdrew.biblebowl.generate.indices.writeHeadingsText
+import net.markdrew.biblebowl.generate.indices.writeNamesIndex
+import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
+import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
-import net.markdrew.biblebowl.generate.writeNonLocalPhrasesIndex
-import net.markdrew.biblebowl.generate.writeNumbersIndex
-import net.markdrew.biblebowl.indices.writeNamesIndex
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -77,6 +80,13 @@ fun main(args: Array<String>) {
     writeNumbersIndex(studyData)
     writeNamesIndex(studyData)
     writeNonLocalPhrasesIndex(studyData)
+    writeHeadingsPdf(studyData)
+
+    // Write text resources
+    writeHeadingsText(studyData)
+
+    // Write CSV resources
+    writeHeadingsCsv(studyData)
 
     // Write Cram resources
     writeCramVerses(studyData)

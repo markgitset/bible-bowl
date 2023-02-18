@@ -5,7 +5,6 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.generate.noBreak
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc

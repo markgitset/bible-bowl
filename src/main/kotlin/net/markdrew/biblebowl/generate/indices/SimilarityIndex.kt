@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate
+package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.WithCount

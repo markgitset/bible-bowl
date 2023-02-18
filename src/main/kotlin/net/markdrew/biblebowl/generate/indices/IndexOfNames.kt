@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.indices
+package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
@@ -6,8 +6,6 @@ import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
 import net.markdrew.biblebowl.analysis.findNames
-import net.markdrew.biblebowl.generate.noBreak
-import net.markdrew.biblebowl.generate.withCount
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc

@@ -1,26 +1,24 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildWordIndex
-import net.markdrew.biblebowl.generate.noBreak
-import net.markdrew.biblebowl.generate.withCount
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import java.io.File
-import java.nio.file.Paths
 
-fun main() {
+fun main(args: Array<String>) {
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet)
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
     writeFullIndex(studyData, STOP_WORDS)
 }
 

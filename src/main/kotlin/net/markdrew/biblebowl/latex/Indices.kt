@@ -44,8 +44,12 @@ fun writeDoc(
         \usepackage[utf8]{inputenc}
         \usepackage[margin=0.75in]{geometry}
         \usepackage{multicol}
+        \usepackage{multirow}
         \usepackage{hanging}
+        \usepackage{array}
+        \renewcommand{\arraystretch}{1}
 
+        \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
     """.trimIndent())
     if (!allowParagraphBreaks) writer.appendLine("""
         % the next two lines prevent breaks within paragraphs

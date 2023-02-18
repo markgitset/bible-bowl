@@ -35,6 +35,7 @@ dependencies {
     implementation("com.robrua.nlp.models:easy-bert-cased-L-12-H-768-A-12:1.0.0") // com/robrua/nlp/easy-bert/bert-cased-L-12-H-768-A-12
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
     implementation("org.apache.poi:poi-ooxml:5.2.2")
+    implementation("org.apache.commons:commons-csv:1.10.0") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
 }
 
 tasks.named<Test>("test") {
