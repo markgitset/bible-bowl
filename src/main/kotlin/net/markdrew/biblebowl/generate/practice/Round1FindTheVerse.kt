@@ -1,9 +1,8 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
-import net.markdrew.biblebowl.model.ChapterRange
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -11,7 +10,6 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.toString
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
 import java.io.File
@@ -21,11 +19,9 @@ private const val VERSES_PER_PAGE = 20
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val content = PracticeContent(studyData, studyData.chapterRangeOfNChapters(22))
-    showPdf(
-        writeFindTheVerse(
-            PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
-        )
+    val content = PracticeContent(studyData, studySet.toChapter(Book.MAT.chapterRef(17)))
+    writeFindTheVerse(
+        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
     )
 //    val content: PracticeContent = StudyData.readData().practice(1..14)
 //    showPdf(writeFindTheVerse(
@@ -76,7 +72,7 @@ private fun writeFindTheVerse(
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, practiceTest)
     }
-    return outputFile.toPdf()
+    return outputFile.toPdf(keepTexFiles = true)
 }
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
@@ -100,21 +96,28 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
                                                practiceTest: PracticeTest) {
     val seedString = "%04d".format(practiceTest.randomSeed)
     val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
-    val chapters: ChapterRange = practiceTest.content.coveredChapters
-    val coverage = if (practiceTest.content.allChapters) "" else " (ONLY chapters ${chapters.toString("-")})"
-    val bookDesc = practiceTest.studySet.name + coverage
+    val chapters: String = practiceTest.content.coveredChaptersString()
+    val multiBook = practiceTest.content.studyData.isMultiBook
+    val coverage = if (practiceTest.content.allChapters) "" else " (ONLY $chapters)"
+    val answerDesc = if (multiBook) {
+        "book, chapter, and verse from ${practiceTest.studySet.chapterNamesWith2LetterCodes()}"
+    } else {
+        "chapter and verse from ${practiceTest.studySet.name}"
+    }
+    val bookColDef = if (multiBook) "m{0.3in}|" else ""
+    val bookColHeading = if (multiBook) """\multicolumn{1}{c}{Book}&""" else ""
     val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
     appendable.appendLine("""
         \documentclass[10pt, letter paper]{article} 
         \usepackage[utf8]{inputenc}
-        \usepackage[letterpaper, left=0.75in, right=0.75in, top=0.75in, bottom=0.75in]{geometry}
+        \usepackage[letterpaper, left=0.7in, right=0.7in, top=0.7in, bottom=0.7in]{geometry}
         \usepackage{multicol}
         \usepackage[T1]{fontenc}
     """.trimIndent())
     if (size > VERSES_PER_PAGE) appendable.appendLine("\\usepackage{longtable}")
     appendable.appendLine("""
         \usepackage{array}
-        \renewcommand{\arraystretch}{1.5}
+        \renewcommand{\arraystretch}{1.4}
         \newcounter{rowcount}
         \setcounter{rowcount}{0}
         
@@ -123,17 +126,20 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
         
         \section*{\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
-        Using your Bible, write the chapter and verse from $bookDesc of each quotation in its matching box.
+        Using your Bible, write the $answerDesc$coverage of each quotation in its matching box.
         
         \begin{center}
-        \begin{$tabularEnv}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}p{5.5in}||m{0.3in}|m{0.3in}|}
-            \multicolumn{1}{c}{}&\multicolumn{2}{c}{ANSWER}\\
-            \multicolumn{1}{c}{}&\multicolumn{1}{c}{Chapter}&\multicolumn{1}{c}{Verse}\\
+        \begin{$tabularEnv}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}%
+            p{${if (multiBook) 5.2 else 5.5}in}||${bookColDef}m{0.3in}|m{0.3in}|}
+            \multicolumn{1}{c}{}&\multicolumn{${if (multiBook) 3 else 2}}{c}{ANSWER}\\
+            \multicolumn{1}{c}{}&$bookColHeading\multicolumn{1}{c}{Chapter}&\multicolumn{1}{c}{Verse}\\
             \hline
     """.trimIndent())
     this.forEachIndexed { i, refVerse ->
-        if (i > 0 && i % VERSES_PER_PAGE == 0) appendable.appendLine("    \\newpage\\hline")
-        appendable.appendLine("""    ${removeUnmatchedCharPairs(refVerse.verse.normalizeWS())} & & \\""")
+        if (i > 0 && i % VERSES_PER_PAGE == 0) appendable.appendLine("""    \newpage\hline""")
+        appendable.appendLine(
+            """    ${removeUnmatchedCharPairs(refVerse.verse.normalizeWS())} & & ${if (multiBook) "&" else ""}\\"""
+        )
         appendable.appendLine("""    \hline""")
     }
     appendable.appendLine("""

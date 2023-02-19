@@ -17,12 +17,22 @@ data class PracticeTest(
     val random = Random(randomSeed)
     val studySet: StudySet = content.studyData.studySet
 
+    private fun coveredChaptersForFileName(): String {
+        if (content.allChapters) return ""
+        val chapters = content.coveredChapters
+        val firstBook =
+            if (content.studyData.isMultiBook) chapters.start.book.name.lowercase()
+            else "chap"
+        val lastBook =
+            if (chapters.endInclusive.book == chapters.start.book) ""
+            else chapters.endInclusive.book.name.lowercase()
+        return "-%s%02dto%s%02d".format(firstBook, chapters.start.chapter, lastBook, chapters.endInclusive.chapter)
+    }
+
     fun buildTexFileName(directory: File? = null): File {
         val setName = studySet.simpleName
         val dir = directory ?: File("$PRODUCTS_DIR/$setName/practice/round${round.number}")
-        val chapters = content.coveredChapters
-        val fileName = "$setName-${round.shortName}-chap%02dto%02d-seed%04d"
-            .format(chapters.start.chapter, chapters.endInclusive.chapter, randomSeed)
+        val fileName = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d".format(randomSeed)
         dir.mkdirs()
         return File(dir, "$fileName.tex")
     }

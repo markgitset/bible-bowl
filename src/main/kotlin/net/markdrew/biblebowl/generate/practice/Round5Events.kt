@@ -9,7 +9,6 @@ import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.toString
 import net.markdrew.chupacabra.core.intersect
 import java.io.File
 import kotlin.math.roundToInt
@@ -143,7 +142,7 @@ private fun toLatexTest(
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChapters.toString("-")})"
+        else " (ONLY chapters ${content.coveredChaptersString()})"
     appendable.appendLine(
         """
         \section*{$titleString}

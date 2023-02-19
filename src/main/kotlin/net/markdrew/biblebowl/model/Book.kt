@@ -1,13 +1,13 @@
 package net.markdrew.biblebowl.model
 
-enum class Book(val fullName: String, val briefName: String = fullName) {
+enum class Book(val fullName: String, val briefName: String = fullName, private val twoLetterCode: String? = null) {
     GEN("Genesis", "Gen"),
     EXO("Exodus", "Exo"),
     LEV("Leviticus", "Lev"),
     NUM("Numbers", "Num"),
-    DEU("Deuteronomy", "Deut"),
+    DEU("Deuteronomy", "Deut", "DT"),
     JOS("Joshua"),
-    JDG("Judges"),
+    JDG("Judges", twoLetterCode = "JG"),
     RUT("Ruth"),
     SA1("1 Samuel", "1 Sam"),
     SA2("2 Samuel", "2 Sam"),
@@ -70,6 +70,7 @@ enum class Book(val fullName: String, val briefName: String = fullName) {
 
     val number = ordinal + 1
     val lastChapterRef = ChapterRef(this, BCV_FACTOR - 1)
+    val twoLetter = (twoLetterCode ?: name.take(2)).uppercase()
 
     fun verseRef(chapter: Int, verse: Int): VerseRef = chapterRef(chapter).verse(verse)
     fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)

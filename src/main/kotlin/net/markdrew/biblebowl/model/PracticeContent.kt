@@ -1,10 +1,16 @@
 package net.markdrew.biblebowl.model
 
 import net.markdrew.chupacabra.core.encloses
+import net.markdrew.chupacabra.core.intersect
 
-data class PracticeContent internal constructor(val studyData: StudyData, val coveredChapters: ChapterRange) {
+data class PracticeContent internal constructor(
+    val studyData: StudyData,
+    // spans lots of not covered chapters, but intersect with studyData.chapters to find actual chapters
+    val coveredChapters: ChapterRange = studyData.chapterRange
+) {
 
     init {
+        require(!coveredChapters.isEmpty()) { "Requested chapter range is empty!" }
         require(studyData.chapterRange.encloses(coveredChapters)) {
             "Requested chapter range (${studyData.chapterRange}) must be within $coveredChapters!"
         }
@@ -18,4 +24,9 @@ data class PracticeContent internal constructor(val studyData: StudyData, val co
 
     fun headings(): List<Heading> = studyData.headings(coveredChapters)
 
+    fun coveredChaptersString(): String =
+        studyData.studySet.chapterRanges
+            .map { it.intersect(coveredChapters) }
+            .filterNot { it.isEmpty() }
+            .format(FULL_BOOK_FORMAT)
 }

@@ -5,7 +5,6 @@ import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudyData
-import net.markdrew.biblebowl.model.toString
 import java.io.File
 import java.io.InputStream
 import java.net.URL
@@ -126,7 +125,7 @@ private fun toLatexTest(
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChapters.toString("-")})"
+        else " (ONLY chapters ${content.coveredChaptersString()})"
     appendable.appendLine(
         """
         \section*{$titleString}

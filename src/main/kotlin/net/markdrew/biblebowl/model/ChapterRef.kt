@@ -4,9 +4,9 @@ typealias AbsoluteChapterNum = Int
 fun AbsoluteChapterNum.toChapterRef(): ChapterRef = ChapterRef.fromAbsoluteChapterNum(this)
 
 typealias ChapterRange = ClosedRange<ChapterRef>
-fun ChapterRange.toString(separator: String): String {
+fun ChapterRange.format(bookFormat: BookFormat = FULL_BOOK_FORMAT, separator: String = "-"): String {
     require(!isEmpty()) { "Chapter range is empty!" }
-    return start.format(FULL_BOOK_FORMAT) + if (start == endInclusive) "" else "$separator${endInclusive.chapter}"
+    return start.format(bookFormat) + if (start == endInclusive) "" else "$separator${endInclusive.chapter}"
 }
 
 data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef> {
@@ -37,4 +37,17 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
             ChapterRef(Book.fromNumber(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
     }
 
+}
+
+fun Iterable<ChapterRange>.format(bookFormat: BookFormat): String {
+    require(distinctBy { it.start.book }.size <= 1 || bookFormat != NO_BOOK_FORMAT) {
+        "Don't use NO_BOOK_FORMAT for multi-book chapter ranges!"
+    }
+    val rangesByBook: Map<Book, List<ChapterRange>> = groupingBy { it.start.book }
+        .aggregate { _, accumulator: MutableList<ChapterRange>?, chapterRange, _ ->
+            accumulator?.apply { add(chapterRange) } ?: mutableListOf(chapterRange)
+        }
+    return rangesByBook.entries.joinToString("; ") { (book, inBookChapterRanges) ->
+        "${bookFormat(book)} " + inBookChapterRanges.joinToString(",") { it.format(NO_BOOK_FORMAT) }
+    }.trim() // trim() removes leading space in the NO_BOOK_FORMAT case
 }
