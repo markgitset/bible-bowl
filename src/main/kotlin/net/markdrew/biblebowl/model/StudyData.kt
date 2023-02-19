@@ -208,7 +208,7 @@ class StudyData(
      * For multi-book sets, these are relative chapters, not necessarily book chapters
      */
     fun chapterRange(first: Int, last: Int): ChapterRange =
-        with (chapters.values.toList()) { this[first]..this[last] }
+        with (chapters.values.toList()) { this[first - 1]..this[last - 1] }
 
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }

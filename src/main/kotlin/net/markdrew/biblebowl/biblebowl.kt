@@ -19,6 +19,7 @@ import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.practice.PracticeTest
 import net.markdrew.biblebowl.generate.practice.Round
 import net.markdrew.biblebowl.generate.practice.writeFindTheVerse
+import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.PracticeContent
@@ -104,6 +105,7 @@ fun main(args: Array<String>) {
 
     // Write practice tests
     val content = PracticeContent(studyData)
-    writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50))
-    writeRound5Events(PracticeTest(Round.EVENTS, content, numQuestions = 20, randomSeed = 50))
+    writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50))
+    writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = 50))
+    writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50))
 }

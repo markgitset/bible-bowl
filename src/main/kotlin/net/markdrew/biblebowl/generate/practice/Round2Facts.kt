@@ -4,16 +4,19 @@ import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.toPdf
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
+import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import java.io.File
 import java.io.InputStream
 import java.net.URL
 import kotlin.random.Random
 
-fun main() {
-    val studyData = StudyData.readData()
+fun main(args: Array<String>) {
+    val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
+    val studyData = StudyData.readData(studySet)
     val practice = PracticeContent(studyData, studyData.chapterRangeOfNChapters(13))
-    showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)).toPdf(keepTexFiles = true))
+    showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
@@ -54,7 +57,7 @@ private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null
     }
 
     println("Wrote $texFile")
-    return texFile
+    return texFile.toPdf(keepTexFiles = true)
 }
 
 private fun escapeLatex(s: String): String =
@@ -125,7 +128,7 @@ private fun toLatexTest(
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
-        else " (ONLY chapters ${content.coveredChaptersString()})"
+        else " (ONLY ${content.coveredChaptersString()})"
     appendable.appendLine(
         """
         \section*{$titleString}
