@@ -8,6 +8,7 @@ fun ChapterRange.format(bookFormat: BookFormat = FULL_BOOK_FORMAT, separator: St
     require(!isEmpty()) { "Chapter range is empty!" }
     return start.format(bookFormat) + if (start == endInclusive) "" else "$separator${endInclusive.chapter}"
 }
+fun ChapterRange.toAbsoluteRange(): IntRange = start.absoluteChapter..endInclusive.absoluteChapter
 
 data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef> {
 

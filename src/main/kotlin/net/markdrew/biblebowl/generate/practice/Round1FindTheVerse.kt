@@ -40,7 +40,7 @@ fun main(args: Array<String>) {
 //    }
 }
 
-private fun writeFindTheVerse(
+fun writeFindTheVerse(
     practiceTest: PracticeTest,
     minCharLength: Int = 15,
     directory: File? = null,

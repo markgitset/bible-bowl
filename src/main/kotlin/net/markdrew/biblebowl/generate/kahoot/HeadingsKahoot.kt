@@ -43,10 +43,10 @@ private fun writeHeadingsKahoot(
             question(
                 KahootQuestion(
                     multiChoice.question.question,
-                    multiChoice.choices[0],
-                    multiChoice.choices[1],
-                    multiChoice.choices[2],
-                    multiChoice.choices[3],
+                    multiChoice.choices[0] ?: "none of these",
+                    multiChoice.choices[1] ?: "none of these",
+                    multiChoice.choices[2] ?: "none of these",
+                    multiChoice.choices[3] ?: "none of these",
                     timeLimit,
                     listOf(multiChoice.correctChoice + 1)
                 )

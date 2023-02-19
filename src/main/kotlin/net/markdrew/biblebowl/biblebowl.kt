@@ -16,7 +16,12 @@ import net.markdrew.biblebowl.generate.indices.writeNamesIndex
 import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
+import net.markdrew.biblebowl.generate.practice.PracticeTest
+import net.markdrew.biblebowl.generate.practice.Round
+import net.markdrew.biblebowl.generate.practice.writeFindTheVerse
+import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.model.Excerpt
+import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -96,4 +101,9 @@ fun main(args: Array<String>) {
     val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
     writeCramNameBlanks(studyData, nameExcerpts)
     writeCramFewTimeWords(studyData)
+
+    // Write practice tests
+    val content = PracticeContent(studyData)
+    writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50))
+    writeRound5Events(PracticeTest(Round.EVENTS, content, numQuestions = 20, randomSeed = 50))
 }
