@@ -11,7 +11,9 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import org.docx4j.Docx4J
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
+import org.docx4j.openpackaging.parts.PartName
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
+import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
 import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFtnProps
 import org.docx4j.wml.CTNumRestart
@@ -95,6 +97,11 @@ object DocMaker {
 
 
     private fun renderText(out: MainDocumentPart, studyData: StudyData, opts: TextOptions) {
+        // add a numbering part to the document
+        out.addTargetPart(NumberingDefinitionsPart(PartName("/numbering")).apply {
+            unmarshalDefaultNumbering()
+        })
+
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         val contentStack = ArrayDeque<MutableList<Any>>()
         val footnotes = mutableMapOf<String, Any>()
