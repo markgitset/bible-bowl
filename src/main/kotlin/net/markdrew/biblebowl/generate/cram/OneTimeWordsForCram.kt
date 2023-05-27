@@ -22,12 +22,15 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
-    val stepByNChapters = 10
     val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
-    val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
-    for (chapterRange in chapterChunks) {
-        writeCramOneTimeWords(studyData, oneTimeWords, chapterRange)
-    }
+    writeCramOneTimeWords(studyData, oneTimeWords)
+
+//    val stepByNChapters = 10
+//    val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
+//    val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
+//    for (chapterRange in chapterChunks) {
+//        writeCramOneTimeWords(studyData, oneTimeWords, chapterRange)
+//    }
 }
 
 fun writeCramOneTimeWords(

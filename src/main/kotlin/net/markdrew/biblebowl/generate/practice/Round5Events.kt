@@ -128,7 +128,7 @@ private fun docHeader(appendable: Appendable) {
         \usepackage[utf8]{inputenc}
         \setlength{\parindent}{0in}
         \usepackage{multicol}
-        \usepackage[letterpaper, left=1in, right=1in, top=0.5in, bottom=0.5in]{geometry}
+        \usepackage[letterpaper, left=.7in, right=.7in, top=0.3in, bottom=0.3in]{geometry}
         \usepackage{xpatch}
         \xpatchcmd{\oneparchoices}{\penalty -50\hskip 1em plus 1em\relax}{\hfill}{}{}
         
@@ -162,7 +162,7 @@ private fun toLatexTest(
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
         each of the following ${round.shortName} is found (i.e., begins) in ${practiceTest.studySet.name}$limitedTo.
         
-        \vspace{0.1in}
+        \vspace{0.08in}
         
         \begin{questions}
     """.trimIndent()

@@ -1,7 +1,8 @@
 # To Do List
 
-1. Build question bank for generating rounds 2 and 3
-2. Highlight names and numbers in generated text
+1. Fix bug with underlining highlighted words with letters that drop low!
+2. Compact verse references (e.g., Mat 4:5,6,7; 6:8,10) in word indices
+3. Build question bank for generating rounds 2 and 3
 3. Build question bank for generating power round
 4. For reoccurring non-local phrases, index by each word
 5. For reoccurring non-local phrases, improve deduplication
@@ -13,7 +14,8 @@
 11. Generate power round one-time word ordering questions (by grouping related one-time words)
 12. Build command-line interfaces for these utilities
 13. Exclude genealogies from generated names questions (or maybe score significance of names?)
-14. Build chapter headings index/list
+2. ~~Highlight names and numbers in generated text~~
+14. ~~Build chapter headings index/list~~
 15. ~~In Cram one-words, don't highlight part of a word~~
 16. ~~Allow hyphens in names (e.g., Tubal-cain)~~
 17. ~~Add verse refs to practice tests' answer keys~~

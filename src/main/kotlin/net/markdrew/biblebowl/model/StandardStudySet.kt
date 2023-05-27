@@ -16,6 +16,20 @@ enum class StandardStudySet(val set: StudySet) {
             Book.DEU.chapterRange(31, 34),
         )
     ),
+    LIFE_OF_MOSES_LTC(
+        StudySet(
+            "Life of Moses LTC", "ltc",
+            Book.EXO.chapterRange(1, 20),
+//            Book.EXO.chapterRange(32, 34),
+//            Book.NUM.chapterRange(1, 3),
+            Book.NUM.chapterRange(10, 14),
+//            Book.NUM.chapterRange(16, 17),
+            Book.NUM.chapterRange(20, 24),
+//            Book.NUM.chapterRange(20, 27),
+//            Book.NUM.chapterRange(31, 36),
+            Book.DEU.chapterRange(31, 34),
+        )
+    ),
     LUKE(StudySet(Book.LUK, "luke")),
     JOSHUA_JUDGES_RUTH(
         StudySet(

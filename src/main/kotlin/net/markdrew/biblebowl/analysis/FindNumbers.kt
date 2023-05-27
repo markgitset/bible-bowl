@@ -3,8 +3,10 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.cram.Card
+import net.markdrew.biblebowl.generate.cram.CardWriter
 import net.markdrew.biblebowl.generate.cram.FillInTheBlank
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
@@ -48,11 +50,11 @@ fun main(args: Array<String>) {
     val numberExcerpts: Sequence<Excerpt> = findNumbers(studyData.text)
     printNumberMatches(numberExcerpts, studyData)
 
-//    val bookName = book.name.lowercase()
-//    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName").resolve("$bookName-cram-number-blanks.tsv")
-//    CardWriter(cramNumberBlanksPath).use {
-//        it.write(toCards(numberExcerpts, studyData))
-//    }
+    val setName = studySet.simpleName
+    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
+    CardWriter(cramNumberBlanksPath).use {
+        it.write(toCards(numberExcerpts, studyData))
+    }
 
 }
 

@@ -82,6 +82,8 @@ fun writeBibleText(studyData: StudyData, opts: TextOptions = TextOptions()) {
 //    latexFile.toPdf(twice = true)
 //}
 
+private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
+
 class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
     fun renderToFile(file: File, studyData: StudyData) {
@@ -92,31 +94,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
     }
 
     private fun renderText(out: Appendable, studyData: StudyData) {
-        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
-            BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
-        ).apply {
-            val regexAnnotationsRangeMap: DisjointRangeMap<String> =
-                opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
-                    drm.apply {
-                        putAll(studyData.findAll(*patterns.toTypedArray()).associateWith { color })
-                    }
-                }
-            setAnnotations(REGEX, regexAnnotationsRangeMap)
-            if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
-            if (opts.names) {
-                val namesRangeSet = DisjointRangeSet(
-                    findNames(studyData, exceptNames = divineNames.toTypedArray())
-                        .map { it.excerptRange }.toList()
-                )
-                // remove any ranges that intersect with custom regex ranges
-                val deconflicted = namesRangeSet.minusEnclosedBy(regexAnnotationsRangeMap)
-                setAnnotations(NAME, deconflicted)
-            }
-            if (opts.numbers) {
-                val numbersRangeSet = DisjointRangeSet(findNumbers(studyData.text).map { it.excerptRange }.toList())
-                setAnnotations(NUMBER, numbersRangeSet)
-            }
-        }
+        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append("}}")
@@ -308,7 +286,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
         """\versenum{$verseNum}""".let { if (inPoetry) "\\flagverse{$it}" else it }
 
     private fun renderFootNote(verseRef: VerseRef, note: String): String {
-        val formattedNote = note.replace(Regex("""\*([^*]+)\*"""), """\\textit{$1}""")
+        val formattedNote = note.replace(asteriskBracketedWordRegex, """\\textit{$1}""")
         return """\footnote{${verseRef.format(FULL_BOOK_FORMAT)} $formattedNote}"""
     }
 
@@ -326,6 +304,37 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
 
     private fun Appendable.appendBookTitle(book: Book) {
         //appendLine("\n\n\\mychapter{${book.fullName}}")
+    }
+
+    companion object {
+        fun annotatedDoc(studyData: StudyData, opts: TextOptions): AnnotatedDoc<AnalysisUnit> {
+            val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
+                BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
+            ).apply {
+                val regexAnnotationsRangeMap: DisjointRangeMap<String> =
+                    opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
+                        drm.apply {
+                            putAll(studyData.findAll(*patterns.toTypedArray()).associateWith { color })
+                        }
+                    }
+                setAnnotations(REGEX, regexAnnotationsRangeMap)
+                if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
+                if (opts.names) {
+                    val namesRangeSet = DisjointRangeSet(
+                        findNames(studyData, exceptNames = divineNames.toTypedArray())
+                            .map { it.excerptRange }.toList()
+                    )
+                    // remove any ranges that intersect with custom regex ranges
+                    val deconflicted = namesRangeSet.minusEnclosedBy(regexAnnotationsRangeMap)
+                    setAnnotations(NAME, deconflicted)
+                }
+                if (opts.numbers) {
+                    val numbersRangeSet = DisjointRangeSet(findNumbers(studyData.text).map { it.excerptRange }.toList())
+                    setAnnotations(NUMBER, numbersRangeSet)
+                }
+            }
+            return annotatedDoc
+        }
     }
 
 }
