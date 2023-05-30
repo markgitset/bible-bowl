@@ -89,7 +89,7 @@ class EsvIndexer(val studySet: StudySet) {
                 if (buffer.isNotEmpty()) endHeading()
                 continue
             }
-            paragraphStart = buffer.length
+            paragraphStart = buffer.length + line.indexOfFirst { !it.isWhitespace() }
             val indexOf = line.indexOf('[')
             // indexOf('[') != 0 indicates that this line is continuing the verse from the previous line
             if (indexOf < 0) { // could be -1 or > 0 -- either way we need to continue the verse
@@ -97,6 +97,9 @@ class EsvIndexer(val studySet: StudySet) {
             } else if (indexOf > 0) { // could be -1 or > 0 -- either way we need to continue the verse
                 continueVerse(line.substring(0 until indexOf), noteOffsetsByNoteNumber)
             }
+
+// TODO            TRYING TO FIGURE OUT HOW TO INCLUDE LAST SPACE OF A VERSE WITHIN THE VERSE'S RANGE
+
             """\[(\d+)] ([^\[]+)""".toRegex().findAll(line).forEach { match ->
                 val (verseNum, verseText) = match.destructured
                 startVerse(currentChapter, verseNum.toInt(), verseText, noteOffsetsByNoteNumber)

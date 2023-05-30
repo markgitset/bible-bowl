@@ -4,6 +4,7 @@ import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.generate.text.DocMaker.createMatthew
 import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -19,6 +20,7 @@ import org.docx4j.wml.CTFtnProps
 import org.docx4j.wml.CTNumRestart
 import org.docx4j.wml.CTVerticalAlignRun
 import org.docx4j.wml.Color
+import org.docx4j.wml.Lvl
 import org.docx4j.wml.NumFmt
 import org.docx4j.wml.NumberFormat
 import org.docx4j.wml.Numbering
@@ -100,6 +102,13 @@ object DocMaker {
         // add a numbering part to the document
         out.addTargetPart(NumberingDefinitionsPart(PartName("/numbering")).apply {
             unmarshalDefaultNumbering()
+            abstractListDefinitions["0"]?.abstractNumNode!!.lvl[0].apply {
+                numFmt = NumFmt().apply { `val` = NumberFormat.LOWER_LETTER }
+                lvlText = Lvl.LvlText().apply { `val` = "%1." }
+                rPr = RPr().apply {
+                    rFonts = qsFonts
+                }
+            }
         })
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
@@ -108,46 +117,13 @@ object DocMaker {
         var nextFootnote = 0
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
-            // since footnotes are zero-width and follow the text to which they refer,
-            // we need to handle them before any endings
-            transition.beginning(AnalysisUnit.FOOTNOTE)?.apply {
-//                val outerAnns: List<Annotation<AnalysisUnit>> =
-//                    transition.continuing.filter { it.key in setOf(
-//                        AnalysisUnit.REGEX,
-//                        AnalysisUnit.NAME,
-//                        AnalysisUnit.NUMBER
-//                    ) }
-//                // assume/hope that only one of these ever matches
-//                val outerAnn: Annotation<AnalysisUnit>? = if (outerAnns.isEmpty()) null else outerAnns.single()
-//
-//                // before inserting a footnote, need to end highlighting
-//                if (outerAnn?.key == AnalysisUnit.REGEX) out.append('}')
-//                if (opts.names && outerAnn?.key == AnalysisUnit.NAME) out.append('}')
-//                if (opts.numbers && outerAnn?.key == AnalysisUnit.NUMBER) out.append('}')
-
-                // subtract/add one from footnote offset to find verse in case
-                // the footnote occurs at the end/beginning of the verse
-                val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                val fnRef = ('a' + nextFootnote++).toString()
-                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
-                contentStack.last().add(footnoteRef(fnRef))
-                // after inserting a footnote, need to resume highlighting
-//                if (opts.names && outerAnn?.key == AnalysisUnit.NAME) out.append("""\myname{""")
-//                if (opts.numbers && outerAnn?.key == AnalysisUnit.NUMBER) out.append("""\mynumber{""")
-//                if (outerAnn?.key == AnalysisUnit.REGEX) {
-//                    val color = outerAnn.value
-//                    out.append("""\myhl[$color]{""")
-//                }
-            }
 
             // endings
 
-            if (transition.isEnded(AnalysisUnit.PARAGRAPH) /*&& !transition.isPresent(AnalysisUnit.POETRY)*/) {
+            if (transition.isEnded(PARAGRAPH) /*&& !transition.isPresent(AnalysisUnit.POETRY)*/) {
                 val p = paragraph().also { it.content.addAll(contentStack.removeLast()) }
                 contentStack.last().add(p)
-                logger.debug { "Ended ${AnalysisUnit.PARAGRAPH} ${contentStack.size}" }
+                logger.debug { "Ended $PARAGRAPH ${contentStack.size}" }
             }
 //            if (transition.isEnded(AnalysisUnit.POETRY)) out.appendLine("\\end{verse}\n")
 //            if (opts.chapterBreaksPage && transition.isEnded(AnalysisUnit.CHAPTER)) out.appendLine("\\clearpage")
@@ -173,9 +149,9 @@ object DocMaker {
                 contentStack.last().add(heading(value as String))
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${contentStack.size})" }
             }
-            if (transition.isBeginning(AnalysisUnit.PARAGRAPH)) {
+            if (transition.isBeginning(PARAGRAPH)) {
                 contentStack.addLast(mutableListOf())
-                logger.debug { "Began ${AnalysisUnit.PARAGRAPH} ${contentStack.size}" }
+                logger.debug { "Began $PARAGRAPH ${contentStack.size}" }
             }
 
 //            if (transition.isBeginning(AnalysisUnit.POETRY)) out.appendLine("""\begin{verse}""")
@@ -189,7 +165,7 @@ object DocMaker {
                     contentStack.last().add(chapterNum(chapterRef.chapter))
                     logger.debug { "Added ${AnalysisUnit.CHAPTER}: ${chapterRef.chapter} (${contentStack.size})" }
                 } else {
-                    contentStack.last().add(verseNum(verseNum).also {
+                    contentStack.last().add(verseNum(verseNum, addSpace = !transition.isBeginning(PARAGRAPH)).also {
     //                    println(XmlUtils.marshaltoString(it))
                     })
                     logger.debug { "Added ${AnalysisUnit.VERSE} ${contentStack.size}" }
@@ -212,9 +188,24 @@ object DocMaker {
 //                    .replace("""\n""".toRegex(), "\\\\\\\\\n")
 //                    .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
 //            }
+//            if (transition.isEnded(VERSE)) textToOutput += " "
             if (textToOutput.isNotBlank()) {
                 contentStack.last().add(verseText(textToOutput))
                 logger.debug { "Added '$textToOutput' ${contentStack.size}" }
+            }
+
+            // since footnotes are zero-width (1-width?) and follow the text to which they refer,
+            // we need to handle them before any endings
+            transition.present(AnalysisUnit.FOOTNOTE)?.apply {
+
+                // subtract/add one from footnote offset to find verse in case
+                // the footnote occurs at the end/beginning of the verse
+                val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
+                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
+                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
+                val fnRef = ('a' + nextFootnote++).toString()
+                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
+                contentStack.last().add(footnoteRef(fnRef))
             }
 
             if (transition.isEnded(AnalysisUnit.STUDY_SET)) {
@@ -265,7 +256,7 @@ object DocMaker {
         })
     }
 
-    fun verseNum(verseNum: Int): R = factory.createR().apply {
+    fun verseNum(verseNum: Int, addSpace: Boolean): R = factory.createR().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             b = BooleanDefaultTrue()
@@ -273,7 +264,9 @@ object DocMaker {
             vertAlign = factory.createCTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
         }
 //        content.add(mkText(" $verseNum "))
-        content.add(mkText("$verseNum "))
+        var text = "$verseNum "
+        if (addSpace) text = " $text"
+        content.add(mkText(text))
     }
 
     fun chapterNum(chapterNum: Int): R = factory.createR().apply {
@@ -301,7 +294,7 @@ object DocMaker {
             rFonts = qsFonts
             color = black
         }
-        content.add(mkText("$text"))
+        content.add(mkText(text))
     }
 
     fun paragraph(): P = factory.createP().apply {
@@ -331,11 +324,12 @@ object DocMaker {
 
     fun footnotesHeader(): P = factory.createP().apply {
         pPr = factory.createPPr().apply {
+            keepNext = wmlBoolean(true)
 //            pStyle = factory.createPPrBasePStyle().apply { `val` = "Normal1" }
-            shd = factory.createCTShd().apply {
-                fill = "ffffff"
-                `val` = STShd.CLEAR
-            }
+//            shd = factory.createCTShd().apply {
+//                fill = "ffffff"
+//                `val` = STShd.CLEAR
+//            }
             spacing = factory.createPPrBaseSpacing().apply {
                 before = BigInteger.valueOf(300)
                 after = BigInteger.valueOf(150)
@@ -368,7 +362,7 @@ object DocMaker {
         val nums: MutableList<Numbering.Num> = jaxbElement.num
         if (nums.none { it.numId == bigNumId }) nums.add(Numbering.Num().apply {
             numId = bigNumId
-            abstractNumId = Numbering.Num.AbstractNumId().apply { `val` = BigInteger.ONE }
+            abstractNumId = Numbering.Num.AbstractNumId().apply { `val` = BigInteger.ZERO }
             // restart the footnote letters for each chapter
             lvlOverride.add(Numbering.Num.LvlOverride().apply {
                 ilvl = BigInteger.ZERO
@@ -441,6 +435,6 @@ object DocMaker {
             color = black
             vertAlign = CTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
         }
-        content.add(mkText("$ref "))
+        content.add(mkText(ref))
     }
 }
