@@ -11,15 +11,19 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import org.docx4j.Docx4J
+import org.docx4j.XmlUtils
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.PartName
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
+import org.docx4j.openpackaging.parts.relationships.RelationshipsPart
 import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFtnProps
 import org.docx4j.wml.CTNumRestart
 import org.docx4j.wml.CTVerticalAlignRun
 import org.docx4j.wml.Color
+import org.docx4j.wml.Ftr
 import org.docx4j.wml.Lvl
 import org.docx4j.wml.NumFmt
 import org.docx4j.wml.NumberFormat
@@ -42,7 +46,12 @@ import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
 import java.io.File
+import java.io.InputStream
 import java.math.BigInteger
+import java.net.URI
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import kotlin.io.path.toPath
 
 private val logger: KLogger = KotlinLogging.logger {}
 
@@ -84,18 +93,49 @@ object DocMaker {
     }
 
     private val black: Color = factory.createColor().apply { `val` = "000000" }
-    
-    fun createMatthew(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage =
-        Docx4J.load(this.javaClass.getResourceAsStream("/text-template.docx")).apply {
+
+    private fun URI.resolveChild(childString: String): URI =
+        toPath().resolve(childString).toUri()
+    private fun URI.open(childString: String): InputStream =
+        resolveChild(childString).toURL().openStream()
+
+    fun createMatthew(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage {
+        val baseUri: URI = javaClass.getResource("/tbb-doc-format")?.toURI()
+            ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format")
+//        println(baseUri)
+//        println(baseUri.resolveChild("test"))
+        return Docx4J.load(baseUri.open("text-template.docx")).apply {
+            val mappings: Map<String, String> = mapOf(
+                "title" to studyData.studySet.name,
+                "date" to LocalDate.now().format(DateTimeFormatter.ofPattern("LLLL d, uuuu"))
+            )
+            mainDocumentPart.addTargetPart(
+                footerPartFromTemplate("/word/footer2.xml", baseUri.resolveChild("footer2.xml"), mappings),
+                RelationshipsPart.AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS,
+                "rId3"
+            )
             renderText(mainDocumentPart, studyData, opts)
-//            with(mainDocumentPart.content) {
-//                for (heading in studyData.headings) {
-//                    val headingP = heading(heading.title)
-////                    println(XmlUtils.marshaltoString(heading))
-//                    add(headingP)
-//                }
-//            }
+            //            with(mainDocumentPart.content) {
+            //                for (heading in studyData.headings) {
+            //                    val headingP = heading(heading.title)
+            ////                    println(XmlUtils.marshaltoString(heading))
+            //                    add(headingP)
+    //                }
+    //            }
         }
+    }
+
+    private fun footerPartFromTemplate(
+        footerPartName: String,
+        templateUri: URI,
+        mappings: Map<String, String>
+    ): FooterPart = FooterPart(PartName(footerPartName)).apply {
+        templateUri.toURL().openStream().use {
+            jaxbElement = XmlUtils.unmarshallFromTemplate(
+                it.reader().readText(), mappings
+            ) as Ftr?
+        }
+    }
 
 
     private fun renderText(out: MainDocumentPart, studyData: StudyData, opts: TextOptions) {
