@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import net.markdrew.biblebowl.generate.text.DocMaker.createMatthew
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
+import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -19,8 +20,10 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart
 import org.docx4j.wml.BooleanDefaultTrue
+import org.docx4j.wml.Br
 import org.docx4j.wml.CTFtnProps
 import org.docx4j.wml.CTNumRestart
+import org.docx4j.wml.CTTabStop
 import org.docx4j.wml.CTVerticalAlignRun
 import org.docx4j.wml.Color
 import org.docx4j.wml.Ftr
@@ -40,8 +43,10 @@ import org.docx4j.wml.RStyle
 import org.docx4j.wml.STLineSpacingRule
 import org.docx4j.wml.STRestartNumber
 import org.docx4j.wml.STShd
+import org.docx4j.wml.STTabJc
 import org.docx4j.wml.STVerticalAlignRun
 import org.docx4j.wml.SectPr
+import org.docx4j.wml.Tabs
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
@@ -99,15 +104,15 @@ object DocMaker {
     private fun URI.open(childString: String): InputStream =
         resolveChild(childString).toURL().openStream()
 
+    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
+
     fun createMatthew(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage {
         val baseUri: URI = javaClass.getResource("/tbb-doc-format")?.toURI()
             ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format")
-//        println(baseUri)
-//        println(baseUri.resolveChild("test"))
         return Docx4J.load(baseUri.open("text-template.docx")).apply {
             val mappings: Map<String, String> = mapOf(
                 "title" to studyData.studySet.name,
-                "date" to LocalDate.now().format(DateTimeFormatter.ofPattern("LLLL d, uuuu"))
+                "date" to LocalDate.now().format(dateFormatter)
             )
             mainDocumentPart.addTargetPart(
                 footerPartFromTemplate("/word/footer2.xml", baseUri.resolveChild("footer2.xml"), mappings),
@@ -115,13 +120,6 @@ object DocMaker {
                 "rId3"
             )
             renderText(mainDocumentPart, studyData, opts)
-            //            with(mainDocumentPart.content) {
-            //                for (heading in studyData.headings) {
-            //                    val headingP = heading(heading.title)
-            ////                    println(XmlUtils.marshaltoString(heading))
-            //                    add(headingP)
-    //                }
-    //            }
         }
     }
 
@@ -155,18 +153,28 @@ object DocMaker {
         val contentStack = ArrayDeque<MutableList<Any>>()
         val footnotes = mutableMapOf<String, Any>()
         var nextFootnote = 0
+        val textToOutput = StringBuilder()
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
 
             // endings
 
-            if (transition.isEnded(PARAGRAPH) /*&& !transition.isPresent(AnalysisUnit.POETRY)*/) {
+            if (transition.isEnded(POETRY)) {
+                val p = paragraph().apply {
+                    pPr.tabs = Tabs().apply {
+                        tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
+                        tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("360") })
+                    }
+                    content.addAll(contentStack.removeLast())
+                }
+                contentStack.last().add(p)
+                logger.debug { "Ended $POETRY ${contentStack.size}" }
+            }
+            if ((transition.isEnded(PARAGRAPH)) && !transition.isPresent(POETRY)) {
                 val p = paragraph().also { it.content.addAll(contentStack.removeLast()) }
                 contentStack.last().add(p)
                 logger.debug { "Ended $PARAGRAPH ${contentStack.size}" }
             }
-//            if (transition.isEnded(AnalysisUnit.POETRY)) out.appendLine("\\end{verse}\n")
-//            if (opts.chapterBreaksPage && transition.isEnded(AnalysisUnit.CHAPTER)) out.appendLine("\\clearpage")
             transition.ended(AnalysisUnit.CHAPTER)?.apply {
                 contentStack.last().add(footnotesHeader())
                 logger.debug { "Added ${AnalysisUnit.FOOTNOTE}s for chapter $value (${contentStack.size})" }
@@ -189,9 +197,13 @@ object DocMaker {
                 contentStack.last().add(heading(value as String))
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${contentStack.size})" }
             }
-            if (transition.isBeginning(PARAGRAPH)) {
+            if (transition.isBeginning(PARAGRAPH) && !transition.isPresent(POETRY)) {
                 contentStack.addLast(mutableListOf())
                 logger.debug { "Began $PARAGRAPH ${contentStack.size}" }
+            }
+            if (transition.isBeginning(POETRY)) {
+                contentStack.addLast(mutableListOf())
+                logger.debug { "Began $POETRY ${contentStack.size}" }
             }
 
 //            if (transition.isBeginning(AnalysisUnit.POETRY)) out.appendLine("""\begin{verse}""")
@@ -222,16 +234,41 @@ object DocMaker {
 
             // text
 
-            var textToOutput = excerpt.excerptText//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
+            textToOutput.append(excerpt.excerptText)//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
 //            if (transition.isPresent(AnalysisUnit.POETRY)) {
 //                textToOutput = textToOutput
 //                    .replace("""\n""".toRegex(), "\\\\\\\\\n")
 //                    .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
 //            }
 //            if (transition.isEnded(VERSE)) textToOutput += " "
+
+//            if (transition.isPresent(POETRY)) {
+//                contentStack.last().add(verseText(textToOutput))
+//                logger.debug { "Added '$textToOutput' ${contentStack.size}" }
+//                contentStack.last().add(Br())
+//                logger.debug { "Added <br/> ${contentStack.size}" }
+//            } else
             if (textToOutput.isNotBlank()) {
-                contentStack.last().add(verseText(textToOutput))
+                if (textToOutput.startsWith('\n')) textToOutput.deleteCharAt(0)
+                val textRun: R = verseText(textToOutput.toString())
+                if (transition.isPresent(POETRY)) {
+                    while (textToOutput.startsWith("    ")) {
+                        val t = textRun.content.removeLast()
+                        textRun.content.add(R.Tab())
+                        textRun.content.add(t)
+                        textToOutput.delete(0, 4)
+                        logger.debug { "Added <tab/> ${contentStack.size}" }
+                    }
+                }
+                if (transition.isPresent(POETRY)) {
+                    textRun.content.add(Br())
+                    logger.debug { "Added <br/> ${contentStack.size}" }
+                }
+                contentStack.last().add(textRun)
                 logger.debug { "Added '$textToOutput' ${contentStack.size}" }
+                textToOutput.clear()
+            } else if (!transition.isPresent(POETRY)) {
+                textToOutput.clear()
             }
 
             // since footnotes are zero-width (1-width?) and follow the text to which they refer,
