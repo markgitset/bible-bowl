@@ -2,8 +2,9 @@ package net.markdrew.biblebowl.generate.text
 
 import mu.KLogger
 import mu.KotlinLogging
-import net.markdrew.biblebowl.generate.text.DocMaker.createMatthew
+import net.markdrew.biblebowl.generate.text.DocMaker.createWmlPackage
 import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.ChapterRef
@@ -80,7 +81,7 @@ fun writeBibleDoc(studyData: StudyData, opts: TextOptions = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-bible-text-${opts.fileNameSuffix}.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
-    val wordPackage: WordprocessingMLPackage = createMatthew(studyData, opts)
+    val wordPackage: WordprocessingMLPackage = createWmlPackage(studyData, opts)
 
     wordPackage.save(outputFile)
     println("Wrote $outputFile")
@@ -106,7 +107,7 @@ object DocMaker {
 
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
 
-    fun createMatthew(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage {
+    fun createWmlPackage(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage {
         val baseUri: URI = javaClass.getResource("/tbb-doc-format")?.toURI()
             ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format")
         return Docx4J.load(baseUri.open("text-template.docx")).apply {
@@ -177,7 +178,7 @@ object DocMaker {
             }
             transition.ended(AnalysisUnit.CHAPTER)?.apply {
                 contentStack.last().add(footnotesHeader())
-                logger.debug { "Added ${AnalysisUnit.FOOTNOTE}s for chapter $value (${contentStack.size})" }
+                logger.debug { "Added ${FOOTNOTE}s for chapter $value (${contentStack.size})" }
                 contentStack.last().addAll(footnotes.values)
                 contentStack.last().add(paragraph())
                 footnotes.clear()
@@ -249,22 +250,21 @@ object DocMaker {
 //                logger.debug { "Added <br/> ${contentStack.size}" }
 //            } else
             if (textToOutput.isNotBlank()) {
-                if (textToOutput.startsWith('\n')) textToOutput.deleteCharAt(0)
-                val textRun: R = verseText(textToOutput.toString())
-                if (transition.isPresent(POETRY)) {
-                    while (textToOutput.startsWith("    ")) {
-                        val t = textRun.content.removeLast()
-                        textRun.content.add(R.Tab())
-                        textRun.content.add(t)
-                        textToOutput.delete(0, 4)
-                        logger.debug { "Added <tab/> ${contentStack.size}" }
+                contentStack.last().add(makeRun().apply {
+                    if (textToOutput.startsWith('\n') && transition.isPresent(POETRY)) {
+                        textToOutput.deleteCharAt(0)
+                        content.add(Br())
+                        logger.debug { "Added <br/> ${contentStack.size}" }
                     }
-                }
-                if (transition.isPresent(POETRY)) {
-                    textRun.content.add(Br())
-                    logger.debug { "Added <br/> ${contentStack.size}" }
-                }
-                contentStack.last().add(textRun)
+                    if (transition.isPresent(POETRY)) {
+                        while (textToOutput.startsWith("    ")) {
+                            content.add(R.Tab())
+                            textToOutput.delete(0, 4)
+                            logger.debug { "Added <tab/> ${contentStack.size}" }
+                        }
+                    }
+                    content.add(makeText(textToOutput))
+                })
                 logger.debug { "Added '$textToOutput' ${contentStack.size}" }
                 textToOutput.clear()
             } else if (!transition.isPresent(POETRY)) {
@@ -273,7 +273,7 @@ object DocMaker {
 
             // since footnotes are zero-width (1-width?) and follow the text to which they refer,
             // we need to handle them before any endings
-            transition.present(AnalysisUnit.FOOTNOTE)?.apply {
+            transition.present(FOOTNOTE)?.apply {
 
                 // subtract/add one from footnote offset to find verse in case
                 // the footnote occurs at the end/beginning of the verse
@@ -283,6 +283,7 @@ object DocMaker {
                 val fnRef = ('a' + nextFootnote++).toString()
                 footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
                 contentStack.last().add(footnoteRef(fnRef))
+                logger.debug { "Added $FOOTNOTE ref ${contentStack.size}" }
             }
 
             if (transition.isEnded(AnalysisUnit.STUDY_SET)) {
@@ -329,7 +330,7 @@ object DocMaker {
                 szCs = factory.createHpsMeasure().apply { `val` = BigInteger("27") }
                 rtl = BooleanDefaultTrue()
             }
-            content.add(mkText(heading))
+            content.add(makeText(heading))
         })
     }
 
@@ -343,7 +344,7 @@ object DocMaker {
 //        content.add(mkText(" $verseNum "))
         var text = "$verseNum "
         if (addSpace) text = " $text"
-        content.add(mkText(text))
+        content.add(makeText(text))
     }
 
     fun chapterNum(chapterNum: Int): R = factory.createR().apply {
@@ -358,20 +359,23 @@ object DocMaker {
             szCs = factory.createHpsMeasure().apply { `val` = BigInteger("32") }
             rtl = wmlBoolean(false)
         }
-        content.add(mkText("$chapterNum "))
+        content.add(makeText("$chapterNum "))
     }
 
-    private fun mkText(text: String, preserveSpace: Boolean = true): Text = Text().apply {
-        value = text
+    private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text = Text().apply {
+        value = text.toString()
         if (preserveSpace) space = "preserve"
     }
 
-    fun verseText(text: String): R = R().apply {
+    fun makeRun(): R = R().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             color = black
         }
-        content.add(mkText(text))
+    }
+
+    fun verseText(text: String): R = makeRun().apply {
+        content.add(makeText(text))
     }
 
     fun paragraph(): P = factory.createP().apply {
@@ -425,7 +429,7 @@ object DocMaker {
                 color = black
                 rtl = wmlBoolean(false)
             }
-            content.add(mkText("Footnotes"))
+            content.add(makeText("Footnotes"))
         })
     }
 
@@ -476,7 +480,7 @@ object DocMaker {
                 u = U().apply { `val` = UnderlineEnumeration.SINGLE }
                 rtl = wmlBoolean(false)
             }
-            content.add(mkText(verseRef.format(FULL_BOOK_FORMAT)))
+            content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
         })
 //        content.add(makeRun(" $fnContent"))//, italic = index % 2 == 1))
         runsSeq.forEachIndexed { index, s ->
@@ -494,7 +498,7 @@ object DocMaker {
                 iCs = wmlBoolean(true)
             }
         }
-        content.add(mkText(textContent))
+        content.add(makeText(textContent))
     }
 
     // for real footnotes
@@ -512,6 +516,6 @@ object DocMaker {
             color = black
             vertAlign = CTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
         }
-        content.add(mkText(ref))
+        content.add(makeText(ref))
     }
 }
