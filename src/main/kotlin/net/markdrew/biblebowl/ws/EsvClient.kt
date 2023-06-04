@@ -12,6 +12,7 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.createDirectories
 import kotlin.io.path.isReadable
@@ -152,15 +153,20 @@ class EsvClient(
 
     private fun retrieveCachedPassage(chapterRef: ChapterRef): Passage? {
         //println("Checking cache for $chapterRef...")
-        val path = Paths.get(RAW_DATA_DIR).resolve(chapterRef.bookName).resolve(chapterRef.chapter.toString())
+        val path = cachePathFor(chapterRef)
         return if (path.isReadable()) Passage.deserialize(path.readText()) else null
     }
 
     private fun updateCachedPassage(chapterRef: ChapterRef, passage: Passage) {
         println("Updating cache for $chapterRef...")
-        val path = Paths.get(RAW_DATA_DIR).resolve(chapterRef.bookName).resolve(chapterRef.chapter.toString())
+        val path = cachePathFor(chapterRef)
         path.parent.createDirectories()
         path.writeText(passage.serialize())
+    }
+
+    private fun cachePathFor(chapterRef: ChapterRef): Path {
+        val bookDirName: String = "%02d-${chapterRef.bookName}".format(chapterRef.book.number)
+        return Paths.get(RAW_DATA_DIR).resolve(bookDirName).resolve(chapterRef.chapter.toString())
     }
 
     private fun rangeByChapters(
