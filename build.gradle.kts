@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.21"
+    kotlin("plugin.serialization") version "1.8.21"
     application
 }
 
@@ -38,6 +39,7 @@ dependencies {
     implementation("org.apache.commons:commons-csv:1.10.0") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
 //    implementation("org.docx4j:docx4j-bundle:11.4.9")
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.9")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
 tasks.named<Test>("test") {

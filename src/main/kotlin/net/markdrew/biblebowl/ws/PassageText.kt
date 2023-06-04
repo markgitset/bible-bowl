@@ -1,12 +1,18 @@
 package net.markdrew.biblebowl.ws
 
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.serializersModuleOf
 
 /*
  * Builds an IntRange from the first two values of a List<Int>
  */
 fun List<Int>.toIntRange(): IntRange = with (take(2)) { min()..max() }
 
+@Serializable
 data class PassageMeta(val canonical: String,
                        @SerializedName("chapter_start") val chapterStart: List<Int>,
                        @SerializedName("chapter_end") val chapterEnd: List<Int>,
@@ -37,10 +43,20 @@ data class Section(val heading: String, val paragraphs: List<String>) {
 
 }
 
-data class Passage(val canonical: String, val range: IntRange, val meta: PassageMeta, val text: String) {
+val json = Json {
+    serializersModule = serializersModuleOf(IntRangeSerializer)
+    prettyPrint = true
+}
+
+@Serializable
+data class Passage(val canonical: String, @Contextual val range: IntRange, val meta: PassageMeta, val text: String) {
     fun sections(): List<Section> = text.split("""^_+$""".toRegex(RegexOption.MULTILINE)).map { textChunk ->
         val paragraphs = textChunk.split("\n\n", "\n\n\n")
         Section(heading = paragraphs.first(), paragraphs = paragraphs.drop(1))
+    }
+    fun serialize(): String = json.encodeToString(this)
+    companion object {
+        fun deserialize(s: String): Passage = json.decodeFromString(s)
     }
 }
 

@@ -7,6 +7,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -161,15 +162,7 @@ object DocMaker {
             // endings
 
             if (transition.isEnded(POETRY)) {
-                val p = paragraph().apply {
-                    pPr.tabs = Tabs().apply {
-                        tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
-                        tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("360") })
-                    }
-                    content.addAll(contentStack.removeLast())
-                }
-                contentStack.last().add(p)
-                logger.debug { "Ended $POETRY ${contentStack.size}" }
+                endPoetry(contentStack)
             }
             if ((transition.isEnded(PARAGRAPH)) && !transition.isPresent(POETRY)) {
                 val p = paragraph().also { it.content.addAll(contentStack.removeLast()) }
@@ -177,9 +170,12 @@ object DocMaker {
                 logger.debug { "Ended $PARAGRAPH ${contentStack.size}" }
             }
             transition.ended(AnalysisUnit.CHAPTER)?.apply {
+//                if (transition.isPresent(POETRY)) endPoetry(contentStack)
                 contentStack.last().add(footnotesHeader())
                 logger.debug { "Added ${FOOTNOTE}s for chapter $value (${contentStack.size})" }
+//                logger.debug { "Adding footnotes to ${contentStack.last()}"}
                 contentStack.last().addAll(footnotes.values)
+//                logger.debug { "Adding paragraph to ${contentStack.last()}"}
                 contentStack.last().add(paragraph())
                 footnotes.clear()
                 nextFootnote = 0
@@ -197,6 +193,10 @@ object DocMaker {
             transition.beginning(AnalysisUnit.HEADING)?.apply {
                 contentStack.last().add(heading(value as String))
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${contentStack.size})" }
+            }
+            if (studyData.isMultiBook) transition.beginning(AnalysisUnit.BOOK)?.apply {
+                contentStack.last().add(heading((value as Book).fullName))
+                logger.debug { "Added ${AnalysisUnit.BOOK}: $value (${contentStack.size})" }
             }
             if (transition.isBeginning(PARAGRAPH) && !transition.isPresent(POETRY)) {
                 contentStack.addLast(mutableListOf())
@@ -280,6 +280,7 @@ object DocMaker {
                 val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
                     ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
                     ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
+                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 2)
                 val fnRef = ('a' + nextFootnote++).toString()
                 footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
                 contentStack.last().add(footnoteRef(fnRef))
@@ -297,6 +298,18 @@ object DocMaker {
                 numRestart = CTNumRestart().apply { `val` = STRestartNumber.EACH_SECT }
             }
         })
+    }
+
+    private fun endPoetry(contentStack: ArrayDeque<MutableList<Any>>) {
+        val p = paragraph().apply {
+            pPr.tabs = Tabs().apply {
+                tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
+                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("360") })
+            }
+            content.addAll(contentStack.removeLast())
+        }
+        contentStack.last().add(p)
+        logger.debug { "Ended $POETRY ${contentStack.size}" }
     }
 
     private fun heading(heading: String): P = P().apply {

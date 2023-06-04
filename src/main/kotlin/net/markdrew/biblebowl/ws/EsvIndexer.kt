@@ -9,8 +9,6 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 class EsvIndexer(val studySet: StudySet) {
     val buffer = StringBuilder()
@@ -26,11 +24,9 @@ class EsvIndexer(val studySet: StudySet) {
 
     private lateinit var currentHeading: String
 
-    fun indexBook(chapterPassages: Sequence<Passage>,
-                  timeBetweenChapters: Duration = 1.seconds): StudyData {
+    fun indexBook(chapterPassages: Sequence<Passage>): StudyData {
         chapterPassages.forEach {
             indexChapter(it)
-            Thread.sleep(timeBetweenChapters.inWholeMilliseconds)
         }
         endHeading()
         return StudyData(studySet, buffer.toString(), verses, headings, chapters, paragraphs, footnotes, poetry)

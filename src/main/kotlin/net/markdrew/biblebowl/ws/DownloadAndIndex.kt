@@ -9,7 +9,7 @@ import java.nio.file.Paths
 fun main(vararg args: String) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val indexer = EsvIndexer(studySet)
-    val studyData: StudyData = indexer.indexBook(EsvClient().bookByChapters(studySet))
+    val studyData: StudyData = indexer.indexBook(EsvClient().bookByChapters(studySet, forceDownload = false))
     studyData.writeData(Paths.get(DATA_DIR))
 }
 //fun main(vararg args: String) {

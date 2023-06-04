@@ -35,6 +35,7 @@ import java.nio.file.Paths
 
 const val INDENT_POETRY_LINES = 4
 
+const val RAW_DATA_DIR = "raw-data"
 const val DATA_DIR = "data"
 const val PRODUCTS_DIR = "products"
 const val BANNER = """
@@ -70,7 +71,7 @@ fun main(args: Array<String>) {
         println("File not found: ${e.message}")
         println("Downloading and indexing the study set for ${studySet.name}...")
         val indexer = EsvIndexer(studySet)
-        val chapterPassages: Sequence<Passage> = EsvClient().bookByChapters(studySet)
+        val chapterPassages: Sequence<Passage> = EsvClient().bookByChapters(studySet, forceDownload = false)
         indexer.indexBook(chapterPassages).also {
             it.writeData(dataPath)
         }
