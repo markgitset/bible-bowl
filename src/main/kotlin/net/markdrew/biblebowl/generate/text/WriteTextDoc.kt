@@ -4,9 +4,11 @@ import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.generate.text.DocMaker.createWmlPackage
 import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -156,116 +158,95 @@ object DocMaker {
         val footnotes = mutableMapOf<String, Any>()
         var nextFootnote = 0
         val textToOutput = StringBuilder()
+        var inPoetry = false
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
 
             // endings
 
-            if (transition.isEnded(POETRY)) {
+            if (inPoetry && transition.isEnded(POETRY)) {
                 endPoetry(contentStack)
+                inPoetry = false
             }
             if ((transition.isEnded(PARAGRAPH)) && !transition.isPresent(POETRY)) {
                 val p = paragraph().also { it.content.addAll(contentStack.removeLast()) }
                 contentStack.last().add(p)
-                logger.debug { "Ended $PARAGRAPH ${contentStack.size}" }
+                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
-            transition.ended(AnalysisUnit.CHAPTER)?.apply {
+            transition.ended(CHAPTER)?.apply {
 //                if (transition.isPresent(POETRY)) endPoetry(contentStack)
-                contentStack.last().add(footnotesHeader())
-                logger.debug { "Added ${FOOTNOTE}s for chapter $value (${contentStack.size})" }
-//                logger.debug { "Adding footnotes to ${contentStack.last()}"}
-                contentStack.last().addAll(footnotes.values)
-//                logger.debug { "Adding paragraph to ${contentStack.last()}"}
-                contentStack.last().add(paragraph())
-                footnotes.clear()
-                nextFootnote = 0
+                if (inPoetry) {
+                    endPoetry(contentStack)
+                    inPoetry = false
+                }
+                if (footnotes.isNotEmpty()) {
+                    contentStack.last().add(footnotesHeader())
+                    logger.debug { "Added ${FOOTNOTE}s for chapter $value (${transition.present(VERSE)?.value})" }
+    //                logger.debug { "Adding footnotes to ${contentStack.last()}"}
+                    contentStack.last().addAll(footnotes.values)
+    //                logger.debug { "Adding paragraph to ${contentStack.last()}"}
+                    contentStack.last().add(paragraph())
+                    footnotes.clear()
+                    nextFootnote = 0
+                }
             }
 
             // beginnings
 
             if (transition.isBeginning(AnalysisUnit.STUDY_SET)) {
                 contentStack.addLast(mutableListOf())
-                logger.debug { "Began ${AnalysisUnit.STUDY_SET} ${contentStack.size}" }
+                logger.debug { "Began ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
             }
 
 //            transition.beginning(AnalysisUnit.BOOK)?.apply { out.appendBookTitle(value as Book) }
 //
+            if (studyData.isMultiBook) transition.beginning(AnalysisUnit.BOOK)?.apply {
+                contentStack.last().add(heading((value as Book).fullName, 54))
+                logger.debug { "Added ${AnalysisUnit.BOOK}: $value (${transition.present(VERSE)?.value})" }
+            }
             transition.beginning(AnalysisUnit.HEADING)?.apply {
                 contentStack.last().add(heading(value as String))
-                logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${contentStack.size})" }
-            }
-            if (studyData.isMultiBook) transition.beginning(AnalysisUnit.BOOK)?.apply {
-                contentStack.last().add(heading((value as Book).fullName))
-                logger.debug { "Added ${AnalysisUnit.BOOK}: $value (${contentStack.size})" }
+                logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
             if (transition.isBeginning(PARAGRAPH) && !transition.isPresent(POETRY)) {
                 contentStack.addLast(mutableListOf())
-                logger.debug { "Began $PARAGRAPH ${contentStack.size}" }
+                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
             if (transition.isBeginning(POETRY)) {
                 contentStack.addLast(mutableListOf())
-                logger.debug { "Began $POETRY ${contentStack.size}" }
+                inPoetry = true
+                logger.debug { "Began $POETRY ${transition.present(VERSE)?.value}" }
             }
 
 //            if (transition.isBeginning(AnalysisUnit.POETRY)) out.appendLine("""\begin{verse}""")
 
-            transition.beginning(AnalysisUnit.VERSE)?.apply {
-                val verseNum: Int = (value as VerseRef).verse
-                if (verseNum == 1) {
-                    logger.debug { "Skipping verse number for first verse of chapter." }
-                    val chapterRef = transition.present(AnalysisUnit.CHAPTER)?.value as? ChapterRef
-                        ?: throw Exception("Not in any chapter?!")
-                    contentStack.last().add(chapterNum(chapterRef.chapter))
-                    logger.debug { "Added ${AnalysisUnit.CHAPTER}: ${chapterRef.chapter} (${contentStack.size})" }
-                } else {
-                    contentStack.last().add(verseNum(verseNum, addSpace = !transition.isBeginning(PARAGRAPH)).also {
-    //                    println(XmlUtils.marshaltoString(it))
-                    })
-                    logger.debug { "Added ${AnalysisUnit.VERSE} ${contentStack.size}" }
-                }
-            }
+//            transition.beginning(VERSE)?.apply { startVerse(transition, contentStack) }
 
-//            if (opts.uniqueWords && transition.isBeginning(AnalysisUnit.UNIQUE_WORD)) out.append("""{\uline{""")
-//            if (opts.names && transition.isBeginning(AnalysisUnit.NAME)) out.append("""\myname{""")
-//            if (opts.numbers && transition.isBeginning(AnalysisUnit.NUMBER)) out.append("""\mynumber{""")
-//            if (transition.isBeginning(AnalysisUnit.REGEX)) {
-//                val color = transition.beginning.first { it.key == AnalysisUnit.REGEX }.value
-//                out.append("""\myhl[$color]{""")
-//            }
 
             // text
-
             textToOutput.append(excerpt.excerptText)//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
-//            if (transition.isPresent(AnalysisUnit.POETRY)) {
-//                textToOutput = textToOutput
-//                    .replace("""\n""".toRegex(), "\\\\\\\\\n")
-//                    .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), """\\vin """)
-//            }
-//            if (transition.isEnded(VERSE)) textToOutput += " "
-
-//            if (transition.isPresent(POETRY)) {
-//                contentStack.last().add(verseText(textToOutput))
-//                logger.debug { "Added '$textToOutput' ${contentStack.size}" }
-//                contentStack.last().add(Br())
-//                logger.debug { "Added <br/> ${contentStack.size}" }
-//            } else
             if (textToOutput.isNotBlank()) {
-                contentStack.last().add(makeRun().apply {
-                    if (textToOutput.startsWith('\n') && transition.isPresent(POETRY)) {
+                if (textToOutput.startsWith('\n') && transition.isPresent(POETRY)) {
+                    contentStack.last().add(makeRun().apply {
                         textToOutput.deleteCharAt(0)
                         content.add(Br())
-                        logger.debug { "Added <br/> ${contentStack.size}" }
-                    }
-                    if (transition.isPresent(POETRY)) {
+                        logger.debug { "Added <br/> ${transition.present(VERSE)?.value}" }
+                    })
+                }
+                transition.beginning(VERSE)?.apply { startVerse(transition, contentStack) }
+                if (transition.isPresent(POETRY)) {
+                    contentStack.last().add(makeRun().apply {
                         while (textToOutput.startsWith("    ")) {
                             content.add(R.Tab())
                             textToOutput.delete(0, 4)
-                            logger.debug { "Added <tab/> ${contentStack.size}" }
+                            logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
                         }
-                    }
+                    })
+                }
+                contentStack.last().add(makeRun().apply {
                     content.add(makeText(textToOutput))
                 })
-                logger.debug { "Added '$textToOutput' ${contentStack.size}" }
+                logger.debug { "Added '$textToOutput' ${transition.present(VERSE)?.value}" }
                 textToOutput.clear()
             } else if (!transition.isPresent(POETRY)) {
                 textToOutput.clear()
@@ -284,12 +265,12 @@ object DocMaker {
                 val fnRef = ('a' + nextFootnote++).toString()
                 footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
                 contentStack.last().add(footnoteRef(fnRef))
-                logger.debug { "Added $FOOTNOTE ref ${contentStack.size}" }
+                logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
             if (transition.isEnded(AnalysisUnit.STUDY_SET)) {
                 out.content.addAll(contentStack.removeLast())
-                logger.debug { "Ended ${AnalysisUnit.STUDY_SET} ${contentStack.size}" }
+                logger.debug { "Ended ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
             }
         }
         out.content.add(SectPr().apply {
@@ -298,6 +279,23 @@ object DocMaker {
                 numRestart = CTNumRestart().apply { `val` = STRestartNumber.EACH_SECT }
             }
         })
+    }
+
+    private fun Annotation<AnalysisUnit>.startVerse(
+        transition: StateTransition<AnalysisUnit>,
+        contentStack: ArrayDeque<MutableList<Any>>
+    ) {
+        val verseNum: Int = (value as VerseRef).verse
+        if (verseNum == 1) {
+            logger.debug { "Skipping verse number for first verse of chapter." }
+            val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef
+                ?: throw Exception("Not in any chapter?!")
+            contentStack.last().add(chapterNum(chapterRef.chapter))
+            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} (${transition.present(VERSE)?.value})" }
+        } else {
+            contentStack.last().add(verseNum(verseNum, addSpace = !transition.isBeginning(PARAGRAPH)))
+            logger.debug { "Added $VERSE ${transition.present(VERSE)?.value}" }
+        }
     }
 
     private fun endPoetry(contentStack: ArrayDeque<MutableList<Any>>) {
@@ -309,10 +307,10 @@ object DocMaker {
             content.addAll(contentStack.removeLast())
         }
         contentStack.last().add(p)
-        logger.debug { "Ended $POETRY ${contentStack.size}" }
+        logger.debug { "Ended $POETRY" }
     }
 
-    private fun heading(heading: String): P = P().apply {
+    private fun heading(heading: String, size: Int = 27): P = P().apply {
         pPr = PPr().apply {
             keepNext = wmlBoolean(true)
 //            pStyle = factory.createPPrBasePStyle().apply { `val` = "Normal1" }
@@ -326,21 +324,14 @@ object DocMaker {
                 before = BigInteger.valueOf(300)
                 lineRule = STLineSpacingRule.AUTO
             }
-            rPr = factory.createParaRPr().apply {
-                rFonts = qsFonts
-                b = BooleanDefaultTrue()
-                color = black
-                sz = factory.createHpsMeasure().apply { `val` = BigInteger("27") }
-                szCs = factory.createHpsMeasure().apply { `val` = BigInteger("27") }
-            }
         }
         content.add(factory.createR().apply {
             rPr = factory.createRPr().apply {
                 rFonts = qsFonts
                 b = BooleanDefaultTrue()
                 color = black
-                sz = factory.createHpsMeasure().apply { `val` = BigInteger("27") }
-                szCs = factory.createHpsMeasure().apply { `val` = BigInteger("27") }
+                sz = factory.createHpsMeasure().apply { `val` = BigInteger(size.toString()) }
+                szCs = factory.createHpsMeasure().apply { `val` = BigInteger(size.toString()) }
                 rtl = BooleanDefaultTrue()
             }
             content.add(makeText(heading))
@@ -419,11 +410,6 @@ object DocMaker {
     fun footnotesHeader(): P = factory.createP().apply {
         pPr = factory.createPPr().apply {
             keepNext = wmlBoolean(true)
-//            pStyle = factory.createPPrBasePStyle().apply { `val` = "Normal1" }
-//            shd = factory.createCTShd().apply {
-//                fill = "ffffff"
-//                `val` = STShd.CLEAR
-//            }
             spacing = factory.createPPrBaseSpacing().apply {
                 before = BigInteger.valueOf(300)
                 after = BigInteger.valueOf(150)
