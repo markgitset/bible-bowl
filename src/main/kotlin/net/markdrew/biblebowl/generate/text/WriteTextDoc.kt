@@ -303,7 +303,8 @@ object DocMaker {
         val p = paragraph().apply {
             pPr.tabs = Tabs().apply {
                 tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
-                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("360") })
+                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("630") })
+                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("990") })
             }
             content.addAll(contentStack.removeLast())
         }
