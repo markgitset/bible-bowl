@@ -34,7 +34,6 @@ import org.docx4j.wml.Ftr
 import org.docx4j.wml.Lvl
 import org.docx4j.wml.NumFmt
 import org.docx4j.wml.NumberFormat
-import org.docx4j.wml.Numbering
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
@@ -159,6 +158,7 @@ object DocMaker {
         var nextFootnote = 0
         val textToOutput = StringBuilder()
         var inPoetry = false
+        var footnoteListId = 2L // this is the ID of the default/first numbered list
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
 
@@ -188,6 +188,7 @@ object DocMaker {
                     contentStack.last().add(paragraph())
                     footnotes.clear()
                     nextFootnote = 0
+                    footnoteListId = out.numberingDefinitionsPart.restart(2L, 0L, 1L)
                 }
             }
 
@@ -263,7 +264,7 @@ object DocMaker {
                     ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
                     ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 2)
                 val fnRef = ('a' + nextFootnote++).toString()
-                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, out.numberingDefinitionsPart.jaxbElement)
+                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, footnoteListId)
                 contentStack.last().add(footnoteRef(fnRef))
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
@@ -434,25 +435,14 @@ object DocMaker {
 
     private fun wmlBoolean(value: Boolean): BooleanDefaultTrue = BooleanDefaultTrue().apply { isVal = value }
 
-    fun footnoteContent(verseRef: VerseRef, fnContent: String, jaxbElement: Numbering): P = factory.createP().apply {
+    fun footnoteContent(verseRef: VerseRef, fnContent: String, footnoteListId: Long): P = factory.createP().apply {
         // footnotes come in with asterisks around what should be italicized--compute the distinct runs
         val runsSeq = " $fnContent".splitToSequence('*')
 
-        val bigNumId = BigInteger((10 * verseRef.chapter).toString())
-        val nums: MutableList<Numbering.Num> = jaxbElement.num
-        if (nums.none { it.numId == bigNumId }) nums.add(Numbering.Num().apply {
-            numId = bigNumId
-            abstractNumId = Numbering.Num.AbstractNumId().apply { `val` = BigInteger.ZERO }
-            // restart the footnote letters for each chapter
-            lvlOverride.add(Numbering.Num.LvlOverride().apply {
-                ilvl = BigInteger.ZERO
-                startOverride = Numbering.Num.LvlOverride.StartOverride().apply { `val` = BigInteger.ONE }
-            })
-        })
         pPr = factory.createPPr().apply {
             numPr = PPrBase.NumPr().apply {
                 ilvl = PPrBase.NumPr.Ilvl().apply { `val` = BigInteger.ZERO }
-                numId = PPrBase.NumPr.NumId().apply { `val` = bigNumId }
+                numId = PPrBase.NumPr.NumId().apply { `val` = BigInteger.valueOf(footnoteListId) }
             }
             shd = factory.createCTShd().apply {
                 fill = "ffffff"
