@@ -9,9 +9,10 @@ import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
-import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -183,24 +184,19 @@ object DocMaker {
                 logger.debug { "Began ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
             }
 
-            if (studyData.isMultiBook) transition.beginning(AnalysisUnit.BOOK)?.apply {
-                contentStack.last().add(heading((value as Book).fullName, 54))
-                logger.debug { "Added ${AnalysisUnit.BOOK}: $value (${transition.present(VERSE)?.value})" }
-            }
             transition.beginning(AnalysisUnit.HEADING)?.apply {
                 contentStack.last().add(heading(value as String))
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
-            if (transition.isBeginning(PARAGRAPH)) {// && !transition.isPresent(POETRY)) {
-                contentStack.addLast(mutableListOf())
-                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
-            }
+            if (transition.isBeginning(PARAGRAPH)) startParagraph(contentStack, transition)
 
 
             // text
             textToOutput.append(excerpt.excerptText)//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
             if (textToOutput.isNotBlank()) {
-                transition.beginning(VERSE)?.apply { startVerse(transition, contentStack) }
+                transition.beginning(VERSE)?.apply {
+                    startVerse(value as VerseRef, transition, contentStack, studyData.isMultiBook)
+                }
                 contentStack.last().add(makeRun().apply {
                     if (transition.isPresent(POETRY)) {
                         val numIndents = countIndents(textToOutput)
@@ -250,6 +246,14 @@ object DocMaker {
         })
     }
 
+    private fun startParagraph(
+        contentStack: ArrayDeque<MutableList<Any>>,
+        transition: StateTransition<AnalysisUnit>
+    ) {
+        contentStack.addLast(mutableListOf())
+        logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
+    }
+
     private fun countIndents(text: CharSequence): Int = text.takeWhile { it.isWhitespace() }.length / 4
 
     private fun endParagraph(
@@ -264,20 +268,25 @@ object DocMaker {
         logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
     }
 
-    private fun Annotation<AnalysisUnit>.startVerse(
+    private fun startVerse(
+        verseRef: VerseRef,
         transition: StateTransition<AnalysisUnit>,
-        contentStack: ArrayDeque<MutableList<Any>>
+        contentStack: ArrayDeque<MutableList<Any>>,
+        multiBook: Boolean,
     ) {
-        val verseNum: Int = (value as VerseRef).verse
+        val verseNum: Int = verseRef.verse
+        val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
         if (verseNum == 1) {
+            contentStack.last().add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
             logger.debug { "Skipping verse number for first verse of chapter." }
-            val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef
-                ?: throw Exception("Not in any chapter?!")
-            contentStack.last().add(chapterNum(chapterRef.chapter))
-            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} (${transition.present(VERSE)?.value})" }
+            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
+            if (transition.isPresent(POETRY)) {
+                endParagraph(contentStack, transition)
+                startParagraph(contentStack, transition)
+            }
         } else {
             contentStack.last().add(verseNum(verseNum, addSpace = !transition.isBeginning(PARAGRAPH)))
-            logger.debug { "Added $VERSE ${transition.present(VERSE)?.value}" }
+            logger.debug { "Added $VERSE $verseRef" }
         }
     }
 
@@ -303,7 +312,7 @@ object DocMaker {
         return this
     }
 
-    private fun heading(heading: String, size: Int = 27): P = P().apply {
+    private fun heading(heading: String, size: Long = 32): P = P().apply {
         pPr = PPr().apply {
             keepNext = wmlBoolean(true)
             spacing = factory.createPPrBaseSpacing().apply {
@@ -318,8 +327,8 @@ object DocMaker {
                 rFonts = qsFonts
                 b = BooleanDefaultTrue()
                 color = black
-                sz = factory.createHpsMeasure().apply { `val` = BigInteger(size.toString()) }
-                szCs = factory.createHpsMeasure().apply { `val` = BigInteger(size.toString()) }
+                sz = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
+                szCs = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
                 rtl = BooleanDefaultTrue()
             }
             content.add(makeText(heading))
@@ -338,16 +347,16 @@ object DocMaker {
         content.add(makeText(text))
     }
 
-    private fun chapterNum(chapterNum: Int): R = factory.createR().apply {
+    private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat, size: Long = 27): R = factory.createR().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             b = wmlBoolean(true)
             color = black
-            sz = factory.createHpsMeasure().apply { `val` = BigInteger("32") }
-            szCs = factory.createHpsMeasure().apply { `val` = BigInteger("32") }
+            sz = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
+            szCs = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
             rtl = wmlBoolean(false)
         }
-        content.add(makeText("$chapterNum "))
+        content.add(makeText("${chapterRef.format(bookFormat)} "))
     }
 
     private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text = Text().apply {
