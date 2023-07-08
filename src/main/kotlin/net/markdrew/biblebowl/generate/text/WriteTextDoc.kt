@@ -24,7 +24,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
 import org.docx4j.openpackaging.parts.relationships.RelationshipsPart
 import org.docx4j.wml.BooleanDefaultTrue
-import org.docx4j.wml.Br
 import org.docx4j.wml.CTFtnProps
 import org.docx4j.wml.CTNumRestart
 import org.docx4j.wml.CTTabStop
@@ -157,34 +156,19 @@ object DocMaker {
         val footnotes = mutableMapOf<String, Any>()
         var nextFootnote = 0
         val textToOutput = StringBuilder()
-        var inPoetry = false
         var footnoteListId = 2L // this is the ID of the default/first numbered list
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
-
             // endings
 
-            if (inPoetry && transition.isEnded(POETRY)) {
-                endPoetry(contentStack)
-                inPoetry = false
-            }
-            if ((transition.isEnded(PARAGRAPH)) && !transition.isPresent(POETRY)) {
-                val p = paragraph().also { it.content.addAll(contentStack.removeLast()) }
-                contentStack.last().add(p)
-                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
+            if ((transition.isEnded(PARAGRAPH))) {
+                endParagraph(contentStack, transition)
             }
             transition.ended(CHAPTER)?.apply {
-//                if (transition.isPresent(POETRY)) endPoetry(contentStack)
-                if (inPoetry) {
-                    endPoetry(contentStack)
-                    inPoetry = false
-                }
                 if (footnotes.isNotEmpty()) {
                     contentStack.last().add(footnotesHeader())
                     logger.debug { "Added ${FOOTNOTE}s for chapter $value (${transition.present(VERSE)?.value})" }
-    //                logger.debug { "Adding footnotes to ${contentStack.last()}"}
                     contentStack.last().addAll(footnotes.values)
-    //                logger.debug { "Adding paragraph to ${contentStack.last()}"}
                     contentStack.last().add(paragraph())
                     footnotes.clear()
                     nextFootnote = 0
@@ -199,8 +183,6 @@ object DocMaker {
                 logger.debug { "Began ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
             }
 
-//            transition.beginning(AnalysisUnit.BOOK)?.apply { out.appendBookTitle(value as Book) }
-//
             if (studyData.isMultiBook) transition.beginning(AnalysisUnit.BOOK)?.apply {
                 contentStack.last().add(heading((value as Book).fullName, 54))
                 logger.debug { "Added ${AnalysisUnit.BOOK}: $value (${transition.present(VERSE)?.value})" }
@@ -209,48 +191,34 @@ object DocMaker {
                 contentStack.last().add(heading(value as String))
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
-            if (transition.isBeginning(PARAGRAPH) && !transition.isPresent(POETRY)) {
+            if (transition.isBeginning(PARAGRAPH)) {// && !transition.isPresent(POETRY)) {
                 contentStack.addLast(mutableListOf())
                 logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
-            if (transition.isBeginning(POETRY)) {
-                contentStack.addLast(mutableListOf())
-                inPoetry = true
-                logger.debug { "Began $POETRY ${transition.present(VERSE)?.value}" }
-            }
-
-//            if (transition.isBeginning(AnalysisUnit.POETRY)) out.appendLine("""\begin{verse}""")
-
-//            transition.beginning(VERSE)?.apply { startVerse(transition, contentStack) }
 
 
             // text
             textToOutput.append(excerpt.excerptText)//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
             if (textToOutput.isNotBlank()) {
-                if (textToOutput.startsWith('\n') && transition.isPresent(POETRY)) {
-                    contentStack.last().add(makeRun().apply {
-                        textToOutput.deleteCharAt(0)
-                        content.add(Br())
-                        logger.debug { "Added <br/> ${transition.present(VERSE)?.value}" }
-                    })
-                }
                 transition.beginning(VERSE)?.apply { startVerse(transition, contentStack) }
-                if (transition.isPresent(POETRY)) {
-                    contentStack.last().add(makeRun().apply {
-                        while (textToOutput.startsWith("    ")) {
+                contentStack.last().add(makeRun().apply {
+                    if (transition.isPresent(POETRY)) {
+                        val numIndents = countIndents(textToOutput)
+                        repeat(numIndents) {
                             content.add(R.Tab())
-                            textToOutput.delete(0, 4)
+                            textToOutput.trimInPlace()
                             logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
                         }
-                    })
-                }
-                contentStack.last().add(makeRun().apply {
+                    }
                     content.add(makeText(textToOutput))
                 })
                 logger.debug { "Added '$textToOutput' ${transition.present(VERSE)?.value}" }
                 textToOutput.clear()
-            } else if (!transition.isPresent(POETRY)) {
-                textToOutput.clear()
+            } else {
+                if (!transition.isPresent(POETRY)) textToOutput.clear()
+                if (transition.isEnded(POETRY) && transition.isBeginning(POETRY)) {
+                    contentStack.last().add(paragraph().poetryPPr(0))
+                }
             }
 
             // since footnotes are zero-width (1-width?) and follow the text to which they refer,
@@ -282,6 +250,20 @@ object DocMaker {
         })
     }
 
+    private fun countIndents(text: CharSequence): Int = text.takeWhile { it.isWhitespace() }.length / 4
+
+    private fun endParagraph(
+        contentStack: ArrayDeque<MutableList<Any>>,
+        transition: StateTransition<AnalysisUnit>,
+    ) {
+        val p = paragraph().also {
+            it.content.addAll(contentStack.removeLast())
+            if (transition.isPresent(POETRY)) it.poetryPPr(1)
+        }
+        contentStack.last().add(p)
+        logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
+    }
+
     private fun Annotation<AnalysisUnit>.startVerse(
         transition: StateTransition<AnalysisUnit>,
         contentStack: ArrayDeque<MutableList<Any>>
@@ -299,27 +281,31 @@ object DocMaker {
         }
     }
 
-    private fun endPoetry(contentStack: ArrayDeque<MutableList<Any>>) {
-        val p = paragraph().apply {
-            pPr.tabs = Tabs().apply {
-                tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
-                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("630") })
-                tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("990") })
-            }
-            content.addAll(contentStack.removeLast())
+    private fun P.poetryPPr(numIndents: Int): P {
+        pPr.tabs = Tabs().apply {
+            tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
+            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("630") })
+            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("990") })
         }
-        contentStack.last().add(p)
-        logger.debug { "Ended $POETRY" }
+        pPr.spacing.apply {
+            before = BigInteger.ZERO
+            after = BigInteger.ZERO
+        }
+        val indent = when(numIndents) {
+            1 -> 630L
+            2 -> 990L
+            else -> 2000L
+        }
+        pPr.ind = PPrBase.Ind().apply {
+            left = BigInteger.valueOf(indent)
+            hanging = BigInteger.valueOf(indent)
+        }
+        return this
     }
 
     private fun heading(heading: String, size: Int = 27): P = P().apply {
         pPr = PPr().apply {
             keepNext = wmlBoolean(true)
-//            pStyle = factory.createPPrBasePStyle().apply { `val` = "Normal1" }
-//            shd = factory.createCTShd().apply {
-//                fill = "ffffff"
-//                `val` = STShd.CLEAR
-//            }
             spacing = factory.createPPrBaseSpacing().apply {
                 after = BigInteger.valueOf(150)
                 line = BigInteger.valueOf(240)
@@ -340,23 +326,19 @@ object DocMaker {
         })
     }
 
-    fun verseNum(verseNum: Int, addSpace: Boolean): R = factory.createR().apply {
+    private fun verseNum(verseNum: Int, addSpace: Boolean): R = factory.createR().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             b = BooleanDefaultTrue()
             color = black
             vertAlign = factory.createCTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
         }
-//        content.add(mkText(" $verseNum "))
         var text = "$verseNum "
         if (addSpace) text = " $text"
         content.add(makeText(text))
     }
 
-    fun chapterNum(chapterNum: Int): R = factory.createR().apply {
-//        rsidRPr = "00000000"
-//        rsidDel = "00000000"
-//        rsidR = "00000000"
+    private fun chapterNum(chapterNum: Int): R = factory.createR().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             b = wmlBoolean(true)
@@ -373,25 +355,15 @@ object DocMaker {
         if (preserveSpace) space = "preserve"
     }
 
-    fun makeRun(): R = R().apply {
+    private fun makeRun(): R = R().apply {
         rPr = factory.createRPr().apply {
             rFonts = qsFonts
             color = black
         }
     }
 
-    fun verseText(text: String): R = makeRun().apply {
-        content.add(makeText(text))
-    }
-
     fun paragraph(): P = factory.createP().apply {
-//        rsidRPr="00000000"
-//        rsidR="00000000"
-//        rsidDel="00000000"
-//        rsidP="00000000"
-//        rsidRDefault="00000000"
         pPr = factory.createPPr().apply {
-//            pStyle = factory.createPPrBasePStyle().apply { `val` = "Normal1" }
             shd = factory.createCTShd().apply {
                 fill = "ffffff"
                 `val` = STShd.CLEAR
@@ -399,7 +371,6 @@ object DocMaker {
             spacing = factory.createPPrBaseSpacing().apply {
                 before = BigInteger.valueOf(280)
                 after = BigInteger.valueOf(280)
-//                line = BigInteger.valueOf(240)
                 lineRule = STLineSpacingRule.AUTO
             }
             rPr = factory.createParaRPr().apply {
@@ -409,7 +380,7 @@ object DocMaker {
         }
     }
 
-    fun footnotesHeader(): P = factory.createP().apply {
+    private fun footnotesHeader(): P = factory.createP().apply {
         pPr = factory.createPPr().apply {
             keepNext = wmlBoolean(true)
             spacing = factory.createPPrBaseSpacing().apply {
@@ -436,7 +407,11 @@ object DocMaker {
 
     private fun wmlBoolean(value: Boolean): BooleanDefaultTrue = BooleanDefaultTrue().apply { isVal = value }
 
-    fun footnoteContent(verseRef: VerseRef, fnContent: String, footnoteListId: Long): P = factory.createP().apply {
+    private fun footnoteContent(
+        verseRef: VerseRef,
+        fnContent: String,
+        footnoteListId: Long
+    ): P = factory.createP().apply {
         // footnotes come in with asterisks around what should be italicized--compute the distinct runs
         val runsSeq = " $fnContent".splitToSequence('*')
 
@@ -472,7 +447,6 @@ object DocMaker {
             }
             content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
         })
-//        content.add(makeRun(" $fnContent"))//, italic = index % 2 == 1))
         runsSeq.forEachIndexed { index, s ->
             content.add(makeRun(s, italic = index % 2 == 1))
         }
@@ -498,14 +472,18 @@ object DocMaker {
             rFonts = qsFonts
             color = black
         }
-        content.add(FootnoteRef()/*.apply { id = 2 }*/)
+        content.add(FootnoteRef())
     }
-    fun footnoteRef(ref: String): R = R().apply {
+    private fun footnoteRef(ref: String): R = R().apply {
         rPr = RPr().apply {
             rFonts = qsFonts
             color = black
             vertAlign = CTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
         }
         content.add(makeText(ref))
+    }
+
+    private fun StringBuilder.trimInPlace() {
+        replace(0, Int.MAX_VALUE, trim().toString())
     }
 }
