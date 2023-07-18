@@ -9,6 +9,7 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import kotlin.math.max
 
 class EsvIndexer(val studySet: StudySet) {
     val buffer = StringBuilder()
@@ -85,7 +86,7 @@ class EsvIndexer(val studySet: StudySet) {
                 if (buffer.isNotEmpty()) endHeading()
                 continue
             }
-            paragraphStart = buffer.length + line.indexOfFirst { !it.isWhitespace() }
+            paragraphStart = buffer.length// + line.indexOfFirst { !it.isWhitespace() }
             val indexOf = line.indexOf('[')
             // indexOf('[') != 0 indicates that this line is continuing the verse from the previous line
             if (indexOf < 0) { // could be -1 or > 0 -- either way we need to continue the verse
@@ -100,6 +101,7 @@ class EsvIndexer(val studySet: StudySet) {
                 val (verseNum, verseText) = match.destructured
                 startVerse(currentChapter, verseNum.toInt(), verseText, noteOffsetsByNoteNumber)
             }
+            paragraphStart += max(0, buffer.substring(paragraphStart).indexOfFirst { !it.isWhitespace() })
             paragraphs.add(paragraphStart until buffer.length)
             buffer.appendLine()
         }
