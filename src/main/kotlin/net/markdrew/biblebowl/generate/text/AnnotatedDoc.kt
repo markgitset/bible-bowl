@@ -14,13 +14,13 @@ import kotlin.math.min
 class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
 
     private val docRange: IntRange = docText.indices
-    private val annotationMaps: MutableMap<A, DisjointRangeMap<Annotation<A>>> = mutableMapOf(
+    private val annotationMaps: MutableMap<A, DisjointRangeMap<RangeAnnotation<A>>> = mutableMapOf(
         wholeDocAnnotationKey to DisjointRangeMap(
-            docRange to Annotation(wholeDocAnnotationKey, true, docRange)
+            docRange to RangeAnnotation(wholeDocAnnotationKey, true, docRange)
         )
     )
     // point annotations are considered to occur between index-1 and index
-    private val pointAnnotationMaps: MutableMap<A, NavigableMap<Int, Annotation<A>>> = mutableMapOf()
+    private val pointAnnotationMaps: MutableMap<A, NavigableMap<Int, PointAnnotation<A>>> = mutableMapOf()
 
     fun <V : Any> setAnnotations(annotationKey: A, annotationsRangeMap: DisjointRangeMap<V>) {
         annotationMaps[annotationKey] = annotationsRangeMap.mapNotNull { (annotationRange, annotationValue) ->
@@ -38,14 +38,14 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
         pointAnnotationMaps[annotationKey] = pointAnnotationsMap.mapNotNull { (offset: Int, value: V) ->
 //            annotationMapping(offset..offset, annotationKey, value, isPoint = true)
             if (offset !in docRange) null
-            else offset to Annotation(annotationKey, value, offset..offset, isPoint = true)
+            else offset to PointAnnotation(annotationKey, value, offset)
         }.toMap(TreeMap())
     }
 
-    private fun <V : Any> annotationMapping(range: IntRange, key: A, value: V): Pair<IntRange, Annotation<A>>? =
+    private fun <V : Any> annotationMapping(range: IntRange, key: A, value: V): Pair<IntRange, RangeAnnotation<A>>? =
         range.intersect(docRange).let { inDocRange ->
             if (inDocRange.isEmpty()) null
-            else inDocRange to Annotation(key, value, range)
+            else inDocRange to RangeAnnotation(key, value, range)
         }
 
     fun textRuns(): Sequence<TextRun<A>> = sequence {
@@ -62,13 +62,13 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
     }
 
     private fun runAt(start: Int): TextRun<A>? {
-        val annotations: List<Annotation<A>> = annotationsAt(start)
+        val annotations: List<RangeAnnotation<A>> = annotationsAt(start)
         return when {
             annotations.isEmpty() -> null
             else -> {
-                val pointAnnotations: List<Annotation<A>> = nextPointAnnotationsAfter(start)
+                val pointAnnotations: List<PointAnnotation<A>> = nextPointAnnotationsAfter(start)
                 val minEndOfRange = annotations.minOf { it.range.last }
-                val minPoint = pointAnnotations.firstOrNull()?.let { it.range.first - 1 } ?: Int.MAX_VALUE
+                val minPoint = pointAnnotations.firstOrNull()?.let { it.offset - 1 } ?: Int.MAX_VALUE
                 val anns = if (minPoint <= minEndOfRange) (annotations + pointAnnotations) else annotations
                 TextRun(
                     start..min(minEndOfRange, minPoint),
@@ -78,17 +78,17 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
         }
     }
 
-    private fun annotationsAt(start: Int): List<Annotation<A>> =
+    private fun annotationsAt(start: Int): List<RangeAnnotation<A>> =
         annotationMaps.mapNotNull { (annotationKey, annotationMap) ->
             annotationMap.valueContaining(start)
                 ?: annotationMap.ceilingKey(start..start)?.let { ceilingRange ->
                     // need to generate null annotations so that we can correctly
                     // detect when the next non-null one starts
-                    Annotation(annotationKey, null, start until ceilingRange.first)
+                    RangeAnnotation(annotationKey, null, start until ceilingRange.first)
                 }
         }
 
-    private fun nextPointAnnotationsAfter(start: Int): List<Annotation<A>> {
+    private fun nextPointAnnotationsAfter(start: Int): List<PointAnnotation<A>> {
         val minOffset = pointAnnotationMaps.values.minOfOrNull { it.ceilingKey(start + 1) } ?: return emptyList()
         return pointAnnotationMaps.values.mapNotNull { it[minOffset] }
     }
