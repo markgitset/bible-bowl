@@ -12,10 +12,10 @@ import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
-import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import org.docx4j.XmlUtils
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.JaxbXmlPart
@@ -23,7 +23,6 @@ import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart
 import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFootnotes
 import org.docx4j.wml.CTFtnEdn
@@ -35,11 +34,9 @@ import org.docx4j.wml.P
 import org.docx4j.wml.PPr
 import org.docx4j.wml.PPrBase
 import org.docx4j.wml.PPrBase.PStyle
-import org.docx4j.wml.ParaRPr
 import org.docx4j.wml.R
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
-import org.docx4j.wml.STLineSpacingRule
 import org.docx4j.wml.STTabJc
 import org.docx4j.wml.Tabs
 import org.docx4j.wml.Text
@@ -91,28 +88,20 @@ private fun StringBuilder.trimInPlace() {
 class DocMaker2 {
 
     val factory = ObjectFactory()
-    val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
-    val out: MainDocumentPart = wordPackage.mainDocumentPart
+    private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
+    val mainPart: MainDocumentPart = wordPackage.mainDocumentPart
 
-    val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(out) }
-    val footnotes = mutableMapOf<Long, CTFtnEdn>()
-    var nextFootnote = 2L
-    val currentRunText = StringBuilder()
-    var footnoteListId = 2L // this is the ID of the default/first numbered list
+    private val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(mainPart) }
+    val footnotes = mutableListOf<CTFtnEdn>()
+    private var nextFootnote = 2L
+    private val currentRunText = StringBuilder()
+    private var footnoteListId = 2L // this is the ID of the default/first numbered list
 
     init {
         val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
             ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
-        out.addTargetPart(
-            stylesPartFromTemplate(baseUri.resolveChild("styles.xml")),
-            RelationshipsPart.AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS,
-            "rId1"
-        )
-        out.addTargetPart(
-            fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")),
-            RelationshipsPart.AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS,
-            "rId3"
-        )
+        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml")))
+        mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
 
     private fun <T : ContentAccessor> push(ca: T): T = ca.also { contentStack.addFirst(ca) }
@@ -120,36 +109,40 @@ class DocMaker2 {
     private fun <T> pop(): T = contentStack.removeFirst() as T
 
     private fun pushR(): R {
-        require(contentStack.first() is P)
+        require(contentStack.first() is P) { "Can't push an R into a ${contentStack.first()::class.simpleName}!" }
         return push(R())
     }
     private fun popR(): R = pop()
 
+    private fun finishR() {
+        if (contentStack.first() is R) add(popR().apply { addText() })
+    }
+
+    private fun finishP() {
+        finishR()
+        if (contentStack.first() is P) add(popP())
+    }
+
     private fun pushP(style: String = "TextBody"): P {
-        require(contentStack.first() !is R)
+        finishR()
+        require(contentStack.first() is MainDocumentPart) { "Can't push a P into a ${contentStack.first()::class.simpleName}!" }
         return push(makeParagraph(style))
     }
     private fun popP(): P = pop()
-
-    private fun <T> add(item: T): T = item.also { contentStack.first().content.add(it) }
+    private fun getP(): P = contentStack.first { it is P } as P
+    private fun <T : Any> add(item: T): T = item.also {
+        val container = contentStack.first()
+        require(container is MainDocumentPart && item is P || container is P && item is R) {
+            "Can't add a ${item::class.simpleName} to a ${container::class.simpleName}!"
+        }
+        container.content.add(it)
+    }
 
     fun renderText(studyData: StudyData, opts: TextOptions): WordprocessingMLPackage {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             // endings
-
-            transition.ended(CHAPTER)?.apply {
-//                if (footnotes.isNotEmpty()) {
-//                    contentStack.last().add(footnotesHeader())
-//                    logger.debug { "Added ${FOOTNOTE}s for chapter $value (${transition.present(VERSE)?.value})" }
-//                    contentStack.last().addAll(footnotes.values)
-//                    contentStack.last().add(paragraph())
-//                    footnotes.clear()
-//                    nextFootnote = 0
-////                    footnoteListId = out.numberingDefinitionsPart.restart(2L, 0L, 1L)
-//                }
-            }
 
             // beginnings
 
@@ -158,22 +151,28 @@ class DocMaker2 {
             }
 
             transition.beginning(AnalysisUnit.HEADING)?.apply {
+                finishP()
                 add(makeParagraph("Heading1")).addRun().addText(value as String)
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
-            if (transition.isBeginning(PARAGRAPH)) {
-                if (contentStack.first() !is P) pushP()
-                val p: P = contentStack.first() as P
-                if (transition.isPresent(POETRY)) p.poetryPPr(1)
+            val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
+            if (newParagraph) {
+                if (contentStack.first() is MainDocumentPart) pushP()
+                if (contentStack.first() is P) pushR()
+//                val p: P = contentStack.first() as P
+//                val p: P = pushP()
+                if (transition.isPresent(POETRY)) getP().poetryPPr(1)
                 logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
 
             // text
 //            if (currentRunText.isNotBlank()) {
-                transition.beginning(VERSE)?.apply {
-                    startVerse(value as VerseRef, transition, studyData.isMultiBook)
-                }
+            transition.beginning(VERSE)?.apply {
+                if (contentStack.first() is MainDocumentPart) pushP()
+                if (contentStack.first() is P) pushR()
+                startVerse(value as VerseRef, transition, studyData.isMultiBook, newParagraph)
+            }
             if (excerpt.excerptText.isNotBlank()) currentRunText.append(excerpt.excerptText.trim())//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
                 if (transition.isPresent(POETRY)) {
                     val numIndents = countIndents(currentRunText)
@@ -190,31 +189,33 @@ class DocMaker2 {
 ////                }
 //            }
             if ((transition.isEnded(PARAGRAPH))) {
-                if (contentStack.first() is R)
-                    add(popR()).addText()
-                add(popP())
+                finishP()
                 logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
-            // since footnotes are zero-width (1-width?) and follow the text to which they refer,
+            // since footnotes are zero-width and follow the run text to which they are attached,
             // we need to handle them before any endings
             transition.present(FOOTNOTE)?.apply {
-                if (contentStack.first() is R)
-                    add(popR()).addText()
+                if (contentStack.first() !is R) pushP() else finishR()
 
                 // subtract/add one from footnote offset to find verse in case
                 // the footnote occurs at the end/beginning of the verse
-                val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 2)
-//                val fnRef = ('a' + nextFootnote++).toString()
+                val verses: DisjointRangeMap<VerseRef> = studyData.verses
+                val excerptRange: IntRange = excerpt.excerptRange
+                var verseRef = verses.valueContaining(excerptRange.first) // footnote in verse
+                    ?: verses.valueContaining(excerptRange.first - 1) // footnote at end of verse
+                val addSpace = verseRef != null
+                if (addSpace) currentRunText.append(' ')
+                verseRef = verseRef
+                    ?: verses.valueContaining(excerptRange.first + 1) // footnote at beginning of verse
+                    ?: verses.valueContaining(excerptRange.first + 2) // footnote at beginning of verse
                 val fnRef = nextFootnote++
-                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, footnoteListId)
-                if (contentStack.first() !is P) pushP()
+                footnotes.add(footnoteContent(verseRef!!, value as String, footnoteListId))
+//                if (contentStack.first() !is P) pushP()
                 add(footnoteRef2(fnRef))
+                pushR()
+//                if (addSpace) add(R().apply { addText(" ") })
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
-//                pushR()
             }
 
             if (transition.isEnded(STUDY_SET)) {
@@ -227,12 +228,9 @@ class DocMaker2 {
 //                numRestart = CTNumRestart().apply { `val` = STRestartNumber.EACH_SECT }
 //            }
 //        })
-        out.addTargetPart(FootnotesPart(), RelationshipsPart.AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS,
-            "rId4")
-        out.footnotesPart.contents = CTFootnotes().apply {
-            for (fn in footnotes.values) {
-                footnote.add(fn)
-            }
+        mainPart.addTargetPart(FootnotesPart())
+        mainPart.footnotesPart.contents = CTFootnotes().apply {
+            footnote.addAll(footnotes)
         }
         return wordPackage
     }
@@ -242,9 +240,9 @@ class DocMaker2 {
     private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
 
 //    private fun makeText(text: CharSequence): Text = Text().apply { value = text.toString() }
-    private fun makeParagraph(formatFun: (PPr.() -> Unit)? = null): P = P().apply {
-        if (formatFun != null) pPr = PPr().apply(formatFun)
-    }
+//    private fun makeParagraph(formatFun: (PPr.() -> Unit)? = null): P = P().apply {
+//        if (formatFun != null) pPr = PPr().apply(formatFun)
+//    }
     private fun makeParagraph(style: String = "TextBody"): P = P().apply {
         pPr = PPr().apply { pStyle = pStyle(style) }
     }
@@ -256,28 +254,30 @@ class DocMaker2 {
         verseRef: VerseRef,
         transition: StateTransition<AnalysisUnit>,
         multiBook: Boolean,
+        newParagraph: Boolean,
     ) {
         val verseNum: Int = verseRef.verse
         val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
-        if (verseNum == 1) {
-            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
-            logger.debug { "Skipping verse number for first verse of chapter." }
-            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
-            if (transition.isPresent(POETRY)) {
-                add(popP())
-                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
-                pushP().also { if (transition.isPresent(POETRY)) it.poetryPPr(1) }
-                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
-            }
-        } else {
-            if (contentStack.first() is R) {
-                currentRunText.append(' ')
-                add(popR()).addText()
-            }
+//        if (verseNum == 1) {
+//            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
+//            logger.debug { "Skipping verse number for first verse of chapter." }
+//            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
+//            if (transition.isPresent(POETRY)) {
+//                add(popP())
+//                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
+//                pushP().also { if (transition.isPresent(POETRY)) it.poetryPPr(1) }
+//                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
+//            }
+//        } else {
+            if (!newParagraph && !currentRunText.endsWith(' ')) currentRunText.append(' ')
+            finishR()
+//            if (contentStack.first() is R) {
+//                add(popR()).addText()
+//            }
             add(verseNumRun(verseNum))
             currentRunText.append(' ')
             logger.debug { "Added $VERSE $verseRef" }
-        }
+//        }
         pushR()
     }
 
@@ -300,11 +300,6 @@ class DocMaker2 {
         return this
     }
 
-    private fun heading(heading: String): P = P().apply {
-        pPr = PPr().apply { pStyle = pStyle("Heading1") }
-        content.add(R().apply { content.add(makeText(heading)) })
-    }
-
     private fun pStyle(style: String): PStyle = PStyle().apply { `val` = style }
     private fun rStyle(style: String): RStyle = RStyle().apply { `val` = style }
 
@@ -325,31 +320,6 @@ class DocMaker2 {
     private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text = Text().apply {
         value = text.toString()
         if (preserveSpace) space = "preserve"
-    }
-
-    private fun footnotesHeader(): P = P().apply {
-        pPr = PPr().apply {
-            keepNext = wmlBoolean(true)
-            spacing = PPrBase.Spacing().apply {
-                before = BigInteger.valueOf(300)
-                after = BigInteger.valueOf(150)
-                lineRule = STLineSpacingRule.AUTO
-            }
-            rPr = ParaRPr().apply {
-//                rFonts = qsFonts
-                b = wmlBoolean(true)
-//                color = black
-            }
-        }
-        content.add(R().apply {
-            rPr = RPr().apply {
-//                rFonts = qsFonts
-                b = wmlBoolean(true)
-//                color = black
-                rtl = wmlBoolean(false)
-            }
-            content.add(makeText("Footnotes"))
-        })
     }
 
     private fun wmlBoolean(value: Boolean): BooleanDefaultTrue = BooleanDefaultTrue().apply { isVal = value }
@@ -377,8 +347,6 @@ class DocMaker2 {
 
     private fun makeRun(textContent: String, italic: Boolean = false): R = R().apply {
         rPr = RPr().apply {
-//            rFonts = qsFonts
-//            color = black
             rtl = wmlBoolean(false)
             if (italic) {
                 i = wmlBoolean(true)
@@ -389,21 +357,13 @@ class DocMaker2 {
     }
 
     // for real footnotes
-    fun footnoteRef2(id: Long): R = R().apply {
+    private fun footnoteRef2(id: Long): R = R().apply {
         rPr = RPr().apply {
             rStyle = RStyle().apply { `val` = "FootnoteAnchor" }
         }
 
         content.add(factory.createRFootnoteReference(CTFtnEdnRef().apply { setId(BigInteger.valueOf(id)) }))
     }
-//    private fun footnoteRef(ref: String): R = R().apply {
-//        rPr = RPr().apply {
-////            rFonts = qsFonts
-//            color = black
-//            vertAlign = CTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
-//        }
-//        content.add(makeText(ref))
-//    }
 
     companion object {
         private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
