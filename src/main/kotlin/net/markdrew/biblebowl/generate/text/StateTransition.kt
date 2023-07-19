@@ -1,9 +1,11 @@
 package net.markdrew.biblebowl.generate.text
 
 data class StateTransition<K>(
-    val ended: Set<Annotation<K>>,
-    val continuing: Set<Annotation<K>>,
-    val beginning: Set<Annotation<K>>,
+    val ended: Set<RangeAnnotation<K>>,
+    val continuing: Set<RangeAnnotation<K>>,
+    val beginning: Set<RangeAnnotation<K>>,
+    val prePointAnns: Set<PointAnnotation<K>>,
+    val postPointAnns: Set<PointAnnotation<K>>,
 ) {
     init {
         // check that three sets are mutually exclusive
@@ -18,9 +20,11 @@ data class StateTransition<K>(
     fun ended(key: K): Annotation<K>? = ended.zeroOrOne(key)
     fun isEnded(key: K): Boolean = ended(key) != null
     fun present(key: K): Annotation<K>? = currentState.zeroOrOne(key)
+    fun prePoint(key: K): PointAnnotation<K>? = prePointAnns.zeroOrOne(key)
+    fun postPoint(key: K): PointAnnotation<K>? = postPointAnns.zeroOrOne(key)
     fun isPresent(key: K): Boolean = present(key) != null
     companion object {
-        fun <K> Set<Annotation<K>>.zeroOrOne(key: K): Annotation<K>? =
+        fun <A : Annotation<K>, K> Set<A>.zeroOrOne(key: K): A? =
             filter { it.key == key }.let {
                 when {
                     it.isEmpty() -> null

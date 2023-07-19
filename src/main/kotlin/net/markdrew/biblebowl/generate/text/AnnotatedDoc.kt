@@ -36,7 +36,6 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
 
     fun <V : Any> setAnnotations(annotationKey: A, pointAnnotationsMap: Map<Int, V>) {
         pointAnnotationMaps[annotationKey] = pointAnnotationsMap.mapNotNull { (offset: Int, value: V) ->
-//            annotationMapping(offset..offset, annotationKey, value, isPoint = true)
             if (offset !in docRange) null
             else offset to PointAnnotation(annotationKey, value, offset)
         }.toMap(TreeMap())
@@ -48,17 +47,18 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
             else inDocRange to RangeAnnotation(key, value, range)
         }
 
+    @Suppress("KotlinConstantConditions")
     fun textRuns(): Sequence<TextRun<A>> = sequence {
         var prevEndExclusive = 0
         // start with an empty run
-        var run: TextRun<A>? = TextRun(prevEndExclusive until prevEndExclusive, emptySet())
+        var run: TextRun<A>? = TextRun(prevEndExclusive until prevEndExclusive, emptySet(), emptySet(), emptySet())
         while (run != null) {
             yield(run)
             prevEndExclusive = run.range.last + 1
             run = runAt(prevEndExclusive)
         }
         // end with an empty run
-        yield(TextRun(prevEndExclusive until prevEndExclusive, emptySet()))
+        yield(TextRun(prevEndExclusive until prevEndExclusive, emptySet(), emptySet(), emptySet()))
     }
 
     private fun runAt(start: Int): TextRun<A>? {
@@ -66,13 +66,15 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
         return when {
             annotations.isEmpty() -> null
             else -> {
-                val pointAnnotations: List<PointAnnotation<A>> = nextPointAnnotationsAfter(start)
+                val pointAnnotations: Set<PointAnnotation<A>> = nextPointAnnotationsAfter(start)
                 val minEndOfRange = annotations.minOf { it.range.last }
                 val minPoint = pointAnnotations.firstOrNull()?.let { it.offset - 1 } ?: Int.MAX_VALUE
-                val anns = if (minPoint <= minEndOfRange) (annotations + pointAnnotations) else annotations
+                val postPointAnns = if (minPoint <= minEndOfRange) pointAnnotations else emptySet()
                 TextRun(
                     start..min(minEndOfRange, minPoint),
-                    anns.filterNot { it.isAbsent() }.toSet()
+                    annotations.filterNot { it.isAbsent() }.toSet(),
+                    pointAnnotationMaps.values.mapNotNull { it[start] }.toSet(),
+                    postPointAnns,
                 )
             }
         }
@@ -88,13 +90,14 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
                 }
         }
 
-    private fun nextPointAnnotationsAfter(start: Int): List<PointAnnotation<A>> {
-        val minOffset = pointAnnotationMaps.values.minOfOrNull { it.ceilingKey(start + 1) } ?: return emptyList()
-        return pointAnnotationMaps.values.mapNotNull { it[minOffset] }
+    private fun nextPointAnnotationsAfter(start: Int): Set<PointAnnotation<A>> {
+        val minOffset = pointAnnotationMaps.values.mapNotNull { it.ceilingKey(start + 1) }.minOrNull()
+            ?: return emptySet()
+        return pointAnnotationMaps.values.mapNotNull { it[minOffset] }.toSet()
     }
 
     fun stateTransitions(): Sequence<Pair<Excerpt, StateTransition<A>>> = textRuns().windowed(2) { (prevRun, run) ->
-        docText.excerpt(run.range) to prevRun.stateTransition(run.annotations)
+        docText.excerpt(run.range) to prevRun.stateTransition(run)
     }
 
 }
@@ -118,7 +121,11 @@ fun StudyData.toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc
         addAnns(AnalysisUnit.SENTENCE, sentences)
         addAnns(AnalysisUnit.WORD, words)
         if (AnalysisUnit.FOOTNOTE in annotationTypes || annotationTypes.isEmpty()) {
-            setAnnotations(AnalysisUnit.FOOTNOTE, footnotes)
+            val (leadingNotes, normalNotes) = footnotes.toList().partition { (offset, _) ->
+                offset == 0 || docText[offset - 1].isWhitespace()
+            }
+            setAnnotations(AnalysisUnit.FOOTNOTE, normalNotes.toMap())
+            setAnnotations(AnalysisUnit.LEADING_FOOTNOTE, leadingNotes.toMap())
         }
     }
 

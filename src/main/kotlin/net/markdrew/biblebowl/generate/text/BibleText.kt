@@ -11,6 +11,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
+import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.NAME
 import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
@@ -309,7 +310,7 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
     companion object {
         fun annotatedDoc(studyData: StudyData, opts: TextOptions): AnnotatedDoc<AnalysisUnit> {
             val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
-                BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, FOOTNOTE, REGEX
+                BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX
             ).apply {
                 val regexAnnotationsRangeMap: DisjointRangeMap<String> =
                     opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
