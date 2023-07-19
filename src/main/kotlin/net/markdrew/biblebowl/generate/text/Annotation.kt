@@ -19,7 +19,7 @@ class RangeAnnotation<A>(
 class PointAnnotation<A>(
     key: A, // what kind of annotation is this?
     value: Any?, // null indicates absence of this annotation type, true indicates presence w/o value
-    val offset: Int, // what character offset range does this annotation apply to?
+    val offset: Int, // what character offset range does this annotation occur *before*?
 ) : Annotation<A>(key, value) {
     override fun toShortString(): String = if (value == true) "$key($offset)" else "$key=$value($offset)"
 }

@@ -25,6 +25,12 @@ class EsvIndexer(val studySet: StudySet) {
 
     private lateinit var currentHeading: String
 
+    private fun skipSpace(startAt: Int): Int {
+        var newOffset = startAt
+        while (newOffset < buffer.length && buffer[newOffset].isWhitespace()) newOffset++
+        return newOffset
+    }
+
     fun indexBook(chapterPassages: Sequence<Passage>): StudyData {
         chapterPassages.forEach {
             indexChapter(it)
@@ -105,11 +111,11 @@ class EsvIndexer(val studySet: StudySet) {
             paragraphs.add(paragraphStart until buffer.length)
             buffer.appendLine()
         }
-        chapters[chapterStart until buffer.trimEnd().length] = currentChapter
+        chapters[skipSpace(chapterStart) until buffer.trimEnd().length] = currentChapter
     }
 
     private fun endHeading() {
-        headings[headingStart until buffer.trimEnd().length] = currentHeading
+        headings[skipSpace(headingStart) until buffer.trimEnd().length] = currentHeading
         currentHeading = ""
     }
 
@@ -121,14 +127,20 @@ class EsvIndexer(val studySet: StudySet) {
     ) {
         val verseStart = buffer.length
         appendTextContainingFootnoteRefs(text, noteOffsetsByNoteNumber)
-        verses[verseStart until buffer.trimEnd().length] = chapter.verse(verseNum)
+        verses[skipSpace(verseStart) until buffer.trimEnd().length] = chapter.verse(verseNum)
     }
 
     private fun appendTextContainingFootnoteRefs(text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {
         var lastStart = 0
         """\((\d+)\)""".toRegex().findAll(text).forEach {
             buffer.append(text.substring(lastStart, it.range.first))
-            noteOffsetsByNoteNumber[it.groupValues[1].toInt()] = buffer.length
+            val noteNumber = it.groupValues[1].toInt()
+            // footnotes that occur *before* text are normally preceded by a space; when this happens we want to skip
+            // the *following* space so that the offset of the footnote is the same as the offset of the first text to
+            // which it applies
+            val shiftNoteRight = (it.range.first == 0 || text[it.range.first - 1] == ' ')
+                    && text.length > it.range.last + 1 && text[it.range.last + 1] == ' '
+            noteOffsetsByNoteNumber[noteNumber] = buffer.length + (if (shiftNoteRight) 1 else 0)
             lastStart = it.range.last + 1
         }
         buffer.append(text.substring(lastStart))
