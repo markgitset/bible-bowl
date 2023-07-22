@@ -22,14 +22,18 @@ import org.docx4j.XmlUtils
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
 import org.docx4j.openpackaging.parts.JaxbXmlPart
 import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart
+import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
 import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart
+import org.docx4j.relationships.Relationship
 import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFootnotes
 import org.docx4j.wml.CTFtnEdn
 import org.docx4j.wml.CTFtnEdnRef
 import org.docx4j.wml.ContentAccessor
+import org.docx4j.wml.FooterReference
+import org.docx4j.wml.HdrFtrRef
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
@@ -38,6 +42,7 @@ import org.docx4j.wml.R
 import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
+import org.docx4j.wml.SectPr
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
@@ -45,6 +50,7 @@ import java.io.File
 import java.io.InputStream
 import java.math.BigInteger
 import java.net.URI
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.toPath
 
@@ -93,9 +99,9 @@ class DocMaker2 {
     private val currentRunText = StringBuilder()
     private var footnoteListId = 2L // this is the ID of the default/first numbered list
 
+    private val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
+        ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
     init {
-        val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
-            ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
         mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml")))
         mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
@@ -134,6 +140,20 @@ class DocMaker2 {
     }
 
     fun renderText(studyData: StudyData, opts: TextOptions): WordprocessingMLPackage {
+        val footerRel: Relationship = mainPart.addTargetPart(
+            footerFromTemplate(
+                baseUri.resolveChild("footer1.xml"), mapOf(
+                    "title" to studyData.studySet.name,
+                    "date" to LocalDate.now().format(dateFormatter)
+                )
+            )
+        )
+        val sectPr: SectPr = wordPackage.documentModel.sections.last().sectPr
+        sectPr.egHdrFtrReferences.add(FooterReference().apply {
+            id = footerRel.id
+            type = HdrFtrRef.DEFAULT
+        })
+
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         var newPoetry = false
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
@@ -354,6 +374,12 @@ class DocMaker2 {
             mappings: Map<String, String> = emptyMap()
         ): FontTablePart =
             FontTablePart().unmarshallFromTemplate(templateUri, mappings)
+
+        private fun footerFromTemplate(
+            templateUri: URI,
+            mappings: Map<String, String> = emptyMap()
+        ): FooterPart =
+            FooterPart().unmarshallFromTemplate(templateUri, mappings)
 
         private fun <E, P : JaxbXmlPart<E>> P.unmarshallFromTemplate(
             templateUri: URI,
