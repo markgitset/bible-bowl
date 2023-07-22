@@ -32,7 +32,7 @@
       <w:jc w:val="both"/>
     </w:pPr>
     <w:rPr>
-      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Noto Serif CJK SC" w:cs="FreeSans"/>
+      <w:rFonts w:ascii="Times New Roman:liga" w:hAnsi="Times New Roman:liga"/>
       <w:color w:val="auto"/>
       <w:kern w:val="2"/>
       <w:sz w:val="20"/>
@@ -55,7 +55,7 @@
       <w:outlineLvl w:val="0"/>
     </w:pPr>
     <w:rPr>
-      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+      <w:rFonts w:ascii="Times New Roman:liga" w:hAnsi="Times New Roman:liga"/>
       <w:b/>
       <w:bCs/>
       <w:sz w:val="36"/>
@@ -89,7 +89,7 @@
   <w:style w:type="character" w:styleId="FootnoteAnchor">
     <w:name w:val="Footnote Anchor"/>
     <w:rPr>
-      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+      <w:rFonts w:ascii="Times New Roman:liga" w:hAnsi="Times New Roman:liga"/>
       <w:i/>
       <w:sz w:val="20"/>
       <w:vertAlign w:val="superscript"/>
@@ -117,7 +117,7 @@
     <w:name w:val="ChapterNum"/>
     <w:qFormat/>
     <w:rPr>
-      <w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>
+      <w:rFonts w:ascii="Times New Roman:liga" w:hAnsi="Times New Roman:liga"/>
       <w:b/>
       <w:sz w:val="28"/>
     </w:rPr>
@@ -320,6 +320,46 @@
     <w:basedOn w:val="HeaderandFooter"/>
     <w:pPr>
       <w:suppressLineNumbers/>
+    </w:pPr>
+    <w:rPr></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Poetry1">
+    <w:name w:val="Poetry1"/>
+    <w:basedOn w:val="TextBody"/>
+    <w:autoRedefine/>
+    <w:qFormat/>
+    <w:pPr>
+      <w:widowControl/>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="980" w:leader="none"/>
+      </w:tabs>
+      <w:suppressAutoHyphens w:val="false"/>
+      <w:overflowPunct w:val="false"/>
+      <w:bidi w:val="0"/>
+      <w:spacing w:before="0" w:after="0"/>
+      <w:ind w:left="980" w:right="0" w:hanging="980"/>
+      <w:jc w:val="both"/>
+    </w:pPr>
+    <w:rPr></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Poetry0">
+    <w:name w:val="Poetry0"/>
+    <w:basedOn w:val="Poetry1"/>
+    <w:qFormat/>
+    <w:pPr>
+      <w:spacing w:before="234" w:after="0"/>
+    </w:pPr>
+    <w:rPr></w:rPr>
+  </w:style>
+  <w:style w:type="paragraph" w:styleId="Poetry2">
+    <w:name w:val="Poetry2"/>
+    <w:basedOn w:val="Poetry1"/>
+    <w:qFormat/>
+    <w:pPr>
+      <w:tabs>
+        <w:tab w:val="left" w:pos="1200" w:leader="none"/>
+      </w:tabs>
+      <w:ind w:left="1200" w:right="0" w:hanging="1200"/>
     </w:pPr>
     <w:rPr></w:rPr>
   </w:style>

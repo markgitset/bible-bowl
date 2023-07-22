@@ -13,6 +13,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -28,18 +29,15 @@ import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFootnotes
 import org.docx4j.wml.CTFtnEdn
 import org.docx4j.wml.CTFtnEdnRef
-import org.docx4j.wml.CTTabStop
 import org.docx4j.wml.ContentAccessor
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
-import org.docx4j.wml.PPrBase
 import org.docx4j.wml.PPrBase.PStyle
 import org.docx4j.wml.R
+import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
-import org.docx4j.wml.STTabJc
-import org.docx4j.wml.Tabs
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
@@ -82,15 +80,12 @@ private fun URI.resolveChild(childString: String): URI =
     toPath().resolve(childString).toUri()
 private fun URI.open(childString: String): InputStream =
     resolveChild(childString).toURL().openStream()
-private fun StringBuilder.trimInPlace() {
-    replace(0, Int.MAX_VALUE, trim().toString())
-}
 
 class DocMaker2 {
 
     val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
-    val mainPart: MainDocumentPart = wordPackage.mainDocumentPart
+    private val mainPart: MainDocumentPart = wordPackage.mainDocumentPart
 
     private val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(mainPart) }
     val footnotes = mutableListOf<CTFtnEdn>()
@@ -106,6 +101,7 @@ class DocMaker2 {
     }
 
     private fun <T : ContentAccessor> push(ca: T): T = ca.also { contentStack.addFirst(ca) }
+
     @Suppress("UNCHECKED_CAST")
     private fun <T> pop(): T = contentStack.removeFirst() as T
 
@@ -113,15 +109,14 @@ class DocMaker2 {
         require(contentStack.first() is P) { "Can't push an R into a ${contentStack.first()::class.simpleName}!" }
         return push(R())
     }
-    private fun popR(): R = pop()
 
     private fun finishR() {
-        if (contentStack.first() is R) add(popR().apply { addText() })
+        if (contentStack.first() is R) add(pop<R>().apply { addText() })
     }
 
     private fun finishP() {
         finishR()
-        if (contentStack.first() is P) add(popP())
+        if (contentStack.first() is P) add(pop<P>())
     }
 
     private fun pushP(style: String = "TextBody"): P {
@@ -129,11 +124,10 @@ class DocMaker2 {
         require(contentStack.first() is MainDocumentPart) { "Can't push a P into a ${contentStack.first()::class.simpleName}!" }
         return push(makeParagraph(style))
     }
-    private fun popP(): P = pop()
-    private fun getP(): P = contentStack.first { it is P } as P
+
     private fun <T : Any> add(item: T): T = item.also {
         val container = contentStack.first()
-        require(container is MainDocumentPart && item is P || container is P && item is R) {
+        require(container is MainDocumentPart && item is P || container is P && item is R || container is R && item is Tab) {
             "Can't add a ${item::class.simpleName} to a ${container::class.simpleName}!"
         }
         container.content.add(it)
@@ -141,6 +135,7 @@ class DocMaker2 {
 
     fun renderText(studyData: StudyData, opts: TextOptions): WordprocessingMLPackage {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
+        var newPoetry = false
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             // endings
@@ -156,23 +151,37 @@ class DocMaker2 {
                 add(makeParagraph("Heading1")).addRun().addText(value as String)
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
+
+            if (transition.isBeginning(POETRY)) newPoetry = true
+
             val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
+            val numIndents: Int =
+                if (!transition.isPresent(POETRY)) 0
+                else transition.present(PARAGRAPH)?.value as? Int? ?: 0
             if (newParagraph) {
-                if (contentStack.first() is MainDocumentPart) pushP()
+                if (contentStack.first() is MainDocumentPart) {
+                    val style = when(numIndents) {
+                        1 -> if (newPoetry) "Poetry0" else "Poetry1"
+                        2 -> "Poetry2"
+                        else -> "TextBody"
+                    }
+                    pushP(style)
+                    newPoetry = false
+                }
                 if (contentStack.first() is P) pushR()
-//                val p: P = contentStack.first() as P
-//                val p: P = pushP()
-                if (transition.isPresent(POETRY)) getP().poetryPPr(1)
                 logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
-
             // text
-//            if (currentRunText.isNotBlank()) {
             transition.beginning(VERSE)?.apply {
-                if (contentStack.first() is MainDocumentPart) pushP()
-                if (contentStack.first() is P) pushR()
                 startVerse(value as VerseRef, transition, studyData.isMultiBook, newParagraph)
+            }
+
+            if (newParagraph) {
+                repeat(numIndents) {
+                    add(Tab())
+                    logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
+                }
             }
 
             // since LEADING footnotes are zero-width and precede the run text to which they are attached,
@@ -193,21 +202,10 @@ class DocMaker2 {
                 logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
-            if (excerpt.excerptText.isNotBlank()) currentRunText.append(excerpt.excerptText.trim())//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
-            if (transition.isPresent(POETRY)) {
-                val numIndents = countIndents(currentRunText)
-                repeat(numIndents) {
-                    add(R.Tab())
-                    logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
-                    currentRunText.trimInPlace()
-                }
+            if (excerpt.excerptText.isNotBlank()) {
+                currentRunText.append(excerpt.excerptText.trim()) //.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
             }
-//            } else {
-//                if (!transition.isPresent(POETRY)) currentRunText.clear()
-////                if (transition.isEnded(POETRY) && transition.isBeginning(POETRY)) {
-////                    contentStack.last().add(paragraph().poetryPPr(0))
-////                }
-//            }
+
             // since footnotes are zero-width and follow the run text to which they are attached,
             // we need to handle them before any endings
             transition.postPoint(FOOTNOTE)?.apply {
@@ -235,12 +233,6 @@ class DocMaker2 {
                 logger.debug { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
         }
-//        out.content.add(SectPr().apply {
-//            footnotePr = CTFtnProps().apply {
-//                numFmt = NumFmt().apply { `val` = NumberFormat.LOWER_LETTER }
-//                numRestart = CTNumRestart().apply { `val` = STRestartNumber.EACH_SECT }
-//            }
-//        })
         mainPart.addTargetPart(FootnotesPart())
         mainPart.footnotesPart.contents = CTFootnotes().apply {
             footnote.addAll(footnotes)
@@ -248,20 +240,18 @@ class DocMaker2 {
         return wordPackage
     }
 
+    private fun smallCapsLord(s: String): String = s.replace(
+        Regex.escape("LORD"),
+        Regex.escapeReplacement("</w:r><w:r><w:rPr><w:smallCaps/></w:rPr><w:t>Lord</w:t></w:r><w:r>")
+    )
+
     private fun R.addText(): Text = makeText().also { content.add(it) }
     private fun R.addText(text: CharSequence): Text = makeText(text).also { content.add(it) }
     private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
 
-//    private fun makeText(text: CharSequence): Text = Text().apply { value = text.toString() }
-//    private fun makeParagraph(formatFun: (PPr.() -> Unit)? = null): P = P().apply {
-//        if (formatFun != null) pPr = PPr().apply(formatFun)
-//    }
     private fun makeParagraph(style: String = "TextBody"): P = P().apply {
         pPr = PPr().apply { pStyle = pStyle(style) }
     }
-//    private fun makeP(init: P.() -> Unit): P = P().apply { init() }
-
-    private fun countIndents(text: CharSequence): Int = text.takeWhile { it.isWhitespace() }.length / 4
 
     private fun startVerse(
         verseRef: VerseRef,
@@ -269,56 +259,28 @@ class DocMaker2 {
         multiBook: Boolean,
         newParagraph: Boolean,
     ) {
-        val verseNum: Int = verseRef.verse
         val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
-//        if (verseNum == 1) {
-//            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
-//            logger.debug { "Skipping verse number for first verse of chapter." }
-//            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
-//            if (transition.isPresent(POETRY)) {
-//                add(popP())
-//                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
-//                pushP().also { if (transition.isPresent(POETRY)) it.poetryPPr(1) }
-//                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
-//            }
-//        } else {
+        if (verseRef.verse == 1) {
+            finishR()
+            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
+            logger.debug { "Skipping verse number for first verse of chapter." }
+            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
+        } else {
             if (!newParagraph && !currentRunText.endsWith(' ')) currentRunText.append(' ')
             finishR()
-//            if (contentStack.first() is R) {
-//                add(popR()).addText()
-//            }
-            add(verseNumRun(verseNum))
-            currentRunText.append(' ')
+            add(verseNumRun(verseRef))
+            if (!transition.isPresent(POETRY)) currentRunText.append(' ')
             logger.debug { "Added $VERSE $verseRef" }
-//        }
+        }
         pushR()
-    }
-
-    private fun P.poetryPPr(numIndents: Int): P {
-        pPr = pPr ?: PPr()
-        pPr.tabs = Tabs().apply {
-            tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
-            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("630") })
-            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("990") })
-        }
-        val indent = when(numIndents) {
-            1 -> 630L
-            2 -> 990L
-            else -> 2000L
-        }
-        pPr.ind = PPrBase.Ind().apply {
-            left = BigInteger.valueOf(indent)
-            hanging = BigInteger.valueOf(indent)
-        }
-        return this
     }
 
     private fun pStyle(style: String): PStyle = PStyle().apply { `val` = style }
     private fun rStyle(style: String): RStyle = RStyle().apply { `val` = style }
 
-    private fun verseNumRun(verseNum: Int): R = R().apply {
+    private fun verseNumRun(verseRef: VerseRef): R = R().apply {
         rPr = RPr().apply { rStyle = rStyle("VerseNum") }
-        content.add(makeText(verseNum.toString()))
+        content.add(makeText("${verseRef.bookName.first()}${verseRef.chapter}:${verseRef.verse}"))
     }
 
     private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat): R = R().apply {
@@ -399,11 +361,8 @@ class DocMaker2 {
         ): P = apply {
             templateUri.toURL().openStream().use {
                 @Suppress("UNCHECKED_CAST")
-                jaxbElement = XmlUtils.unmarshallFromTemplate(
-                    it.reader().readText(), mappings
-                ) as E
+                jaxbElement = XmlUtils.unmarshallFromTemplate(it.reader().readText(), mappings) as E
             }
         }
-
     }
 }

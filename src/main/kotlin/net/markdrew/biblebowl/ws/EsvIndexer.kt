@@ -16,7 +16,7 @@ class EsvIndexer(val studySet: StudySet) {
     val verses = DisjointRangeMap<VerseRef>()
     val headings = DisjointRangeMap<String>()
     val chapters = DisjointRangeMap<ChapterRef>()
-    val paragraphs = DisjointRangeSet()
+    val paragraphs = DisjointRangeMap<Int>() // char range -> number of indents (for poetry lines)
     val poetry = DisjointRangeSet()
     val footnotes = sortedMapOf<Int, String>() // char offset -> footnote text
 
@@ -107,8 +107,9 @@ class EsvIndexer(val studySet: StudySet) {
                 val (verseNum, verseText) = match.destructured
                 startVerse(currentChapter, verseNum.toInt(), verseText, noteOffsetsByNoteNumber)
             }
-            paragraphStart += max(0, buffer.substring(paragraphStart).indexOfFirst { !it.isWhitespace() })
-            paragraphs.add(paragraphStart until buffer.length)
+            val spaceCount: Int = max(0, buffer.substring(paragraphStart).indexOfFirst { !it.isWhitespace() })
+            val indentCount: Int = spaceCount / 4
+            paragraphs[(paragraphStart + spaceCount) until buffer.length] = indentCount
             buffer.appendLine()
         }
         chapters[skipSpace(chapterStart) until buffer.trimEnd().length] = currentChapter

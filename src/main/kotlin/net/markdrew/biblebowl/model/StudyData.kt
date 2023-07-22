@@ -31,7 +31,7 @@ class StudyData(
     val verses: DisjointRangeMap<VerseRef>,
     val headingCharRanges: DisjointRangeMap<String>,
     val chapters: DisjointRangeMap<ChapterRef>,
-    val paragraphs: DisjointRangeSet,
+    val paragraphs: DisjointRangeMap<Int>, // char range to number of indents (for poetry lines)
     val footnotes: SortedMap<CharOffset, String>,
     val poetry: DisjointRangeSet,
 ) {
@@ -119,8 +119,8 @@ class StudyData(
     }
 
     private fun writeParagraphsIndex(outPath: Path) {
-        writeIterable(outPath, paragraphs) { range ->
-            println("${range.first}\t${range.last}")
+        writeIterable(outPath, paragraphs.entries) { (range, indents) ->
+            println("${range.first}\t${range.last}\t$indents")
         }
     }
 
@@ -290,7 +290,15 @@ class StudyData(
             }.toMap(DisjointRangeMap())
         }
 
-        private fun readChapters(inPath: Path, studySet: StudySet): DisjointRangeMap<ChapterRef> =
+        private fun readParagraphs(inPath: Path): DisjointRangeMap<Int> =
+            inPath.toFile().useLines { linesSeq ->
+                linesSeq.map { line ->
+                    val (first, last, indents) = line.split('\t')
+                    first.toInt()..last.toInt() to indents.toInt()
+                }.toMap(DisjointRangeMap())
+            }
+
+        private fun readChapters(inPath: Path): DisjointRangeMap<ChapterRef> =
             inPath.toFile().useLines { linesSeq ->
                 linesSeq.map { line ->
                     val (first, last, chapterRef) = line.split('\t')
@@ -324,8 +332,8 @@ class StudyData(
             val text = bookDir.resolve(studySet.simpleName + ".txt").toFile().readText()
             val verses = readVerses(bookDir.resolve(indexFileName(studySet, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(studySet, HEADING)))
-            val chapters = readChapters(bookDir.resolve(indexFileName(studySet, CHAPTER)), studySet)
-            val paragraphs = readDisjointRangeSet(bookDir.resolve(indexFileName(studySet, PARAGRAPH)))
+            val chapters = readChapters(bookDir.resolve(indexFileName(studySet, CHAPTER)))
+            val paragraphs = readParagraphs(bookDir.resolve(indexFileName(studySet, PARAGRAPH)))
             val footnotes = readFootnotes(bookDir.resolve(indexFileName(studySet, FOOTNOTE)))
             val poetry = readDisjointRangeSet(bookDir.resolve(indexFileName(studySet, POETRY, plural = false)))
             return StudyData(studySet, text, verses, headings, chapters, paragraphs, footnotes, poetry)
