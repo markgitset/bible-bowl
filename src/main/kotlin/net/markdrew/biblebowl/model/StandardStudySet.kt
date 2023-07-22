@@ -5,38 +5,37 @@ enum class StandardStudySet(val set: StudySet) {
     MATTHEW(StudySet(Book.MAT, "matt")),
     LIFE_OF_MOSES(
         StudySet(
-            "Life of Moses", "moses",
-            Book.EXO.chapterRange(1, 20),
-            Book.EXO.chapterRange(32, 34),
-            Book.NUM.chapterRange(1, 3),
-            Book.NUM.chapterRange(10, 14),
-            Book.NUM.chapterRange(16, 17),
-            Book.NUM.chapterRange(20, 27),
-            Book.NUM.chapterRange(31, 36),
-            Book.DEU.chapterRange(31, 34),
+            "Life of Moses", "moses", listOf(
+                Book.EXO.chapterRange(1, 20),
+                Book.EXO.chapterRange(32, 34),
+                Book.NUM.chapterRange(1, 3),
+                Book.NUM.chapterRange(10, 14),
+                Book.NUM.chapterRange(16, 17),
+                Book.NUM.chapterRange(20, 27),
+                Book.NUM.chapterRange(31, 36),
+                Book.DEU.chapterRange(31, 34),
+            ),
+            "the Life of Moses (Exo 1-20,32-34, Num 1-3,10-14,16-17,20-27,31-36, and Deut 31-34)"
         )
     ),
     LIFE_OF_MOSES_LTC(
         StudySet(
-            "Life of Moses LTC", "ltc",
+            "Life of Moses LTC", "moses-ltc",
             Book.EXO.chapterRange(1, 20),
-//            Book.EXO.chapterRange(32, 34),
-//            Book.NUM.chapterRange(1, 3),
             Book.NUM.chapterRange(10, 14),
-//            Book.NUM.chapterRange(16, 17),
             Book.NUM.chapterRange(20, 24),
-//            Book.NUM.chapterRange(20, 27),
-//            Book.NUM.chapterRange(31, 36),
             Book.DEU.chapterRange(31, 34),
         )
     ),
     LUKE(StudySet(Book.LUK, "luke")),
     JOSHUA_JUDGES_RUTH(
         StudySet(
-            "Joshua, Judges, and Ruth", "josh-judg-ruth",
-            Book.JOS.allChapters(),
-            Book.JDG.allChapters(),
-            Book.RUT.allChapters()
+            "Joshua, Judges, and Ruth", "josh-judg-ruth", listOf(
+                Book.JOS.allChapters(),
+                Book.JDG.allChapters(),
+                Book.RUT.allChapters()
+            ),
+            "the books of Joshua, Judges, and Ruth"
         )
     ),
     ACTS(StudySet(Book.ACT, "acts")),
@@ -46,7 +45,7 @@ enum class StandardStudySet(val set: StudySet) {
     REVELATION(StudySet(Book.REV, "rev")),;
 
     companion object {
-        val DEFAULT: StudySet = MATTHEW.set
+        val DEFAULT: StudySet = LIFE_OF_MOSES.set
 
         // lenient parsing for user input, e.g.
         fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =

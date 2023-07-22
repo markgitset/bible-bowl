@@ -13,5 +13,7 @@
 /*.log
 /*.aux
 /data/
+/raw-data/
 /out/
 *~
+.~*#

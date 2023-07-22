@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
     )
 }
 
-fun writeBibleDocDebug(studyData: StudyData, opts: TextOptions = TextOptions()) {
+fun writeBibleDocDebug(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-debug-text-${opts.fileNameSuffix}.txt")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")

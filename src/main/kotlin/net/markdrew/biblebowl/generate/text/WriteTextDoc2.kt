@@ -9,6 +9,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
+import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
@@ -56,23 +57,29 @@ import kotlin.io.path.toPath
 
 private val logger: KLogger = KotlinLogging.logger {}
 
+private typealias RStyler = RPr.() -> Unit
+
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
     val studyData = StudyData.readData(studySet)
-    val customHighlights = mapOf(
+
+    val rStyler: RStyler = { smallCaps = BooleanDefaultTrue().apply { isVal = true } }
+    val customHighlights: Map<RStyler, Set<Regex>> = mapOf(
 //        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
-        "namesColor" to setOf("John the Baptist".toRegex()),
+//        "namesColor" to setOf("John the Baptist".toRegex()),
+//        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
+
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
     writeBibleDoc2(
         studyData,
-//        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
     )
 }
 
-fun writeBibleDoc2(studyData: StudyData, opts: TextOptions = TextOptions()) {
+fun writeBibleDoc2(studyData: StudyData, opts: TextOptions<RStyler> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-bible-text-${opts.fileNameSuffix}2.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
@@ -111,9 +118,14 @@ class DocMaker2 {
     @Suppress("UNCHECKED_CAST")
     private fun <T> pop(): T = contentStack.removeFirst() as T
 
-    private fun pushR(): R {
+    private fun pushR(styler: RStyler? = null): R {
         require(contentStack.first() is P) { "Can't push an R into a ${contentStack.first()::class.simpleName}!" }
-        return push(R())
+        return push(R().apply {
+            if (styler != null) {
+                if (rPr == null) rPr = RPr()
+                rPr.styler()
+            }
+        })
     }
 
     private fun finishR() {
@@ -139,23 +151,11 @@ class DocMaker2 {
         container.content.add(it)
     }
 
-    fun renderText(studyData: StudyData, opts: TextOptions): WordprocessingMLPackage {
-        val footerRel: Relationship = mainPart.addTargetPart(
-            footerFromTemplate(
-                baseUri.resolveChild("footer1.xml"), mapOf(
-                    "title" to studyData.studySet.name,
-                    "date" to LocalDate.now().format(dateFormatter)
-                )
-            )
-        )
-        val sectPr: SectPr = wordPackage.documentModel.sections.last().sectPr
-        sectPr.egHdrFtrReferences.add(FooterReference().apply {
-            id = footerRel.id
-            type = HdrFtrRef.DEFAULT
-        })
+    fun renderText(studyData: StudyData, opts: TextOptions<RStyler>): WordprocessingMLPackage {
+        addFooter(studyData)
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
-        var newPoetry = false
+        var newPoetry = false // used to track when we've entered a poetry section to use Poetry0 style for 1st line
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
             // endings
@@ -222,9 +222,20 @@ class DocMaker2 {
                 logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
-            if (excerpt.excerptText.isNotBlank()) {
-                currentRunText.append(excerpt.excerptText.trim()) //.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
+            if (opts.uniqueWords) {
+                if (transition.isBeginning(UNIQUE_WORD)) {
+                    finishR()
+                    pushR { this.u = U().apply { `val` = UnderlineEnumeration.SINGLE }}
+                }
+                if (transition.isEnded(UNIQUE_WORD)) {
+                    finishR()
+                    pushR()
+                }
             }
+
+//            if (excerpt.excerptText.isNotBlank()) {
+                currentRunText.append(excerpt.excerptText) //.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
+//            }
 
             // since footnotes are zero-width and follow the run text to which they are attached,
             // we need to handle them before any endings
@@ -258,6 +269,22 @@ class DocMaker2 {
             footnote.addAll(footnotes)
         }
         return wordPackage
+    }
+
+    private fun addFooter(studyData: StudyData) {
+        val footerRel: Relationship = mainPart.addTargetPart(
+            footerFromTemplate(
+                baseUri.resolveChild("footer1.xml"), mapOf(
+                    "title" to studyData.studySet.name,
+                    "date" to LocalDate.now().format(dateFormatter)
+                )
+            )
+        )
+        val sectPr: SectPr = wordPackage.documentModel.sections.last().sectPr
+        sectPr.egHdrFtrReferences.add(FooterReference().apply {
+            id = footerRel.id
+            type = HdrFtrRef.DEFAULT
+        })
     }
 
     private fun smallCapsLord(s: String): String = s.replace(

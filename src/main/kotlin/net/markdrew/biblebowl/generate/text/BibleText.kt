@@ -49,13 +49,13 @@ fun main(args: Array<String>) {
     )
 }
 
-data class TextOptions(
+data class TextOptions<T>(
     val fontSize: Int = 10,
     val uniqueWords: Boolean = false,
     val names: Boolean = false,
     val numbers: Boolean = false,
     val chapterBreaksPage: Boolean = false,
-    val customHighlights: Map<String, Set<Regex>> = emptyMap()
+    val customHighlights: Map<T, Set<Regex>> = emptyMap()
 ) {
     val fileNameSuffix: String by lazy {
         (if (names) "names-" else "") +
@@ -66,7 +66,7 @@ data class TextOptions(
     }
 }
 
-fun writeBibleText(studyData: StudyData, opts: TextOptions = TextOptions()) {
+fun writeBibleText(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val latexFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)
@@ -85,7 +85,7 @@ fun writeBibleText(studyData: StudyData, opts: TextOptions = TextOptions()) {
 
 private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
 
-class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
+class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
 
     fun renderToFile(file: File, studyData: StudyData) {
         file.parentFile.mkdirs()
@@ -308,11 +308,11 @@ class BibleTextRenderer(private val opts: TextOptions = TextOptions()) {
     }
 
     companion object {
-        fun annotatedDoc(studyData: StudyData, opts: TextOptions): AnnotatedDoc<AnalysisUnit> {
+        fun <T : Any> annotatedDoc(studyData: StudyData, opts: TextOptions<T>): AnnotatedDoc<AnalysisUnit> {
             val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
                 BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX
             ).apply {
-                val regexAnnotationsRangeMap: DisjointRangeMap<String> =
+                val regexAnnotationsRangeMap: DisjointRangeMap<T> =
                     opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
                         drm.apply {
                             putAll(studyData.findAll(*patterns.toTypedArray()).associateWith { color })

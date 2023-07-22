@@ -1,6 +1,11 @@
 package net.markdrew.biblebowl.model
 
-data class StudySet(val name: String, val simpleName: String, val chapterRanges: List<ChapterRange>) {
+data class StudySet(
+    val name: String,
+    val simpleName: String,
+    val chapterRanges: List<ChapterRange>,
+    val longName: String = "the book of $name"
+) {
 
     init {
         require(simpleName.first() != '-') { "simpleName can't start with a hyphen, but was: $simpleName" }

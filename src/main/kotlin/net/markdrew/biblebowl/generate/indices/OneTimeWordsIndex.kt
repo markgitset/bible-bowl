@@ -27,15 +27,15 @@ fun writeOneTimeWordsIndex(studySet: StudySet): File {
 
 fun writeOneTimeWordsIndex(studyData: StudyData): File {
     val simpleName = studyData.studySet.simpleName
-    val name = studyData.studySet.name
+    val set = studyData.studySet
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData)
     val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(studyData)
     val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-one-time-words.tex")
     file.writer().use { writer ->
         writeDoc(
-            writer, "$name One-Time Words",
-            docPreface = "The following words only appear one time in the whole book of $name.",
+            writer, "${set.name} One-Time Words",
+            docPreface = "The following words only appear one time in ${set.longName}.",
             allowParagraphBreaks = false,
         ) {
 

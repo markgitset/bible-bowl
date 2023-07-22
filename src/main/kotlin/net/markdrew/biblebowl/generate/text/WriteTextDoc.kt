@@ -79,7 +79,7 @@ fun main(args: Array<String>) {
     )
 }
 
-fun writeBibleDoc(studyData: StudyData, opts: TextOptions = TextOptions()) {
+fun writeBibleDoc(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-bible-text-${opts.fileNameSuffix}.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
@@ -109,7 +109,7 @@ object DocMaker {
 
     private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
 
-    fun createWmlPackage(studyData: StudyData, opts: TextOptions = TextOptions()): WordprocessingMLPackage {
+    fun createWmlPackage(studyData: StudyData, opts: TextOptions<String> = TextOptions()): WordprocessingMLPackage {
         val baseUri: URI = javaClass.getResource("/tbb-doc-format")?.toURI()
             ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format")
         return Docx4J.load(baseUri.open("text-template.docx")).apply {
@@ -139,7 +139,7 @@ object DocMaker {
     }
 
 
-    private fun renderText(out: MainDocumentPart, studyData: StudyData, opts: TextOptions) {
+    private fun renderText(out: MainDocumentPart, studyData: StudyData, opts: TextOptions<String>) {
         // add a numbering part to the document
         out.addTargetPart(NumberingDefinitionsPart(PartName("/numbering")).apply {
             unmarshalDefaultNumbering()
