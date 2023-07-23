@@ -129,7 +129,40 @@ class DocMaker2 {
     }
 
     private fun finishR() {
-        if (contentStack.first() is R) add(pop<R>().apply { addText() })
+        if (contentStack.first() is R) {
+            if ("LORD" !in currentRunText) {
+                val r = pop<R>()
+                if (currentRunText.isNotEmpty())
+                    add(r.apply { addText() })
+            } else {
+                // all this is just to use LORD in small caps!
+                val findAll: Sequence<MatchResult> = Regex.fromLiteral("LORD").findAll(currentRunText)
+                var r = add(pop<R>())
+                var nextIndex = 0
+                findAll.forEach { matchResult ->
+                    if (nextIndex < matchResult.range.first) {
+                        r.apply { addText(currentRunText.substring(nextIndex until matchResult.range.first)) }
+                        r = add(R())
+                    }
+                    r.apply {
+                        rPr = RPr().apply { smallCaps = wmlBoolean(true) }
+                        addText("Lord")
+                    }
+                    nextIndex = matchResult.range.last + 1
+                    if (nextIndex < currentRunText.length) r = add(R())
+                }
+                var removeLastR = true
+                if (nextIndex < currentRunText.length) {
+                    val text = currentRunText.substring(nextIndex)
+                    if (text.isNotEmpty()) {
+                        r.apply { addText(text) }
+                        removeLastR = false
+                    }
+                }
+                if (removeLastR) contentStack.first().content.removeLast()
+                currentRunText.clear()
+            }
+        }
     }
 
     private fun finishP() {
@@ -234,6 +267,7 @@ class DocMaker2 {
             }
 
 //            if (excerpt.excerptText.isNotBlank()) {
+            if (transition.isPresent(PARAGRAPH))
                 currentRunText.append(excerpt.excerptText) //.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
 //            }
 
@@ -247,7 +281,7 @@ class DocMaker2 {
                 val verses: DisjointRangeMap<VerseRef> = studyData.verses
                 val excerptRange: IntRange = excerpt.excerptRange
                 val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
-                currentRunText.append(' ')
+//                currentRunText.append(' ')
                 val fnRef = nextFootnote++
                 footnotes.add(footnoteContent(verseRef!!, value as String, footnoteListId))
                 add(footnoteRef2(fnRef))
@@ -287,11 +321,6 @@ class DocMaker2 {
         })
     }
 
-    private fun smallCapsLord(s: String): String = s.replace(
-        Regex.escape("LORD"),
-        Regex.escapeReplacement("</w:r><w:r><w:rPr><w:smallCaps/></w:rPr><w:t>Lord</w:t></w:r><w:r>")
-    )
-
     private fun R.addText(): Text = makeText().also { content.add(it) }
     private fun R.addText(text: CharSequence): Text = makeText(text).also { content.add(it) }
     private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
@@ -313,7 +342,8 @@ class DocMaker2 {
             logger.debug { "Skipping verse number for first verse of chapter." }
             logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
         } else {
-            if (!newParagraph && !currentRunText.endsWith(' ')) currentRunText.append(' ')
+            if (!newParagraph && !currentRunText.endsWith(' '))
+                currentRunText.append(' ')
             finishR()
             add(verseNumRun(verseRef))
             if (!transition.isPresent(POETRY)) currentRunText.append(' ')
@@ -335,14 +365,15 @@ class DocMaker2 {
         content.add(makeText("${chapterRef.format(bookFormat)} "))
     }
 
-    private fun makeText(preserveSpace: Boolean = true): Text = makeText(currentRunText, preserveSpace).also {
-        currentRunText.clear()
-    }
+    private fun makeText(preserveSpace: Boolean = true): Text =
+        makeText(currentRunText, preserveSpace).also { currentRunText.clear() }
 
-    private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text = Text().apply {
-        value = text.toString()
-        if (preserveSpace) space = "preserve"
-    }
+    private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text =
+        Text().apply {
+            require(text.isNotEmpty()) { "Don't create text with no text in it!" }
+            value = text.toString()
+            if (preserveSpace) space = "preserve"
+        }
 
     private fun wmlBoolean(value: Boolean): BooleanDefaultTrue = BooleanDefaultTrue().apply { isVal = value }
 
@@ -362,34 +393,28 @@ class DocMaker2 {
                 content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
             })
             runsSeq.forEachIndexed { index, s ->
-                content.add(makeRun(s, italic = index % 2 == 1))
+                if (s.isNotEmpty()) content.add(makeRun(s, italic = index % 2 == 1))
             }
         })
     }
 
     private fun makeRun(textContent: String, italic: Boolean = false): R = R().apply {
-        rPr = RPr().apply {
-            rtl = wmlBoolean(false)
-            if (italic) {
-                i = wmlBoolean(true)
-                iCs = wmlBoolean(true)
-            }
+        if (italic) {
+            rPr = RPr().apply { i = wmlBoolean(true) }
         }
         content.add(makeText(textContent))
     }
 
     // for real footnotes
     private fun footnoteRef2(id: Long): R = R().apply {
-        rPr = RPr().apply {
-            rStyle = RStyle().apply { `val` = "FootnoteAnchor" }
-        }
-
+        rPr = RPr().apply { rStyle = rStyle("FootnoteAnchor") }
         content.add(factory.createRFootnoteReference(CTFtnEdnRef().apply { setId(BigInteger.valueOf(id)) }))
     }
 
     companion object {
         private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
 
+        private fun notBlank(s: CharSequence): Boolean = s.isNotBlank() || ' ' in s
         private fun stylesPartFromTemplate(
             templateUri: URI,
             mappings: Map<String, String> = emptyMap()
