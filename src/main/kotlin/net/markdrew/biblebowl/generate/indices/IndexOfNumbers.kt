@@ -29,12 +29,13 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS)
         )
     }
     val fullName = studyData.studySet.name
+    val longName = studyData.studySet.longName
     val simpleName = studyData.studySet.simpleName
     val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-numbers.tex")
     file.writer().use { writer ->
         writeDoc(writer, "$fullName Numbers Index",
-            docPreface = "The following is a complete index of all numbers in $fullName"//, " +
+            docPreface = "The following is a complete index of all numbers in $longName"//, " +
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {
 
@@ -49,8 +50,8 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS)
 //                .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
             writeIndex(writer, freqs, "Numbers in $fullName in Order of Increasing Frequency",
-                       indexPreface = "Each number here occurs in $fullName " +
-                               "the number of times shown next to it.",//  One-time numbers are omitted for brevity.",
+                       indexPreface = "Each number here occurs in $longName " +
+                               "the number of times shown next to it.",
                        columns = 4)
         }
     }

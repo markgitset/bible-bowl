@@ -37,11 +37,12 @@ fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
         }
     val simpleName = studyData.studySet.simpleName
     val setName = studyData.studySet.name
+    val longName = studyData.studySet.longName
     val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-full.tex")
     file.writer().use { writer ->
         writeDoc(writer, "$setName Word Index",
-            docPreface = "The following is a complete index of all words in $setName, " +
+            docPreface = "The following is a complete index of all words in $longName, " +
                     """except for these:\\\\${stopWords.sorted().joinToString()}.""") {
 
             val index: List<WordIndexEntryC> =
@@ -55,7 +56,7 @@ fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
                 .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
             writeIndex(writer, freqs, "Words in $setName in Order of Increasing Frequency",
-                       indexPreface = "Each word here occurs in $setName " +
+                       indexPreface = "Each word here occurs in $longName " +
                                "the number of times shown next to it.  One-time words are omitted for brevity.",
                        columns = 5)
         }

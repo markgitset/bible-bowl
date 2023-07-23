@@ -45,9 +45,10 @@ public fun writeNamesIndex(studyData: StudyData) {
     val dir = File("$PRODUCTS_DIR/$studyName/indices").also { it.mkdirs() }
     val file = dir.resolve("$studyName-index-names.tex")
     val name = studyData.studySet.name
+    val longName = studyData.studySet.longName
     file.writer().use { writer ->
         writeDoc(writer, "$name Names Index",
-            docPreface = "The following is a complete index of all names in  $name"//, " +
+            docPreface = "The following is a complete index of all names in $longName"//, " +
                     //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
             ) {
 
@@ -61,7 +62,7 @@ public fun writeNamesIndex(studyData: StudyData) {
                 .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
             writeIndex(writer, freqs, "Names in $name in Order of Increasing Frequency",
-                       indexPreface = "Each name here occurs in $name " +
+                       indexPreface = "Each name here occurs in $longName " +
                                "the number of times shown next to it.  One-time names are omitted for brevity.",
                        columns = 5)
         }
