@@ -20,6 +20,11 @@ fun main(args: Array<String>) {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
     writeFullIndex(studyData, STOP_WORDS)
+
+//    // For Maria
+//    for (studySet in setOf(StudySet(Book.EXO, "exodus"), StudySet(Book.LEV, "lev"), StudySet(Book.NUM, "num"))) {
+//        writeFullIndex(StudyData.readData(studySet), STOP_WORDS)
+//    }
 }
 
 fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {

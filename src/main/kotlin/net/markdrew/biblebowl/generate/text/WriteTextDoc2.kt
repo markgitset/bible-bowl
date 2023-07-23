@@ -35,14 +35,19 @@ import org.docx4j.wml.CTFtnEdnRef
 import org.docx4j.wml.ContentAccessor
 import org.docx4j.wml.FooterReference
 import org.docx4j.wml.HdrFtrRef
+import org.docx4j.wml.HpsMeasure
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
 import org.docx4j.wml.PPrBase.PStyle
+import org.docx4j.wml.ParaRPr
 import org.docx4j.wml.R
+import org.docx4j.wml.R.ContinuationSeparator
+import org.docx4j.wml.R.Separator
 import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
+import org.docx4j.wml.STFtnEdn
 import org.docx4j.wml.SectPr
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
@@ -104,7 +109,6 @@ class DocMaker2 {
     val footnotes = mutableListOf<CTFtnEdn>()
     private var nextFootnote = 2L
     private val currentRunText = StringBuilder()
-    private var footnoteListId = 2L // this is the ID of the default/first numbered list
 
     private val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
         ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
@@ -132,8 +136,8 @@ class DocMaker2 {
         if (contentStack.first() is R) {
             if ("LORD" !in currentRunText) {
                 val r = pop<R>()
-                if (currentRunText.isNotEmpty())
-                    add(r.apply { addText() })
+                if (currentRunText.isNotEmpty()) r.addText()
+                if (r.content.isNotEmpty()) add(r)
             } else {
                 // all this is just to use LORD in small caps!
                 val findAll: Sequence<MatchResult> = Regex.fromLiteral("LORD").findAll(currentRunText)
@@ -249,7 +253,7 @@ class DocMaker2 {
                 val verseRef = verses.valueContaining(excerptRange.first) // footnote in verse
                 currentRunText.append(' ')
                 val fnRef = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, footnoteListId))
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
                 add(footnoteRef2(fnRef))
                 pushR()
                 logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
@@ -282,8 +286,8 @@ class DocMaker2 {
                 val excerptRange: IntRange = excerpt.excerptRange
                 val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
 //                currentRunText.append(' ')
-                val fnRef = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, footnoteListId))
+                val fnRef: Long = nextFootnote++
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
                 add(footnoteRef2(fnRef))
                 pushR()
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
@@ -298,11 +302,41 @@ class DocMaker2 {
                 logger.debug { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
         }
+        addFootnotes()
+        return wordPackage
+    }
+
+    private fun addFootnotes() {
         mainPart.addTargetPart(FootnotesPart())
         mainPart.footnotesPart.contents = CTFootnotes().apply {
+            footnote.add(0, CTFtnEdn().apply {
+                type = STFtnEdn.SEPARATOR
+                content.add(P().apply {
+                    pPr = PPr().apply {
+                        rPr = ParaRPr().apply {
+                            sz = HpsMeasure().apply { `val` = BigInteger.valueOf(13L) }
+                        }
+                    }
+                    content.add(R().apply {
+                        content.add(Separator())
+                    })
+                })
+            })
+            footnote.add(1, CTFtnEdn().apply {
+                type = STFtnEdn.CONTINUATION_SEPARATOR
+                content.add(P().apply {
+                    pPr = PPr().apply {
+                        rPr = ParaRPr().apply {
+                            sz = HpsMeasure().apply { `val` = BigInteger.valueOf(13L) }
+                        }
+                    }
+                    content.add(R().apply {
+                        content.add(ContinuationSeparator())
+                    })
+                })
+            })
             footnote.addAll(footnotes)
         }
-        return wordPackage
     }
 
     private fun addFooter(studyData: StudyData) {
@@ -380,9 +414,9 @@ class DocMaker2 {
     private fun footnoteContent(
         verseRef: VerseRef,
         fnContent: String,
-        footnoteListId: Long
+        footnoteId: Long
     ): CTFtnEdn = CTFtnEdn().apply {
-        id = BigInteger.valueOf(footnoteListId)
+        id = BigInteger.valueOf(footnoteId)
         content.add(makeParagraph("Footnote").apply {
             // footnotes come in with asterisks around what should be italicized--compute the distinct runs
             val runsSeq = " $fnContent".splitToSequence('*')
