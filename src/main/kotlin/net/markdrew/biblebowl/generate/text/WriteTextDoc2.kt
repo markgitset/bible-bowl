@@ -6,8 +6,11 @@ import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.NAME
+import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
 import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
@@ -32,6 +35,7 @@ import org.docx4j.wml.BooleanDefaultTrue
 import org.docx4j.wml.CTFootnotes
 import org.docx4j.wml.CTFtnEdn
 import org.docx4j.wml.CTFtnEdnRef
+import org.docx4j.wml.CTShd
 import org.docx4j.wml.ContentAccessor
 import org.docx4j.wml.FooterReference
 import org.docx4j.wml.HdrFtrRef
@@ -48,6 +52,7 @@ import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
 import org.docx4j.wml.STFtnEdn
+import org.docx4j.wml.STShd
 import org.docx4j.wml.SectPr
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
@@ -69,8 +74,8 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet)
 
     val rStyler: RStyler = { smallCaps = BooleanDefaultTrue().apply { isVal = true } }
-    val customHighlights: Map<RStyler, Set<Regex>> = mapOf(
-//        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
+    val customHighlights: Map<String, Set<Regex>> = mapOf(
+        "ffff00" to divineNames.map { it.toRegex() }.toSet(), // bright yellow
 //        "namesColor" to setOf("John the Baptist".toRegex()),
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
@@ -84,7 +89,7 @@ fun main(args: Array<String>) {
     )
 }
 
-fun writeBibleDoc2(studyData: StudyData, opts: TextOptions<RStyler> = TextOptions()) {
+fun writeBibleDoc2(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-bible-text-${opts.fileNameSuffix}2.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
@@ -188,7 +193,7 @@ class DocMaker2 {
         container.content.add(it)
     }
 
-    fun renderText(studyData: StudyData, opts: TextOptions<RStyler>): WordprocessingMLPackage {
+    fun renderText(studyData: StudyData, opts: TextOptions<String>): WordprocessingMLPackage {
         addFooter(studyData)
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
@@ -259,12 +264,61 @@ class DocMaker2 {
                 logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
+//            if (transition.isPresent(UNIQUE_WORD) && (transition.isPresent(NUMBER) || transition.isPresent(NAME) || transition.isPresent(REGEX)))
+//                throw Exception(transition.present(VERSE)?.value.toString())
+
             if (opts.uniqueWords) {
                 if (transition.isBeginning(UNIQUE_WORD)) {
                     finishR()
                     pushR { this.u = U().apply { `val` = UnderlineEnumeration.SINGLE }}
                 }
                 if (transition.isEnded(UNIQUE_WORD)) {
+                    finishR()
+                    pushR()
+                }
+            }
+
+            if (opts.numbers) {
+                if (transition.isBeginning(NUMBER)) {
+                    finishR()
+                    pushR {
+                        shd = CTShd().apply {
+                            `val` = STShd.CLEAR
+                            fill = "ffb66c" // light orange
+                        }
+                    }
+                }
+                if (transition.isEnded(NUMBER)) {
+                    finishR()
+                    pushR()
+                }
+            }
+
+            transition.present(REGEX)?.apply {
+                finishR()
+                pushR {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = value as String
+                    }
+                }
+            }
+            if (transition.isEnded(REGEX)) {
+                finishR()
+                pushR()
+            }
+
+            if (opts.names) {
+                if (transition.isBeginning(NAME)) {
+                    finishR()
+                    pushR {
+                        shd = CTShd().apply {
+                            `val` = STShd.CLEAR
+                            fill = "b4c7dc" // light blue
+                        }
+                    }
+                }
+                if (transition.isEnded(NAME)) {
                     finishR()
                     pushR()
                 }
@@ -391,7 +445,8 @@ class DocMaker2 {
 
     private fun verseNumRun(verseRef: VerseRef): R = R().apply {
         rPr = RPr().apply { rStyle = rStyle("VerseNum") }
-        content.add(makeText("${verseRef.bookName.first()}${verseRef.chapter}:${verseRef.verse}"))
+//        content.add(makeText("${verseRef.bookName.first()}${verseRef.chapter}:${verseRef.verse}"))
+        content.add(makeText(verseRef.verse.toString()))
     }
 
     private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat): R = R().apply {

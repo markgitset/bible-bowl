@@ -30,9 +30,6 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
 
-private val divineNames = setOf("God", "Jesus", "Christ", "Holy Spirit", "Immanuel", "Father", "Spirit of God",
-    "Son of God", "Son of Man", "Son of David", "Lord of the harvest", "Spirit of your Father", "Son")
-
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
     val studyData = StudyData.readData(studySet)
