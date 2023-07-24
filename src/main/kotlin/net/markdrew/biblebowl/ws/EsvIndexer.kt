@@ -55,7 +55,7 @@ class EsvIndexer(val studySet: StudySet) {
             lineCount += 1
             if (line.isBlank()) {
                 if (prevLineWasBlank) // poetry section ends with 2 blank lines
-                    poetry.add(potentialPoetryStart until buffer.length)
+                    poetry.add(skipSpace(potentialPoetryStart) until buffer.length)
                 else if (potentialPoetryStart >= 0 && !inFootnotes) {
                     prevLineWasBlank = line == postPoetryLine
                     if (!prevLineWasBlank) potentialPoetryStart = -1
