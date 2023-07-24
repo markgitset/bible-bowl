@@ -113,7 +113,6 @@ class DocMaker2 {
     private val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(mainPart) }
     val footnotes = mutableListOf<CTFtnEdn>()
     private var nextFootnote = 2L
-    private val currentRunText = StringBuilder()
 
     private val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
         ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
@@ -137,11 +136,11 @@ class DocMaker2 {
         })
     }
 
-    private fun finishR() {
+    private fun finishR(currentRunText: String = "") {
         if (contentStack.first() is R) {
             if ("LORD" !in currentRunText) {
                 val r = pop<R>()
-                if (currentRunText.isNotEmpty()) r.addText()
+                if (currentRunText.isNotEmpty()) r.addText(currentRunText)
                 if (r.content.isNotEmpty()) add(r)
             } else {
                 // all this is just to use LORD in small caps!
@@ -169,7 +168,6 @@ class DocMaker2 {
                     }
                 }
                 if (removeLastR) contentStack.first().content.removeLast()
-                currentRunText.clear()
             }
         }
     }
@@ -197,155 +195,11 @@ class DocMaker2 {
         addFooter(studyData)
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
-        var newPoetry = false // used to track when we've entered a poetry section to use Poetry0 style for 1st line
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
-            // endings
-
-            // beginnings
-
-            if (transition.isBeginning(STUDY_SET)) {
-                logger.debug { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
-            }
-
-            transition.beginning(AnalysisUnit.HEADING)?.apply {
-                finishP()
-                add(makeParagraph("Heading1")).addRun().addText(value as String)
-                logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
-            }
-
-            if (transition.isBeginning(POETRY)) newPoetry = true
-
-            val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
-            val numIndents: Int =
-                if (!transition.isPresent(POETRY)) 0
-                else transition.present(PARAGRAPH)?.value as? Int? ?: 0
-            if (newParagraph) {
-                if (contentStack.first() is MainDocumentPart) {
-                    val style = when(numIndents) {
-                        1 -> if (newPoetry) "Poetry0" else "Poetry1"
-                        2 -> "Poetry2"
-                        else -> "TextBody"
-                    }
-                    pushP(style)
-                    newPoetry = false
-                }
-                if (contentStack.first() is P) pushR()
-                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
-            }
-
-            // text
-            transition.beginning(VERSE)?.apply {
-                startVerse(value as VerseRef, transition, studyData.isMultiBook, newParagraph)
-            }
-
-            if (newParagraph) {
-                repeat(numIndents) {
-                    add(Tab())
-                    logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
-                }
-            }
-
-            // since LEADING footnotes are zero-width and precede the run text to which they are attached,
-            // we need to handle them before any text
-            transition.prePoint(LEADING_FOOTNOTE)?.apply {
-                if (contentStack.first() !is R) pushP() else finishR()
-
-                // subtract/add one from footnote offset to find verse in case
-                // the footnote occurs at the end/beginning of the verse
-                val verses: DisjointRangeMap<VerseRef> = studyData.verses
-                val excerptRange: IntRange = excerpt.excerptRange
-                val verseRef = verses.valueContaining(excerptRange.first) // footnote in verse
-                currentRunText.append(' ')
-                val fnRef = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
-                add(footnoteRef2(fnRef))
-                pushR()
-                logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
-            }
-
-//            if (transition.isPresent(UNIQUE_WORD) && (transition.isPresent(NUMBER) || transition.isPresent(NAME) || transition.isPresent(REGEX)))
-//                throw Exception(transition.present(VERSE)?.value.toString())
-
-            if (opts.uniqueWords) {
-                if (transition.isBeginning(UNIQUE_WORD)) {
-                    finishR()
-                    pushR { this.u = U().apply { `val` = UnderlineEnumeration.SINGLE }}
-                }
-                if (transition.isEnded(UNIQUE_WORD)) {
-                    finishR()
-                    pushR()
-                }
-            }
-
-            if (opts.numbers) {
-                if (transition.isBeginning(NUMBER)) {
-                    finishR()
-                    pushR {
-                        shd = CTShd().apply {
-                            `val` = STShd.CLEAR
-                            fill = "ffb66c" // light orange
-                        }
-                    }
-                }
-                if (transition.isEnded(NUMBER)) {
-                    finishR()
-                    pushR()
-                }
-            }
-
-            transition.present(REGEX)?.apply {
-                finishR()
-                pushR {
-                    shd = CTShd().apply {
-                        `val` = STShd.CLEAR
-                        fill = value as String
-                    }
-                }
-            }
-            if (transition.isEnded(REGEX)) {
-                finishR()
-                pushR()
-            }
-
-            if (opts.names) {
-                if (transition.isBeginning(NAME)) {
-                    finishR()
-                    pushR {
-                        shd = CTShd().apply {
-                            `val` = STShd.CLEAR
-                            fill = "b4c7dc" // light blue
-                        }
-                    }
-                }
-                if (transition.isEnded(NAME)) {
-                    finishR()
-                    pushR()
-                }
-            }
-
-//            if (excerpt.excerptText.isNotBlank()) {
-            if (transition.isPresent(PARAGRAPH))
-                currentRunText.append(excerpt.excerptText) //.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
-//            }
-
-            // since footnotes are zero-width and follow the run text to which they are attached,
-            // we need to handle them before any endings
-            transition.postPoint(FOOTNOTE)?.apply {
-                if (contentStack.first() !is R) pushP() else finishR()
-
-                // subtract/add one from footnote offset to find verse in case
-                // the footnote occurs at the end/beginning of the verse
-                val verses: DisjointRangeMap<VerseRef> = studyData.verses
-                val excerptRange: IntRange = excerpt.excerptRange
-                val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
-//                currentRunText.append(' ')
-                val fnRef: Long = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
-                add(footnoteRef2(fnRef))
-                pushR()
-                logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
-            }
+            /*
+             * Endings
+             */
 
             if ((transition.isEnded(PARAGRAPH))) {
                 finishP()
@@ -355,6 +209,116 @@ class DocMaker2 {
             if (transition.isEnded(STUDY_SET)) {
                 logger.debug { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
+
+            /*
+             * Beginnings
+             */
+
+            if (transition.isBeginning(STUDY_SET)) {
+                logger.debug { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
+            }
+
+            val paragraph: Annotation<AnalysisUnit> = transition.present(PARAGRAPH) ?: continue
+
+            transition.beginning(AnalysisUnit.HEADING)?.apply {
+                add(makeParagraph("Heading1")).addRun().addText(value as String)
+                logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
+            }
+
+            val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
+            val newPoetry: Boolean = transition.isBeginning(POETRY)
+            val inPoetry: Boolean = transition.isPresent(POETRY)
+            val numIndents: Int = if (!inPoetry) 0 else paragraph.value as Int
+            if (newParagraph) {
+                val style = when(numIndents) {
+                    1 -> if (newPoetry) "Poetry0" else "Poetry1"
+                    2 -> "Poetry2"
+                    else -> "TextBody"
+                }
+                pushP(style)
+                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
+            }
+
+            // text
+            transition.beginning(VERSE)?.apply {
+                startVerse(value as VerseRef, transition, studyData.isMultiBook)
+            }
+
+            if (newParagraph && inPoetry) {
+                pushR()
+                repeat(numIndents) {
+                    add(Tab())
+                    logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
+                }
+                finishR()
+            }
+
+            // since LEADING footnotes are zero-width and precede the run text to which they are attached,
+            // we need to handle them before any text
+            transition.prePoint(LEADING_FOOTNOTE)?.apply {
+                // subtract/add one from footnote offset to find verse in case
+                // the footnote occurs at the end/beginning of the verse
+                val verses: DisjointRangeMap<VerseRef> = studyData.verses
+                val excerptRange: IntRange = excerpt.excerptRange
+                val verseRef: VerseRef? = verses.valueContaining(excerptRange.first) // footnote in verse
+                val fnRef = nextFootnote++
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
+                add(footnoteRef2(fnRef))
+                add(R()).addText(" ")
+                logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
+            }
+
+            val r = pushR()
+
+            if (transition.isPresent(UNIQUE_WORD)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    u = U().apply { `val` = UnderlineEnumeration.SINGLE }
+                }
+            }
+
+            if (transition.isPresent(NUMBER)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = "ffb66c" // light orange
+                    }
+                }
+            }
+
+            transition.present(REGEX)?.apply {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = value as String
+                    }
+                }
+            }
+
+            if (transition.isBeginning(NAME)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = "b4c7dc" // light blue
+                    }
+                }
+            }
+
+            finishR(excerpt.excerptText)
+
+            // since footnotes are zero-width and follow the run text to which they are attached,
+            // we need to handle them before any endings
+            transition.postPoint(FOOTNOTE)?.apply {
+                // subtract/add one from footnote offset to find verse in case
+                // the footnote occurs at the end/beginning of the verse
+                val verses: DisjointRangeMap<VerseRef> = studyData.verses
+                val excerptRange: IntRange = excerpt.excerptRange
+                val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
+                val fnRef: Long = nextFootnote++
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
+                add(footnoteRef2(fnRef))
+                logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
+            }
+
         }
         addFootnotes()
         return wordPackage
@@ -409,7 +373,6 @@ class DocMaker2 {
         })
     }
 
-    private fun R.addText(): Text = makeText().also { content.add(it) }
     private fun R.addText(text: CharSequence): Text = makeText(text).also { content.add(it) }
     private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
 
@@ -421,23 +384,17 @@ class DocMaker2 {
         verseRef: VerseRef,
         transition: StateTransition<AnalysisUnit>,
         multiBook: Boolean,
-        newParagraph: Boolean,
     ) {
         val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
         if (verseRef.verse == 1) {
-            finishR()
             add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
             logger.debug { "Skipping verse number for first verse of chapter." }
             logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
         } else {
-            if (!newParagraph && !currentRunText.endsWith(' '))
-                currentRunText.append(' ')
-            finishR()
             add(verseNumRun(verseRef))
-            if (!transition.isPresent(POETRY)) currentRunText.append(' ')
+            if (!transition.isPresent(POETRY)) add(R()).addText(" ")
             logger.debug { "Added $VERSE $verseRef" }
         }
-        pushR()
     }
 
     private fun pStyle(style: String): PStyle = PStyle().apply { `val` = style }
@@ -453,9 +410,6 @@ class DocMaker2 {
         rPr = RPr().apply { rStyle = rStyle("ChapterNum") }
         content.add(makeText("${chapterRef.format(bookFormat)} "))
     }
-
-    private fun makeText(preserveSpace: Boolean = true): Text =
-        makeText(currentRunText, preserveSpace).also { currentRunText.clear() }
 
     private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text =
         Text().apply {
@@ -503,7 +457,6 @@ class DocMaker2 {
     companion object {
         private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
 
-        private fun notBlank(s: CharSequence): Boolean = s.isNotBlank() || ' ' in s
         private fun stylesPartFromTemplate(
             templateUri: URI,
             mappings: Map<String, String> = emptyMap()
