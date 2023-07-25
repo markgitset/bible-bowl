@@ -11,6 +11,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
+import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
 import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
@@ -82,11 +83,6 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet)
 
     val rStyler: RStyler = { smallCaps = BooleanDefaultTrue().apply { isVal = true } }
-    val customHighlights: Map<String, Set<Regex>> = mapOf(
-        "ffff00" to divineNames.map { it.toRegex() }.toSet(), // bright yellow
-//        "namesColor" to setOf("John the Baptist".toRegex()),
-//        rStyler to setOf(Regex.fromLiteral("LORD")),
-    )
 
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
@@ -95,17 +91,24 @@ fun main(args: Array<String>) {
 }
 
 fun writeBibleDoc2(studyData: StudyData) {
+
+    val customHighlights: Map<String, Set<Regex>> = mapOf(
+        "ffff00" to divineNames.map { Regex.fromLiteral(it) }.toSet(), // bright yellow
+//        "namesColor" to setOf("John the Baptist".toRegex()),
+//        rStyler to setOf(Regex.fromLiteral("LORD")),
+    )
+
     writeOneText(
         "tbb-doc-format",
         defaultStyle,
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true)
+        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
     )
     writeOneText(
         "tbb-doc-format2",
         marksStyle,
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true)
+        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
     )
 }
 
@@ -177,49 +180,18 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
         })
     }
 
-    private fun finishR(currentRunText: String = "") {
-        if (contentStack.first() is R) {
-            if ("LORD" !in currentRunText) {
-                val r = pop<R>()
-                if (currentRunText.isNotEmpty()) r.addText(currentRunText)
-                if (r.content.isNotEmpty()) add(r)
-            } else {
-                // all this is just to use LORD in small caps!
-                val findAll: Sequence<MatchResult> = Regex.fromLiteral("LORD").findAll(currentRunText)
-                var r = add(pop<R>())
-                var nextIndex = 0
-                findAll.forEach { matchResult ->
-                    if (nextIndex < matchResult.range.first) {
-                        r.apply { addText(currentRunText.substring(nextIndex until matchResult.range.first)) }
-                        r = add(R())
-                    }
-                    r.apply {
-                        rPr = RPr().apply { smallCaps = wmlBoolean(true) }
-                        addText("Lord")
-                    }
-                    nextIndex = matchResult.range.last + 1
-                    if (nextIndex < currentRunText.length) r = add(R())
-                }
-                var removeLastR = true
-                if (nextIndex < currentRunText.length) {
-                    val text = currentRunText.substring(nextIndex)
-                    if (text.isNotEmpty()) {
-                        r.apply { addText(text) }
-                        removeLastR = false
-                    }
-                }
-                if (removeLastR) contentStack.first().content.removeLast()
-            }
-        }
+    private fun finishR(text: String, opts: TextOptions<String>) {
+        val r = pop<R>()
+        val textToAdd = opts.smallCaps[text] ?: text
+        if (textToAdd.isNotEmpty()) r.addText(textToAdd)
+        if (r.content.isNotEmpty()) add(r)
     }
 
     private fun finishP() {
-        finishR()
         if (contentStack.first() is P) add(pop<P>())
     }
 
     private fun pushP(style: String = "TextBody"): P {
-        finishR()
         require(contentStack.first() is MainDocumentPart) { "Can't push a P into a ${contentStack.first()::class.simpleName}!" }
         return push(makeParagraph(style))
     }
@@ -292,12 +264,10 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
             }
 
             if (newParagraph && inPoetry) {
-                pushR()
-                repeat(numIndents) {
-                    add(Tab())
-                    logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
-                }
-                finishR()
+                add(R().apply {
+                    repeat(numIndents) { content.add(Tab()) }
+                })
+                logger.debug { "Added $numIndents <tab/>s ${transition.present(VERSE)?.value}" }
             }
 
             // since LEADING footnotes are zero-width and precede the run text to which they are attached,
@@ -309,7 +279,7 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
                 val excerptRange: IntRange = excerpt.excerptRange
                 val verseRef: VerseRef? = verses.valueContaining(excerptRange.first) // footnote in verse
                 val fnRef = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
                 add(footnoteRef2(fnRef))
                 add(R()).addText(" ")
                 logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
@@ -341,6 +311,12 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
                 }
             }
 
+            transition.present(SMALL_CAPS)?.apply {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    smallCaps = wmlBoolean(true)
+                }
+            }
+
             if (transition.isBeginning(NAME)) {
                 r.rPr = (r.rPr ?: RPr()).apply {
                     shd = CTShd().apply {
@@ -350,7 +326,7 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
                 }
             }
 
-            finishR(excerpt.excerptText)
+            finishR(excerpt.excerptText, opts)
 
             // since footnotes are zero-width and follow the run text to which they are attached,
             // we need to handle them before any endings
@@ -361,7 +337,7 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
                 val excerptRange: IntRange = excerpt.excerptRange
                 val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
                 val fnRef: Long = nextFootnote++
-                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef))
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
                 add(footnoteRef2(fnRef))
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
@@ -482,7 +458,8 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
     private fun footnoteContent(
         verseRef: VerseRef,
         fnContent: String,
-        footnoteId: Long
+        footnoteId: Long,
+        opts: TextOptions<String>,
     ): CTFtnEdn = CTFtnEdn().apply {
         id = BigInteger.valueOf(footnoteId)
         content.add(makeParagraph("Footnote").apply {
@@ -495,14 +472,22 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
                 content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
             })
             runsSeq.forEachIndexed { index, s ->
-                if (s.isNotEmpty()) content.add(makeRun(s, italic = index % 2 == 1))
+                if (s.isNotEmpty()) {
+                    val italic = index % 2 == 1
+                    // this is kind of fragile because it requires that the small caps portion already
+                    // be its own run, but at least in Exodus, that seems to always be the case
+                    val smallCaps = s in opts.smallCaps || (s == "Lord" && italic)
+                    content.add(makeRun(s, italic, smallCaps))
+                }
             }
         })
     }
 
-    private fun makeRun(textContent: String, italic: Boolean = false): R = R().apply {
-        if (italic) {
-            rPr = RPr().apply { i = wmlBoolean(true) }
+    private fun makeRun(textContent: String, italic: Boolean = false, smallCaps: Boolean = false): R = R().apply {
+        if (italic || smallCaps) {
+            rPr = RPr()
+            if (italic) { rPr.i = wmlBoolean(true) }
+            if (smallCaps) { rPr.smallCaps = wmlBoolean(true) }
         }
         content.add(makeText(textContent))
     }

@@ -16,6 +16,7 @@ import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.enclose
 import net.markdrew.chupacabra.core.encloses
 import net.markdrew.chupacabra.core.intersect
+import net.markdrew.chupacabra.core.length
 import net.markdrew.chupacabra.core.toDisjointRangeSet
 import java.io.File
 import java.io.PrintWriter
@@ -245,14 +246,12 @@ class StudyData(
     fun findAll(vararg patterns: Regex): DisjointRangeSet =
         patterns.fold(DisjointRangeSet()) { drs, pattern ->
             pattern.findAll(text).map { it.range }.forEach { r ->
-                // if two patterns overlap, and one encloses the other, keep only the longer range
-                val intersections = drs.rangesIntersectedBy(r)
-                if (intersections.size == 1) {
-                    val other = intersections.single()
-                    if (r.encloses(other)) drs.addForcefully(r)
-                    // if other encloses r, do nothing
-                    else if (!other.encloses(r)) drs.add(r) // expect this to fail
-                } else drs.add(r) // success when no intersections, and fail when there are more than 1
+                // if two (or more) patterns overlap, and one encloses the other, keep only the longer range
+                val intersections: DisjointRangeSet = drs.rangesIntersectedBy(r)
+                if (intersections.isNotEmpty()) { // can have zero, one, or more intersections
+                    val maxR: IntRange = sequenceOf(r, *intersections.toTypedArray()).maxBy { it.length() }
+                    drs.addForcefully(maxR)
+                } else drs.add(r) // success when no intersections
             }
             drs
         }

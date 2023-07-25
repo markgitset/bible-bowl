@@ -17,6 +17,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
+import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
 import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
@@ -44,23 +45,6 @@ fun main(args: Array<String>) {
         studyData,
         TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
     )
-}
-
-data class TextOptions<T>(
-    val fontSize: Int = 10,
-    val uniqueWords: Boolean = false,
-    val names: Boolean = false,
-    val numbers: Boolean = false,
-    val chapterBreaksPage: Boolean = false,
-    val customHighlights: Map<T, Set<Regex>> = emptyMap()
-) {
-    val fileNameSuffix: String by lazy {
-        (if (names) "names-" else "") +
-        (if (numbers) "nums-" else "") +
-        (if (uniqueWords) "unique-" else "") +
-        (if (chapterBreaksPage) "breaks-" else "") +
-        "${fontSize}pt"
-    }
 }
 
 fun writeBibleText(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
@@ -307,7 +291,7 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
     companion object {
         fun <T : Any> annotatedDoc(studyData: StudyData, opts: TextOptions<T>): AnnotatedDoc<AnalysisUnit> {
             val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
-                BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX
+                BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
             ).apply {
                 val regexAnnotationsRangeMap: DisjointRangeMap<T> =
                     opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
@@ -316,6 +300,9 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
                         }
                     }
                 setAnnotations(REGEX, regexAnnotationsRangeMap)
+                setAnnotations(SMALL_CAPS, DisjointRangeSet(
+                    studyData.findAll(*opts.smallCaps.keys.map { Regex.fromLiteral(it) }.toTypedArray())
+                ))
                 if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
                 if (opts.names) {
                     val namesRangeSet = DisjointRangeSet(
