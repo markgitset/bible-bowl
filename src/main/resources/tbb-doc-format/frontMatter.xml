@@ -1,0 +1,2595 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document
+    xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+    xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
+    xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex"
+    xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex"
+    xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex"
+    xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex"
+    xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex"
+    xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex"
+    xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex"
+    xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink"
+    xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+    xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+    xmlns:w10="urn:schemas-microsoft-com:office:word"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+    xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
+    xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"
+    xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+    xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
+    xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
+    xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+    xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+    xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape" mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:body>
+    <w:p w14:paraId="1182633C" w14:textId="5441F903" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00353F9C" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:sz w:val="144"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:sz w:val="144"/>
+        </w:rPr>
+        <w:t>Matthew</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5225B263" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>ESV (English Standard Version)</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0B3965A5" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="33FD3113" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="13508058" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="2479"/>
+          <w:tab w:val="center" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="12586CAA" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="2479"/>
+          <w:tab w:val="center" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="654D6E2D" w14:textId="64A2F041" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00331E50" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="2479"/>
+          <w:tab w:val="center" w:pos="4680"/>
+        </w:tabs>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>Making God's Word Important</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6688ABEE" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="2438C5C5" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3107D728" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="14D5E30A" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6C73B160" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251664384" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="378B56B4" wp14:editId="778A0AEF">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:align>center</wp:align>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>51435</wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="2193144" cy="2128603"/>
+            <wp:effectExtent l="25400" t="0" r="0" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="4" name="Picture 4" descr="tbblogo.jpg"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks
+                  xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic
+                    xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="tbblogo.jpg"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId8"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="2193144" cy="2128603"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2D68994D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="20CDE854" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1656B1B0" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="16EB783E" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6270AB0D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="175F0B56" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="34428E27" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="78543293" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="51252B63" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="19FE43B8" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4A7899A6" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0FAB4ACD" w14:textId="5F2BA1EA" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Texas Bible Bowl </w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">April </w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>, 20</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>3</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3961579D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>www.texasbiblebowl.org</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="666B0444" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="328F8390" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="46B70381" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="760E3DAF" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1B6149E7" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7E5CE8F9" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4D62924A" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="59930835" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="78AEC599" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="63DF7172" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0E100DCA" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="18EDBD07" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:jc w:val="both"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Scripture quotations are taken from the ESV Bible ® (The Holy Bible, English Standard Version ®) Copyright ©2001 by Crossway Bibles, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="73796352" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="12E44052" w14:textId="59A8C73A" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Date:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:tab/>
+        <w:t xml:space="preserve">Texas Bible Bowl </w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>March 3</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50" w:rsidRPr="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>st</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve"> to April</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve"> 2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C" w:rsidRPr="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:vertAlign w:val="superscript"/>
+        </w:rPr>
+        <w:t>nd</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>, 20</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>3</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve"></w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="59844342" w14:textId="6080BC42" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve">Place: </w:t>
+      </w:r>
+      <w:proofErr w:type="spellStart"/>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t>Bandina</w:t>
+      </w:r>
+      <w:proofErr w:type="spellEnd"/>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+        <w:t xml:space="preserve"> Christian Youth Camp in Bandera, Texas </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="42152107" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3FA0F285" w14:textId="7F06CEFC" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:ind w:firstLine="720"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>The Texas Bible Bowl study for Fall 20</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> to Spring 20</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>3</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> is over the book of </w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Matthew</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.  The objective is to gain knowledge of the text.  At the conclusion of the study all participants will travel to </w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Bandera</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, Texas to take a test challenging our knowledge of the text. The test will be Saturday, </w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">April </w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">, in the morning. </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1C849E27" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:kern w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="0" w:name="_Toc260642334"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:kern w:val="28"/>
+        </w:rPr>
+        <w:t>Texas Bible Bowl Test</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="0"/>
+    </w:p>
+    <w:p w14:paraId="26B3FCBC" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>There are several rounds of testing that include the following:</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="61F38579" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Power Round (Closed Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>.  This is a difficult test where any type of question can be asked.  Its intent is to create a point spread for scholarships.  This test is a real challenge of knowledge and it is satisfying to answer some of the questions correctly.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5654503E" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Find The Verse (Open Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.  This test consists of 40 verses or partial verses.  The answer is the Chapter and Verse.  There are approximately 15 seconds per verse.  The key to answering all of these correctly is knowing the text.  The key to knowing the text is reading every night.  </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7B9739D4" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Fact Finder (Open Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>.  This test focuses primarily on facts.  Because the answers are provided, it is relatively easy to recall the facts from the text.  This is the easier of the tests and will build confidence in our knowledge.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="73927C03" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Identification (Open Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.  This test focuses primarily on facts.  Each question has three choices that are facts from the text.  Each question has two choices that require additional thought.  “None of These and All of These”.  When all or none of the answers can be correct, it makes this test a little more difficult.  </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="55AC84FC" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>In What Chapter - Quotes (Closed Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">.  This test consists of 40 verses or partial verses.  The answer is the Chapter in which the verse is found.  The key to this test is to know the topics and chapters.  The study bibles that are used have the text broken into chapters and topics.  </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5676A82A" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>In What Chapter – Events (Closed Bible)</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>.  This test consists of 40 events/topics.  The objective is to know the chapter.  Knowing the topics in the text is an important part of the study.  The facts are tied to topics and the topics are tied to chapters.  Each participant will be able to list all topics from beginning to end.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="211E2D53" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1DBD895E" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:ind w:firstLine="360"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Testing is a small part of Bible Bowl.  Bible Bowl is hours of reading, hours of studying together and the confidence in our knowledge of God’s word.  Testing is merely a tool to challenge us.  The testing is done quietly without bells and buzzers, which makes it a gauge of our knowledge of the book of the text.  The competition will include individual scores and team scores.  A team will be 4 participants.  There are 4 categories of teams, Junior High Experienced and Inexperienced, and Senior High, Experienced and Inexperienced. The top ten teams and individuals will receive awards.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0B4BA82E" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:ind w:firstLine="720"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Adults and Elementary students test only as individuals and not as teams.  There are usually several adults and elementary students testing form each congregation represented.  Adult participation is encouraging to the young people and it also provides a good example.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="707F95B2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="1"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="1" w:name="_Toc304003926"/>
+      <w:bookmarkStart w:id="2" w:name="_Toc260642335"/>
+      <w:bookmarkStart w:id="3" w:name="_Toc303401951"/>
+      <w:bookmarkStart w:id="4" w:name="_Toc303433066"/>
+      <w:bookmarkStart w:id="5" w:name="_Toc303433127"/>
+      <w:bookmarkStart w:id="6" w:name="_Toc303433337"/>
+      <w:bookmarkStart w:id="7" w:name="_Toc303440139"/>
+      <w:bookmarkStart w:id="8" w:name="_Toc303957244"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Schedule and Plans</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="1"/>
+      <w:bookmarkEnd w:id="2"/>
+    </w:p>
+    <w:p w14:paraId="699EB536" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Study the text 20 minutes each night.  Repetition in reading the assigned chapters will make this study a success.  Meditate on the text.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="089ADA06" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="1"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="9" w:name="_Toc304003927"/>
+      <w:bookmarkStart w:id="10" w:name="_Toc260642336"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Each Week</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="9"/>
+      <w:bookmarkEnd w:id="10"/>
+    </w:p>
+    <w:p w14:paraId="37AABFE4" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Read the chapters assigned for the week each night.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2C907202" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Know the </w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>topic headings</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> through the assigned chapter.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3C728AF2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Mark your Bible/Notebook through the assigned chapter. </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1149460D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Complete the outline of each topic.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="431115EC" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="1"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:bookmarkStart w:id="11" w:name="_Toc304003930"/>
+      <w:bookmarkStart w:id="12" w:name="_Toc260642339"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Study Techniques</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="0182D73B" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="1"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Mark Bibles</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="11"/>
+      <w:bookmarkEnd w:id="12"/>
+    </w:p>
+    <w:p w14:paraId="13879368" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>The power round is the most difficult part of the test and find the verse is the second most difficult part of testing is finding the verses.  Find the verse is a true gauge of how well you will do on the overall score.  Verse find consists of any phrases pulled from the text.  During testing, you will have an average of 15 seconds to find a phrase in the bible and record the chapter and verse.  Mark your Bible to help you remember and find phrases and associate them with a topic.  If you can match a phrase to a topic, it will be easy to locate during testing.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="36741227" w14:textId="4EA15A1C" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:firstLine="360"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>If you choose to use a bible then marking your bible helps emphasize words and phrases that you want to remember.  It will help you tie the phrase back to the topic heading.  To remember phrases, it is important to know who said it, and to whom it was said.  One (unique) words are helpful when tied to other words because they help us associate a phrase with a chapter or topic heading.  The following convention* works well:</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="1DE935A4" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Topic headings and verse numbers</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Yellow</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="16BB9565" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Names &amp; Nationalities</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Blue</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="355EFBBD" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Places</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Green</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="17EC5668" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Numbers</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Orange</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="60BB97F7" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>One Words</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Circle These</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="17C1C3D0" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Significant Phrases you want to remember</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:tab/>
+        <w:t>Underline</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7F81B74F" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="2E624D1C" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>*These are only suggestions since marking your bible is a matter of personal taste to facilitate studying and remembering phrases.</w:t>
+      </w:r>
+      <w:bookmarkStart w:id="13" w:name="_Toc260642340"/>
+    </w:p>
+    <w:p w14:paraId="0C34E4F2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:keepNext/>
+        <w:spacing w:before="240" w:after="60"/>
+        <w:outlineLvl w:val="1"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:i/>
+        </w:rPr>
+        <w:t>Topic Outlines</w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="13"/>
+    </w:p>
+    <w:p w14:paraId="643FCD1C" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>To maintain the chronological flow of the text you may want to outline each topic.  A format for the outline of each topic is provided in the study guide.  The outline of each topic will help because it will serve as a study guide.  Each of us will be able to emphasize the things that are more difficult to remember.  The outline will be as follows:</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7EACAA06" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>People:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">  List all of the people in the topic.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="410395E0" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Places:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">  List all the places in the topic.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="41998938" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Numbers:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">  List all of the numbers in the topic. </w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3A31F0D3" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>One Words:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> List all </w:t>
+      </w:r>
+      <w:proofErr w:type="gramStart"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>one time</w:t>
+      </w:r>
+      <w:proofErr w:type="gramEnd"/>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"> words in the topic.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="28F0B36F" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Thoughts:</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">  This is a place to list all the major thoughts in the topic.  It is a good idea to make a note of the things that you find difficult associating with the topic.  </w:t>
+      </w:r>
+      <w:bookmarkEnd w:id="3"/>
+      <w:bookmarkEnd w:id="4"/>
+      <w:bookmarkEnd w:id="5"/>
+      <w:bookmarkEnd w:id="6"/>
+      <w:bookmarkEnd w:id="7"/>
+      <w:bookmarkEnd w:id="8"/>
+    </w:p>
+    <w:p w14:paraId="35206891" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:numPr>
+          <w:ilvl w:val="0"/>
+          <w:numId w:val="1"/>
+        </w:numPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:u w:val="single"/>
+        </w:rPr>
+        <w:t>Lessons/Questions</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>:  What lessons can I learn from these events and teachings for my own life? Are there any questions about this topic?</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="375841D7" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4FE2B3AA" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4DDAA1FE" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="5785731A" w14:textId="20D64F85" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Happiness is studying Gods word. It reveals his will for you. </w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="32"/>
+          <w:szCs w:val="32"/>
+        </w:rPr>
+        <w:t>Let the joy of a Christian life be evident, smile often.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="359D8084" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="76581A25" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="2CF0079C" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0F60C36B" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="0E3587E3" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="36AAC2CB" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4FFFA97B" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1E15B551" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="41D9B1E7" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="578ABDB6" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="009CE44F" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1DEF6179" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="037B3056" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7C89AF57" w14:textId="77777777" w:rsidR="00087CC1" w:rsidRDefault="00087CC1">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+        <w:br w:type="page"/>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="27F9F5E6" w14:textId="1F0ACDE6" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="120"/>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Times New Roman" w:eastAsia="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>
+          <w:szCs w:val="20"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Times New Roman" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="40"/>
+          <w:szCs w:val="40"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Bible Bowl Topic Outline</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3B5B3F8D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="36"/>
+        </w:rPr>
+        <w:t>CH____   Topic ___________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="36A1CEE4" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="788AC7B5" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:left="-90" w:firstLine="90"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>People</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7F1C6482" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7F48D5DF" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>Places</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2841B596" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7BE012C8" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>Numbers</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5E3D73F2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7695FD54" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>One Words</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="7324675D" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="569E51B2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>Key Thoughts</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="12B0FDB2" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>_____________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="2B015BF3" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="32"/>
+        </w:rPr>
+        <w:t>Lessons learned for MY life/Questions to Ask.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="6E313B49" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>_______________________________________________________________________________________________________________________________________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="71BC60B1" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>_____________________________________________________________</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="62D66C32" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:spacing w:after="0"/>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00961D6F">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:eastAsia="Calibri" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>Please use the back of this page to continue Questions/Lessons learned.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="5701AAC8" w14:textId="299641E9" w:rsidR="00961D6F" w:rsidRPr="000A5299" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:sz w:val="144"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00494EEC">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:br w:type="page"/>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:sz w:val="144"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>Matthew</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="760194B8" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="000A5299">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>ESV (English Standard Version)</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="35B33D6C" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="2479"/>
+          <w:tab w:val="center" w:pos="4680"/>
+        </w:tabs>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="38482556" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:tabs>
+          <w:tab w:val="left" w:pos="2479"/>
+          <w:tab w:val="center" w:pos="4680"/>
+        </w:tabs>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="000A5299">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>Studying God’s Word Pleases Him</w:t>
+      </w:r>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:i/>
+          <w:sz w:val="28"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="42CD2A8F" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="53E69361" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+          <w:noProof/>
+        </w:rPr>
+        <w:drawing>
+          <wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251662336" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="05D260F9" wp14:editId="72DEE488">
+            <wp:simplePos x="0" y="0"/>
+            <wp:positionH relativeFrom="column">
+              <wp:align>center</wp:align>
+            </wp:positionH>
+            <wp:positionV relativeFrom="paragraph">
+              <wp:posOffset>51435</wp:posOffset>
+            </wp:positionV>
+            <wp:extent cx="2193144" cy="2128603"/>
+            <wp:effectExtent l="25400" t="0" r="0" b="0"/>
+            <wp:wrapNone/>
+            <wp:docPr id="2" name="Picture 2" descr="tbblogo.jpg"/>
+            <wp:cNvGraphicFramePr>
+              <a:graphicFrameLocks
+                  xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+            </wp:cNvGraphicFramePr>
+            <a:graphic
+                xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic
+                    xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="tbblogo.jpg"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId8"/>
+                    <a:stretch>
+                      <a:fillRect/>
+                    </a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm>
+                      <a:off x="0" y="0"/>
+                      <a:ext cx="2193144" cy="2128603"/>
+                    </a:xfrm>
+                    <a:prstGeom prst="rect">
+                      <a:avLst/>
+                    </a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:anchor>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="4FB0CB80" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4C7BD07B" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="44F9D680" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="3FA6C1D8" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="7B675109" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="459CB0BE" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="27354736" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="41F9A275" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="20DA330E" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="6DE55DAD" w14:textId="27859F48" w:rsidR="00961D6F" w:rsidRPr="000A5299" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="000A5299">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">Texas Bible Bowl </w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve">April </w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>1</w:t>
+      </w:r>
+      <w:r w:rsidRPr="000A5299">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>, 20</w:t>
+      </w:r>
+      <w:r w:rsidR="00331E50">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>2</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>3</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="13479B87" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRPr="000A5299" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:jc w:val="center"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="000A5299">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>www.texasbiblebowl.org</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="3D265040" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="01E188A9" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="444473F7" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="1121A9E5" w14:textId="77777777" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+          <w:b/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="537F7488" w14:textId="076C1641" w:rsidR="00961D6F" w:rsidRDefault="00961D6F" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Scripture q</w:t>
+      </w:r>
+      <w:r w:rsidRPr="00D5205E">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>uotations are taken from the ESV Bible ®</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"></w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C" w:rsidRPr="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>The Holy Bible, English Standard Version.</w:t>
+      </w:r>
+      <w:r w:rsidR="009D170A">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:br/>
+      </w:r>
+      <w:r w:rsidR="00353F9C" w:rsidRPr="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>ESV® Text Edition: 2016. Copyright © 2001</w:t>
+      </w:r>
+      <w:r w:rsidR="009D170A">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>.</w:t>
+      </w:r>
+      <w:r w:rsidR="00353F9C">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t xml:space="preserve"></w:t>
+      </w:r>
+      <w:r w:rsidRPr="00D5205E">
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma"/>
+        </w:rPr>
+        <w:t>Used by permission. All rights reserved.</w:t>
+      </w:r>
+    </w:p>
+    <w:p w14:paraId="062289E0" w14:textId="77777777" w:rsidR="00353F9C" w:rsidRPr="00BD498C" w:rsidRDefault="00353F9C" w:rsidP="00961D6F">
+      <w:pPr>
+        <w:ind w:right="-1440"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Verdana"/>
+          <w:b/>
+          <w:bCs/>
+          <w:i/>
+          <w:sz w:val="48"/>
+          <w:szCs w:val="26"/>
+        </w:rPr>
+      </w:pPr>
+    </w:p>
+    <w:p w14:paraId="4B8C1457" w14:textId="77777777" w:rsidR="00353F9C" w:rsidRDefault="00353F9C" w:rsidP="00353F9C">
+      <w:pPr>
+        <w:pBdr>
+          <w:top w:val="single" w:sz="4" w:space="1" w:color="auto"/>
+          <w:left w:val="single" w:sz="4" w:space="4" w:color="auto"/>
+          <w:bottom w:val="single" w:sz="4" w:space="1" w:color="auto"/>
+          <w:right w:val="single" w:sz="4" w:space="4" w:color="auto"/>
+        </w:pBdr>
+        <w:shd w:val="clear" w:color="auto" w:fill="FFFFFF"/>
+        <w:spacing w:before="300" w:after="150"/>
+        <w:jc w:val="center"/>
+        <w:outlineLvl w:val="2"/>
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:eastAsia="Times New Roman" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:b/>
+          <w:bCs/>
+          <w:color w:val="000000"/>
+          <w:sz w:val="27"/>
+          <w:szCs w:val="27"/>
+        </w:rPr>
+      </w:pPr>
+      <w:r w:rsidRPr="00D257B4">
+        <w:rPr>
+          <w:rFonts w:ascii="Segoe UI" w:hAnsi="Segoe UI" w:cs="Segoe UI"/>
+          <w:color w:val="000000"/>
+          <w:shd w:val="clear" w:color="auto" w:fill="FAF8F7"/>
+        </w:rPr>
+        <w:lastRenderedPageBreak/>
+        <w:t>The Holy Bible, English Standard Version. ESV® Text Edition: 2016. Copyright © 2001</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>

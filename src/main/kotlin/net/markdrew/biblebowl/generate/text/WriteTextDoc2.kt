@@ -37,6 +37,7 @@ import org.docx4j.wml.CTFtnEdn
 import org.docx4j.wml.CTFtnEdnRef
 import org.docx4j.wml.CTShd
 import org.docx4j.wml.ContentAccessor
+import org.docx4j.wml.Document
 import org.docx4j.wml.FooterReference
 import org.docx4j.wml.HdrFtrRef
 import org.docx4j.wml.HpsMeasure
@@ -58,14 +59,21 @@ import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
 import java.io.File
-import java.io.InputStream
+import java.io.FileNotFoundException
+import java.io.Reader
 import java.math.BigInteger
 import java.net.URI
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.toPath
 
 private val logger: KLogger = KotlinLogging.logger {}
+
+enum class WmlFont(val value: String) {
+    TIMES_NEW_ROMAN("Times New Roman:liga"),
+    QUATTROCENTO_SANS("Quattrocento Sans"),
+    MONOSPACE("Liberation Mono"),
+    SANS_SERIF("Liberation Sans"),
+}
 
 private typealias RStyler = RPr.() -> Unit
 
@@ -83,28 +91,61 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleDoc2(
+    writeBibleDoc2(studyData)
+}
+
+fun writeBibleDoc2(studyData: StudyData) {
+    writeOneText(
+        "tbb-doc-format",
+        defaultStyle,
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(names = true, numbers = true, uniqueWords = true)
+    )
+    writeOneText(
+        "tbb-doc-format2",
+        marksStyle,
+        studyData,
+        TextOptions(names = true, numbers = true, uniqueWords = true)
     )
 }
 
-fun writeBibleDoc2(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
+private fun writeOneText(
+    resourcePath: String,
+    styleParams: Map<String, String>,
+    studyData: StudyData,
+    opts: TextOptions<String>
+) {
     val name = studyData.studySet.simpleName
-    val outputFile = File("$name-bible-text-${opts.fileNameSuffix}2.docx")
+    val modifiedOpts: TextOptions<String> =
+        styleParams["mainFontSize"]?.let { opts.copy(fontSize = it.toInt() / 2) } ?: opts
+    val outputFile = File("$name-bible-text-${modifiedOpts.fileNameSuffix}.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
-    val wordPackage: WordprocessingMLPackage = DocMaker2().renderText(studyData, opts)
-
-    wordPackage.save(outputFile)
-    println("Wrote $outputFile")
+    DocMaker2(resourcePath, styleParams).renderText(outputFile, studyData, modifiedOpts)
 }
 
-private fun URI.resolveChild(childString: String): URI =
-    toPath().resolve(childString).toUri()
-private fun URI.open(childString: String): InputStream =
-    resolveChild(childString).toURL().openStream()
+val defaultStyle: Map<String, String> = mapOf(
+    "mainFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "verseNumFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "headingFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "headingFontSize" to "32",
+    "chapterFontSize" to "27",
+    "mainFontSize" to "24",
+    "footnoteFontSize" to "20",
+    "justified" to "left",
+)
 
-class DocMaker2 {
+val marksStyle: Map<String, String> = mapOf(
+    "mainFont" to WmlFont.TIMES_NEW_ROMAN.value,
+    "verseNumFont" to WmlFont.SANS_SERIF.value,
+    "headingFont" to WmlFont.SANS_SERIF.value,
+    "headingFontSize" to "28",
+    "chapterFontSize" to "24",
+    "mainFontSize" to "20",
+    "footnoteFontSize" to "18",
+    "justified" to "both",
+)
+
+class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String, String> = defaultStyle) {
 
     val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
@@ -114,10 +155,10 @@ class DocMaker2 {
     val footnotes = mutableListOf<CTFtnEdn>()
     private var nextFootnote = 2L
 
-    private val baseUri: URI = javaClass.getResource("/tbb-doc-format2")?.toURI()
-        ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format2")
+    private val baseUri: URI = javaClass.getResource("/$resourcePath")?.toURI()
+        ?: throw IllegalStateException("Couldn't find resource in classpath: /$resourcePath")
     init {
-        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml")))
+        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams))
         mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
 
@@ -191,8 +232,14 @@ class DocMaker2 {
         container.content.add(it)
     }
 
+    fun renderText(outputFile: File, studyData: StudyData, opts: TextOptions<String>) {
+        renderText(studyData, opts).save(outputFile)
+        println("Wrote $outputFile")
+    }
+
     fun renderText(studyData: StudyData, opts: TextOptions<String>): WordprocessingMLPackage {
         addFooter(studyData)
+//        addFrontMatter()
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
@@ -322,6 +369,18 @@ class DocMaker2 {
         }
         addFootnotes()
         return wordPackage
+    }
+
+    private fun addFrontMatter() {
+        val uri: URI = baseUri.resolveChild("frontMatter.xml")
+        try {
+            val doc = uri.toURL().openStream().use {
+                XmlUtils.unmarshal(it) as Document
+            }
+            mainPart.content.addAll(doc.body.content)
+        } catch (_: FileNotFoundException) {
+            // if frontMatter doesn't exist in the right directory, skip it
+        }
     }
 
     private fun addFootnotes() {
@@ -479,10 +538,17 @@ class DocMaker2 {
             templateUri: URI,
             mappings: Map<String, String> = emptyMap()
         ): P = apply {
-            templateUri.toURL().openStream().use {
-                @Suppress("UNCHECKED_CAST")
-                jaxbElement = XmlUtils.unmarshallFromTemplate(it.reader().readText(), mappings) as E
+            templateUri.toURL().openStream().reader().use {
+                unmarshallFromTemplate(it, mappings)
             }
+        }
+
+        private fun <E, P : JaxbXmlPart<E>> P.unmarshallFromTemplate(
+            template: Reader,
+            mappings: Map<String, String> = emptyMap()
+        ): P = apply {
+            @Suppress("UNCHECKED_CAST")
+            jaxbElement = XmlUtils.unmarshallFromTemplate(template.readText(), mappings) as E
         }
     }
 }

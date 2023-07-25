@@ -147,7 +147,7 @@
     <w:basedOn w:val="Normal"/>
     <w:pPr>
       <w:suppressLineNumbers/>
-      <w:ind w:left="200" w:hanging="200"/>
+      <w:ind w:left="350" w:hanging="350"/>
     </w:pPr>
     <w:rPr>
       <w:sz w:val="${footnoteFontSize}"/>
