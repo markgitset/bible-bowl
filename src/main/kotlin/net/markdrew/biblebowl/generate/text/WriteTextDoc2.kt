@@ -87,10 +87,10 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleDoc2(studyData)
+    writeBibleDoc2(studyData, LocalDate.of(2024, 4, 6))
 }
 
-fun writeBibleDoc2(studyData: StudyData) {
+fun writeBibleDoc2(studyData: StudyData, testDate: LocalDate) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex.fromLiteral(it) }.toSet(), // bright yellow
@@ -102,13 +102,13 @@ fun writeBibleDoc2(studyData: StudyData) {
         "tbb-doc-format",
         defaultStyle,
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(12, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
     )
     writeOneText(
         "tbb-doc-format2",
         marksStyle,
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(10, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
     )
 }
 
@@ -116,11 +116,13 @@ private fun writeOneText(
     resourcePath: String,
     styleParams: Map<String, String>,
     studyData: StudyData,
-    opts: TextOptions<String>
+    opts: TextOptions<String>,
 ) {
     val name = studyData.studySet.simpleName
     val modifiedOpts: TextOptions<String> =
-        styleParams["mainFontSize"]?.let { opts.copy(fontSize = it.toInt() / 2) } ?: opts
+        styleParams["mainFontSize"]?.let {
+            opts.copy(fontSize = it.toInt() / 2)
+        } ?: opts
     val outputFile = File("$name-bible-text-${modifiedOpts.fileNameSuffix}.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
     DocMaker2(resourcePath, styleParams).renderText(outputFile, studyData, modifiedOpts)
@@ -132,7 +134,7 @@ val defaultStyle: Map<String, String> = mapOf(
     "headingFont" to WmlFont.QUATTROCENTO_SANS.value,
     "headingFontSize" to "32",
     "chapterFontSize" to "27",
-    "mainFontSize" to "24",
+//    "mainFontSize" to "24", // populate from options
     "footnoteFontSize" to "20",
     "justified" to "left",
 )
@@ -143,12 +145,12 @@ val marksStyle: Map<String, String> = mapOf(
     "headingFont" to WmlFont.SANS_SERIF.value,
     "headingFontSize" to "28",
     "chapterFontSize" to "24",
-    "mainFontSize" to "20",
+//    "mainFontSize" to "20", // populate from options
     "footnoteFontSize" to "18",
     "justified" to "both",
 )
 
-class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String, String> = defaultStyle) {
+class DocMaker2(resourcePath: String = "tbb-doc-format", val styleParams: Map<String, String> = defaultStyle) {
 
     val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
@@ -161,7 +163,6 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
     private val baseUri: URI = javaClass.getResource("/$resourcePath")?.toURI()
         ?: throw IllegalStateException("Couldn't find resource in classpath: /$resourcePath")
     init {
-        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams))
         mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
 
@@ -210,7 +211,8 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
     }
 
     fun renderText(studyData: StudyData, opts: TextOptions<String>): WordprocessingMLPackage {
-        addFooter(studyData)
+        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
+        addFooter(studyData, opts.testDate)
 //        addFrontMatter()
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
@@ -392,12 +394,12 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
         }
     }
 
-    private fun addFooter(studyData: StudyData) {
+    private fun addFooter(studyData: StudyData, testDate: LocalDate = LocalDate.now()) {
         val footerRel: Relationship = mainPart.addTargetPart(
             footerFromTemplate(
                 baseUri.resolveChild("footer1.xml"), mapOf(
                     "title" to studyData.studySet.name,
-                    "date" to LocalDate.now().format(dateFormatter)
+                    "date" to testDate.format(dateFormatter)
                 )
             )
         )
@@ -503,9 +505,13 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", styleParams: Map<String
 
         private fun stylesPartFromTemplate(
             templateUri: URI,
-            mappings: Map<String, String> = emptyMap()
+            mappings: Map<String, String> = emptyMap(),
+            opts: TextOptions<String>
         ): StyleDefinitionsPart =
-            StyleDefinitionsPart().unmarshallFromTemplate(templateUri, mappings)
+            StyleDefinitionsPart().unmarshallFromTemplate(
+                templateUri,
+                mappings + ("mainFontSize" to (2 * opts.fontSize).toString()),
+            )
 
         private fun fontTableFromTemplate(
             templateUri: URI,
