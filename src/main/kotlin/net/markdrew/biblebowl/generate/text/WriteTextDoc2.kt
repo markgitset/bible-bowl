@@ -251,7 +251,7 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", val styleParams: Map<St
             val inPoetry: Boolean = transition.isPresent(POETRY)
             val numIndents: Int = if (!inPoetry) 0 else paragraph.value as Int
             if (newParagraph) {
-                val style = when(numIndents) {
+                val style = when (numIndents) {
                     1 -> if (newPoetry) "Poetry0" else "Poetry1"
                     2 -> "Poetry2"
                     else -> "TextBody"
@@ -262,7 +262,15 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", val styleParams: Map<St
 
             // text
             transition.beginning(VERSE)?.apply {
-                startVerse(value as VerseRef, transition, studyData.isMultiBook)
+                val verseRef: VerseRef = value as VerseRef
+                startVerse(verseRef, transition, studyData.isMultiBook)
+
+                // when we're in poetry in a multi-book set and using chapter labels (that include the book name), the
+                // label will exceed the indent, so rather than adding a tab, just drop to the next line
+                if (inPoetry && studyData.isMultiBook && verseRef.verse == 1) {
+                    add(pop<P>())
+                    pushP("Poetry1")
+                }
             }
 
             if (newParagraph && inPoetry) {
