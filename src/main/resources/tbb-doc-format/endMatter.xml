@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document
+    xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+    xmlns:cx="http://schemas.microsoft.com/office/drawing/2014/chartex"
+    xmlns:cx1="http://schemas.microsoft.com/office/drawing/2015/9/8/chartex"
+    xmlns:cx2="http://schemas.microsoft.com/office/drawing/2015/10/21/chartex"
+    xmlns:cx3="http://schemas.microsoft.com/office/drawing/2016/5/9/chartex"
+    xmlns:cx4="http://schemas.microsoft.com/office/drawing/2016/5/10/chartex"
+    xmlns:cx5="http://schemas.microsoft.com/office/drawing/2016/5/11/chartex"
+    xmlns:cx6="http://schemas.microsoft.com/office/drawing/2016/5/12/chartex"
+    xmlns:cx7="http://schemas.microsoft.com/office/drawing/2016/5/13/chartex"
+    xmlns:cx8="http://schemas.microsoft.com/office/drawing/2016/5/14/chartex"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:aink="http://schemas.microsoft.com/office/drawing/2016/ink"
+    xmlns:am3d="http://schemas.microsoft.com/office/drawing/2017/model3d"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    xmlns:m="http://schemas.openxmlformats.org/officeDocument/2006/math"
+    xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:wp14="http://schemas.microsoft.com/office/word/2010/wordprocessingDrawing"
+    xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+    xmlns:w10="urn:schemas-microsoft-com:office:word"
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+    xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
+    xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml"
+    xmlns:w16cex="http://schemas.microsoft.com/office/word/2018/wordml/cex"
+    xmlns:w16cid="http://schemas.microsoft.com/office/word/2016/wordml/cid"
+    xmlns:w16="http://schemas.microsoft.com/office/word/2018/wordml"
+    xmlns:w16sdtdh="http://schemas.microsoft.com/office/word/2020/wordml/sdtdatahash"
+    xmlns:w16se="http://schemas.microsoft.com/office/word/2015/wordml/symex"
+    xmlns:wpg="http://schemas.microsoft.com/office/word/2010/wordprocessingGroup"
+    xmlns:wpi="http://schemas.microsoft.com/office/word/2010/wordprocessingInk"
+    xmlns:wne="http://schemas.microsoft.com/office/word/2006/wordml"
+    xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"
+    mc:Ignorable="w14 w15 w16se w16cid w16 w16cex w16sdtdh wp14">
+  <w:body>
+    <w:p>
+      <w:pPr>
+        <w:pStyle w:val="TextBody"/>
+        <w:spacing w:before="234" w:after="234"/>
+        <w:rPr/>
+      </w:pPr>
+      <w:r>
+        <w:rPr/>
+      </w:r>
+      <w:r>
+        <mc:AlternateContent>
+          <mc:Choice Requires="wps">
+            <w:drawing>
+              <wp:anchor behindDoc="0" distT="72390" distB="72390" distL="72390" distR="72390" simplePos="0" locked="0"
+                         layoutInCell="0" allowOverlap="1" relativeHeight="2">
+                <wp:simplePos x="0" y="0"/>
+                <wp:positionH relativeFrom="column">
+                  <wp:align>center</wp:align>
+                </wp:positionH>
+                <wp:positionV relativeFrom="margin">
+                  <wp:align>bottom</wp:align>
+                </wp:positionV>
+                <wp:extent cx="4279265" cy="643890"/>
+                <wp:effectExtent l="0" t="0" r="0" b="0"/>
+                <wp:wrapTopAndBottom/>
+                <wp:docPr id="1" name="CopyrightNotice"/>
+                <a:graphic
+                    xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+                  <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
+                    <wps:wsp>
+                      <wps:cNvSpPr txBox="1"/>
+                      <wps:spPr>
+                        <a:xfrm>
+                          <a:off x="0" y="0"/>
+                          <a:ext cx="4279265" cy="643890"/>
+                        </a:xfrm>
+                        <a:prstGeom prst="rect"/>
+                        <a:solidFill>
+                          <a:srgbClr val="FFFFFF"/>
+                        </a:solidFill>
+                        <a:ln w="635">
+                          <a:solidFill>
+                            <a:srgbClr val="000000"/>
+                          </a:solidFill>
+                        </a:ln>
+                      </wps:spPr>
+                      <wps:txbx>
+                        <w:txbxContent>
+                          <w:p>
+                            <w:pPr>
+                              <w:pStyle w:val="TextBody"/>
+                              <w:spacing w:before="234" w:after="234"/>
+                              <w:rPr>
+                                <w:sz w:val="16"/>
+                                <w:szCs w:val="16"/>
+                              </w:rPr>
+                            </w:pPr>
+                            <w:r>
+                              <w:rPr>
+                                <w:sz w:val="16"/>
+                                <w:szCs w:val="16"/>
+                              </w:rPr>
+                              <w:t>Taken from the ESV ® Bible (The Holy Bible, English Standard Version®), Copyright ©2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
+                            </w:r>
+                          </w:p>
+                        </w:txbxContent>
+                      </wps:txbx>
+                      <wps:bodyPr anchor="t" lIns="54610" tIns="54610" rIns="54610" bIns="54610">
+                        <a:noAutofit/>
+                      </wps:bodyPr>
+                    </wps:wsp>
+                  </a:graphicData>
+                </a:graphic>
+                <wp14:sizeRelH relativeFrom="margin">
+                  <wp14:pctWidth>85000</wp14:pctWidth>
+                </wp14:sizeRelH>
+              </wp:anchor>
+            </w:drawing>
+          </mc:Choice>
+          <mc:Fallback>
+            <w:pict>
+              <v:rect strokecolor="#000000" strokeweight="0pt"
+                      style="position:absolute;rotation:-0;width:336.95pt;height:50.7pt;mso-wrap-distance-left:5.7pt;mso-wrap-distance-right:5.7pt;mso-wrap-distance-top:5.7pt;mso-wrap-distance-bottom:5.7pt;margin-top:591.6pt;mso-position-vertical:bottom;mso-position-vertical-relative:margin;margin-left:65.55pt;mso-position-horizontal:center;mso-position-horizontal-relative:text">
+                <v:textbox inset="0.0597222222222222in,0.0597222222222222in,0.0597222222222222in,0.0597222222222222in">
+                  <w:txbxContent>
+                    <w:p>
+                      <w:pPr>
+                        <w:pStyle w:val="TextBody"/>
+                        <w:spacing w:before="234" w:after="234"/>
+                        <w:rPr>
+                          <w:sz w:val="16"/>
+                          <w:szCs w:val="16"/>
+                        </w:rPr>
+                      </w:pPr>
+                      <w:r>
+                        <w:rPr>
+                          <w:sz w:val="16"/>
+                          <w:szCs w:val="16"/>
+                        </w:rPr>
+                        <w:t>Taken from the ESV ® Bible (The Holy Bible, English Standard Version®), Copyright © 2001 by
+                          Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights
+                          reserved.
+                        </w:t>
+                      </w:r>
+                    </w:p>
+                  </w:txbxContent>
+                </v:textbox>
+                <w10:wrap type="topAndBottom"/>
+              </v:rect>
+            </w:pict>
+          </mc:Fallback>
+        </mc:AlternateContent>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>

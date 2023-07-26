@@ -353,20 +353,28 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", val styleParams: Map<St
             }
 
         }
+//        addEndMatter()
         addFootnotes()
         return wordPackage
     }
 
-    private fun addFrontMatter() {
-        val uri: URI = baseUri.resolveChild("frontMatter.xml")
+    private fun addContentsFromDoc(docUri: URI) {
         try {
-            val doc = uri.toURL().openStream().use {
+            val doc = docUri.toURL().openStream().use {
                 XmlUtils.unmarshal(it) as Document
             }
             mainPart.content.addAll(doc.body.content)
         } catch (_: FileNotFoundException) {
-            // if frontMatter doesn't exist in the right directory, skip it
+            // if front/endMatter doesn't exist in the right directory, skip it
         }
+    }
+
+    private fun addFrontMatter() {
+        addContentsFromDoc(baseUri.resolveChild("frontMatter.xml"))
+    }
+
+    private fun addEndMatter() {
+        addContentsFromDoc(baseUri.resolveChild("endMatter.xml"))
     }
 
     private fun addFootnotes() {
