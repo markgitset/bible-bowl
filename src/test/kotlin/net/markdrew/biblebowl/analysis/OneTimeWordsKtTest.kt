@@ -21,7 +21,7 @@ internal class OneTimeWordsKtTest {
                     verses = DisjointRangeMap(),
                     headingCharRanges = DisjointRangeMap(),
                     chapters = DisjointRangeMap(),
-                    paragraphs = DisjointRangeSet(),
+                    paragraphs = DisjointRangeMap(),
                     footnotes = TreeMap(),
                     poetry = DisjointRangeSet()
                 )

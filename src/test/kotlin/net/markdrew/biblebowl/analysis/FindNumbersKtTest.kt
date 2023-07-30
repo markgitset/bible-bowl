@@ -98,7 +98,13 @@ internal class FindNumbersKtTest {
 
     @Test
     fun `findNumbers finds plural numbers`() {
-        assertFound(listOf("hundreds", "thousands", "ten thousands"))
+        assertFound(
+            listOf(
+                "hundreds", "thousands", "ten thousands", "twenties", "thirties", "forties", "fifties",
+                "sixties", "seventies", "eighties", "nineties", "twos", "threes", "fours", "fives", "sixes", "sevens",
+                "eights", "nines", "tens", "elevens", "twelves", "thirteens"
+            )
+        )
     }
 
     @Test
@@ -116,6 +122,16 @@ internal class FindNumbersKtTest {
     }
 
     @Test
+    fun `findNumbers finds one as a number`() {
+        assertFound("You shall not eat just one day, or two days, or five days", "one", "two", "five")
+    }
+
+    @Test
+    fun `findNumbers finds first as an ordinal`() {
+        assertFound("the first month of the year", "first")
+    }
+
+    @Test
     fun `findNumbers finds folds`() {
         assertFound(listOf(
             "sevenfold",
@@ -125,7 +141,7 @@ internal class FindNumbersKtTest {
     }
 
     @Test
-    fun `findNumbers does not find-gathered together into one place`() {
+    fun `findNumbers does not find non-numeric ones`() {
         assertNotFound(
             "gathered together into one place,",
             "brought of the firstborn of his flock",
@@ -143,6 +159,8 @@ internal class FindNumbersKtTest {
             "from one end of Egypt",
             "your brothers one mountain slope",
             "on my behalf",
+            "seeing no one, he struck down",
+            "to your godly one, whom",
         )
     }
 
@@ -167,6 +185,11 @@ internal class FindNumbersKtTest {
                 findNumbers("$prefix$number$suffix").toList()
             )
         }
+    }
+
+    /** Doesn't check found ranges, but does check that the expected number strings were found */
+    private fun assertFound(text: String, vararg expectedNumberStrings: String) {
+        assertEquals(expectedNumberStrings.toList(), findNumbers(text).map { it.excerptText }.toList())
     }
 
     private fun assertNotFound(vararg noNumbers: String) {

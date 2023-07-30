@@ -22,18 +22,19 @@ import java.nio.file.Paths
 @Language("RegExp") const val BASE_FRACTIONS =
     """(?:hal(?:f|ve)|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)s?"""
 @Language("RegExp") const val ONE_AS_NUMBER =
-    """(?<=-)one|(?<!the )\bone(?= and|[\- ]$BASE_FRACTIONS| mile| hour| eye| or two| flesh| talent|,| for)"""
+    """(?<=-|just )one|(?<!(the|no) )\bone(?= and|[\- ]$BASE_FRACTIONS| mile| hour| staff| (drawn )?out of| of every| have chased| eye| or two| flesh| talent| for)"""
 @Language("RegExp") const val SPECIAL_NUMBERS_PATTERN =
-    """\b(?:zero|$ONE_AS_NUMBER|two|three|five|ten|eleven|twelve|forty|hundreds?|thousands?|myriads?)"""
+    """\b(?:zero|$ONE_AS_NUMBER|twos?|threes?|fives?|tens?|elevens?|twelves?|fort(y|ies)|hundreds?|thousands?|myriads?)"""
 @Language("RegExp") const val NUMBER_PATTERN =
-    """\b(?:(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|four|fif|six|seven|eight?|nine)(?:teen|ty)?)(?:fold)?)\b"""
+    """\b(?:(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|fours?|fif|six(es)?|sevens?|eigh(ts?)?|nines?)(?:teens?|ty|ties)?)(?:fold)?)\b"""
 @Language("RegExp") const val MULTI_NUMBER_PATTERN = """$NUMBER_PATTERN(?:(?:-| | of |)$NUMBER_PATTERN)*"""
 
 @Language("RegExp") const val TENS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)ty)"""
 @Language("RegExp") const val TENS_ORDINALS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)tieth)"""
 @Language("RegExp") const val TEENS = """(?:(?:thir|four|fif|six|seven|eigh|nine)teen)"""
+@Language("RegExp") const val FIRST_AS_ORDINAL = "(?:first(?=\\s+(day|month)))"
 @Language("RegExp") const val ORDINALS =
-    """(?:(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|(?:$TENS-first)\b|""" +
+    """(?:$FIRST_AS_ORDINAL|(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|(?:$TENS-first)\b|""" +
             """(?:$TENS-)?(?:(?<=and )first|second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|$TEENS)th))\b)"""
 @Language("RegExp") const val FRACTIONS =
     """(?:\b(?:$MULTI_NUMBER_PATTERN(?:\s+and\s+(a|$MULTI_NUMBER_PATTERN))?[\-\s]\s*)?$BASE_FRACTIONS\b)"""
