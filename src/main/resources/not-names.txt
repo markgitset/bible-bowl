@@ -3979,7 +3979,6 @@ aquila
 aquiline
 aquinas
 aquitaine
-ar
 ara
 arab
 araba
@@ -5576,7 +5575,6 @@ aztreonam
 azure
 azygous
 azymia
-bte
 b
 b-girl
 b-horizon
@@ -5584,7 +5582,6 @@ b-meson
 ba
 baa
 baa-lamb
-baal
 baas
 baba
 babar
@@ -6604,7 +6601,6 @@ beeline
 beelzebub
 been
 beep
-beer
 beersheba
 beery
 bees
@@ -6843,8 +6839,6 @@ benignly
 benin
 beninese
 benison
-benjamin
-benjamins
 bennet
 bennettitaceae
 bennettitales
@@ -16501,7 +16495,6 @@ damselfish
 damselfly
 damson
 damusque
-dan
 danae
 danaea
 danaid
@@ -25712,10 +25705,8 @@ gabon
 gabonese
 gaborone
 gaby
-gad
 gadaba
 gadabout
-gaddi
 gadding
 gadfly
 gadget
@@ -25849,7 +25840,6 @@ galvanometer
 galwegian
 gam
 gamache
-gamaliel
 gamashes
 gamba
 gambade
@@ -26492,9 +26482,7 @@ gilded
 gilder
 gildhall
 gilding
-gilead
 giles
-gilgamish
 gill
 gillie
 gills
@@ -28771,8 +28759,6 @@ hebetude
 hebetudinous
 hebraic
 hebraist
-hebrew
-hebrews
 hebridean
 hebrides
 hecatomb
@@ -29800,7 +29786,6 @@ hopples
 hops
 hopsacking
 hopscotch
-hor
 hora
 horace
 horary
@@ -33918,7 +33903,6 @@ kahin
 kahlua
 kahoolawe
 kai
-kain
 kainite
 kaiser
 kaka
@@ -35575,9 +35559,7 @@ levin
 levirate
 levisticum
 levitation
-levite
 levitical
-leviticus
 levity
 levorotary
 levy
@@ -37680,7 +37662,6 @@ mara
 marabou
 marabout
 maraco
-marah
 maranatha
 marang
 maranta
@@ -41621,7 +41602,6 @@ nihilo
 nijmegen
 nike
 nil
-nile
 nilgai
 nill
 nilly
@@ -42417,7 +42397,6 @@ nummulite
 nummulitidae
 numps
 numskull
-nun
 nunc
 nuncio
 nuncupation
@@ -46173,7 +46152,6 @@ phantasmagoria
 phantasmagoric
 phantasy
 phantom
-pharaoh
 pharaonic
 pharmaceutical
 pharmaceutics
@@ -55770,7 +55748,6 @@ shenanigan
 shend
 shenstone
 shenyang
-sheol
 shepard
 shepherd
 shepherdess
@@ -56298,7 +56275,6 @@ simagre
 simarouba
 simaroubaceae
 simazine
-simeon
 simian
 similar
 similarity
@@ -56347,7 +56323,6 @@ simultaneous
 simultaneously
 simultaneousness
 sin
-sinai
 sinanthropus
 sinapis
 sinapism

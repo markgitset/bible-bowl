@@ -14,6 +14,7 @@ val smallCapsNames = mapOf(
 
 val divineNames = setOf("God", "Jesus", "Christ", "Holy Spirit", "Immanuel", "Father", "Spirit of God",
     "Son of God", "Son of Man", "Son of David", "Lord of the harvest", "Spirit of your Father", "Son",
+    "God Almighty", "angel of the LORD", "Spirit",
     *smallCapsNames.keys.toTypedArray())
 
 internal fun URI.resolveChild(childString: String): URI =
