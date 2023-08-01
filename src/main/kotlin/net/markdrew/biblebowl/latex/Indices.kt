@@ -4,13 +4,16 @@ import java.io.Writer
 
 data class IndexEntry<K, V>(val key: K, val values: List<V>)
 
-fun <K, V> writeIndex(writer: Writer,
-                      entries: Iterable<IndexEntry<K, V>>,
-                      indexTitle: String? = null,
-                      indexPreface: String? = null,
-                      columns: Int = 2,
-                      formatKey: (K) -> String = { it.toString() },
-                      formatValue: (V) -> String = { it.toString() }) {
+fun <K, V> writeIndex(
+    writer: Writer,
+    entries: Iterable<IndexEntry<K, V>>,
+    indexTitle: String? = null,
+    indexPreface: String? = null,
+    columns: Int = 2,
+    formatKey: (K) -> String = { it.toString() },
+    formatValue: (V) -> String = { it.toString() },
+    formatValues: (List<V>) -> String = { it.joinToString(transform = formatValue) },
+) {
 
     if (indexTitle != null) writer.appendLine("""\subsection*{$indexTitle}""")
     if (indexPreface != null) writer.appendLine(indexPreface).appendLine()
@@ -21,8 +24,7 @@ fun <K, V> writeIndex(writer: Writer,
         
     """.trimIndent())
     entries.forEach {
-        writer.append("""\par\textbf{${formatKey(it.key)}},  """)
-        it.values.joinTo(writer, postfix = "\n", transform = formatValue)
+        writer.appendLine("""\par\textbf{${formatKey(it.key)}},  ${formatValues(it.values)}""")
     }
     writer.appendLine("""
         \end{hangparas}

@@ -74,14 +74,20 @@ private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: In
         ) {
 
             writeIndex(
-                writer, indexEntries.sortedBy { it.key }, "Alphabetical",
-                columns = 2
-            ) { formatVerseRefWithCount2(it) }
+                writer,
+                indexEntries.sortedBy { it.key },
+                "Alphabetical",
+                columns = 2,
+                formatValue = ::formatVerseRefWithCount2,
+            )
             writer.appendLine("""\newpage""")
             writeIndex(
-                writer, indexEntries.sortedByDescending { it.values.size }, "In Order of Decreasing Frequency",
-                columns = 2
-            ) { formatVerseRefWithCount2(it) }
+                writer,
+                indexEntries.sortedByDescending { it.values.size },
+                "In Order of Decreasing Frequency",
+                columns = 2,
+                formatValue = ::formatVerseRefWithCount2,
+            )
         }
     }
     file.toPdf()

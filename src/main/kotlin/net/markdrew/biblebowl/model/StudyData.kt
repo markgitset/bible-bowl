@@ -1,8 +1,11 @@
 package net.markdrew.biblebowl.model
 
 import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.excerpt
+import net.markdrew.biblebowl.generate.indices.noBreak
+import net.markdrew.biblebowl.generate.indices.withCount
 import net.markdrew.biblebowl.generate.text.AnnotatedDoc
 import net.markdrew.biblebowl.generate.text.toAnnotatedDoc
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -77,7 +80,17 @@ class StudyData(
 
     val verseRefFormat: (VerseRef) -> String by lazy {
         if (isMultiBook) { verseRef: VerseRef -> verseRef.format(BRIEF_BOOK_FORMAT) }
-        else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }
+        else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }.noBreak()//.withCount()
+    }
+
+    val compactVerseRefListFormat: (List<VerseRef>) -> String by lazy {
+        if (isMultiBook) { verseRefs: List<VerseRef> -> verseRefs.format(BRIEF_BOOK_FORMAT) }
+        else { verseRefs: List<VerseRef> -> verseRefs.joinToString { verseRefFormat(it) } }
+    }
+
+    val compactWithCountVerseRefListFormat: (List<WithCount<VerseRef>>) -> String by lazy {
+        if (isMultiBook) { verseRefs: List<WithCount<VerseRef>> -> verseRefs.formatWithCounts(BRIEF_BOOK_FORMAT) }
+        else { verseRefs: List<WithCount<VerseRef>> -> verseRefs.joinToString(transform = verseRefFormat.withCount()) }
     }
 
     fun writeData(outPath: Path) {

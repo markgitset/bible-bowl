@@ -33,7 +33,7 @@ private fun writeNamesList(studyData: StudyData) {
     }
 }
 
-public fun writeNamesIndex(studyData: StudyData) {
+fun writeNamesIndex(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
     val exceptNames: Array<String> = arrayOf()
     val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData, *exceptNames)
@@ -54,7 +54,10 @@ public fun writeNamesIndex(studyData: StudyData) {
         writeDoc(writer, "$name Names Index", docPreface) {
 
             val index: List<WordIndexEntryC> = indexEntries.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())
+            writeIndex(writer, index, columns = 3,
+                //formatValue = studyData.verseRefFormat.noBreak().withCount(),
+                formatValues = studyData.compactWithCountVerseRefListFormat,
+            )
 
             writer.appendLine("""\newpage""")
 

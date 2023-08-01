@@ -33,15 +33,16 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS)
     val simpleName = studyData.studySet.simpleName
     val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-numbers.tex")
+    val docPreface = "The following is a complete index of all numbers in $longName"
     file.writer().use { writer ->
-        writeDoc(writer, "$fullName Numbers Index",
-            docPreface = "The following is a complete index of all numbers in $longName"//, " +
-                    //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
-            ) {
+        writeDoc(writer, "$fullName Numbers Index", docPreface) {
 
             val index: List<WordIndexEntryC> =
                 indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())
+            writeIndex(writer, index, columns = 3,
+                //formatValue = studyData.verseRefFormat.noBreak().withCount(),
+                formatValues = studyData.compactWithCountVerseRefListFormat,
+            )
 
             writer.appendLine("""\newpage""")
 

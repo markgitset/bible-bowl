@@ -22,10 +22,11 @@ fun main() {
     writeNonLocalPhrasesIndex(studyData, maxPhraseLength = 23)
 }
 
-fun ((VerseRef) -> String).noBreak(): (VerseRef) -> String = { ref -> this(ref).replace(' ', '~') }
-fun ((VerseRef) -> String).withCount(): (WithCount<VerseRef>) -> String = { ref ->
-    this(ref.item) + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
-}
+fun <T> ((T) -> String).noBreak(): (T) -> String = { ref -> this(ref).replace(' ', '~') }
+fun <T> ((T) -> String).withCount(): (WithCount<T>) -> String =
+    { ref -> formatWithCount(this(ref.item), ref.count) }
+fun formatWithCount(s: String, count: Int): String =
+    s + (if (count > 1) """(\(\times\)${count})""" else "")
 
 fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
     ref.item.format(NO_BOOK_FORMAT) + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
@@ -49,14 +50,20 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
         ) {
 
             writeIndex(
-                writer, indexEntries.sortedBy { it.key }, "Alphabetical",
-                columns = 2
-            ) { formatVerseRefWithCount(it) }
+                writer,
+                indexEntries.sortedBy { it.key },
+                "Alphabetical",
+                columns = 2,
+                formatValue = ::formatVerseRefWithCount,
+            )
             writer.appendLine("""\newpage""")
             writeIndex(
-                writer, indexEntries.sortedByDescending { it.values.size }, "In Order of Decreasing Frequency",
-                columns = 2
-            ) { formatVerseRefWithCount(it) }
+                writer,
+                indexEntries.sortedByDescending { it.values.size },
+                "In Order of Decreasing Frequency",
+                columns = 2,
+                formatValue = ::formatVerseRefWithCount,
+            )
         }
     }
     file.toPdf()
