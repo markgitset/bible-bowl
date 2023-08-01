@@ -35,7 +35,8 @@ private fun writeNamesList(studyData: StudyData) {
 
 public fun writeNamesIndex(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
-    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData)
+    val exceptNames: Array<String> = arrayOf()
+    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData, *exceptNames)
         .map { wordIndexEntry ->
             WordIndexEntryC(
                 wordIndexEntry.key,
@@ -46,11 +47,11 @@ public fun writeNamesIndex(studyData: StudyData) {
     val file = dir.resolve("$studyName-index-names.tex")
     val name = studyData.studySet.name
     val longName = studyData.studySet.longName
+    val docPrefaceExceptions =
+        if (exceptNames.isEmpty()) "" else ", except for these: ${exceptNames.sorted().joinToString()}"
+    val docPreface = "The following is a complete index of all names in $longName$docPrefaceExceptions."
     file.writer().use { writer ->
-        writeDoc(writer, "$name Names Index",
-            docPreface = "The following is a complete index of all names in $longName"//, " +
-                    //"""except for these:\\\\${stopWords.sorted().joinToString()}."""
-            ) {
+        writeDoc(writer, "$name Names Index", docPreface) {
 
             val index: List<WordIndexEntryC> = indexEntries.sortedBy { it.key.lowercase() }
             writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())

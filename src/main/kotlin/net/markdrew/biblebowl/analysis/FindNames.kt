@@ -16,19 +16,20 @@ import java.nio.file.Paths
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
     "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember", "hurry", "possessor", "perhaps",
-    "oh", "suppose", "knead", "meanwhile", "quick", "raiders", "whichever", "unstable", "assemble", "do")
+    "oh", "suppose", "knead", "meanwhile", "quick", "raiders", "whichever", "unstable", "assemble", "do", "god")
 
 private val REGEX_NAMES = setOf(
     """\p{Lu}\w+ Sea""",
-    """(?:Valley|Brook|Feast|Sea) of \p{Lu}\w+""",
+    """(?:Valley|Brook|Feast|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
     """Mount \p{Lu}\w+""",
 )
 
 private val ENGLISH_WORDS: Dictionary by lazy { DictionaryParser.parse("not-names.txt") }
 
-fun buildNamesIndex(studyData: StudyData,
-                    frequencyRange: IntRange? = null,
-                    vararg exceptNames: String): List<WordIndexEntry> =
+fun buildNamesIndex(
+    studyData: StudyData,
+    vararg exceptNames: String
+): List<WordIndexEntry> =
     nameCandidates(studyData, exceptNames).map { excerpts ->
         val key = excerpts.first().excerptText
         WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
