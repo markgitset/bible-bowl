@@ -327,7 +327,7 @@ class DocMaker2(resourcePath: String = "tbb-doc-format", val styleParams: Map<St
                 }
             }
 
-            if (transition.isBeginning(NAME)) {
+            if (transition.isPresent(NAME)) {
                 r.rPr = (r.rPr ?: RPr()).apply {
                     shd = CTShd().apply {
                         `val` = STShd.CLEAR

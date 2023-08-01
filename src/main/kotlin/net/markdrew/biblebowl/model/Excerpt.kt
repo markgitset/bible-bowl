@@ -28,3 +28,5 @@ data class Excerpt(val excerptText: String, val excerptRange: IntRange) {
         Excerpt(excerptText.dropLast(2), excerptRange.first..(excerptRange.last - 2))
     } else this
 }
+
+fun MatchResult.toExcerpt(): Excerpt = Excerpt(value, range)

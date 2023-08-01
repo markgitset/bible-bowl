@@ -10,12 +10,19 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
 import java.nio.file.Paths
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
     "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember", "hurry", "possessor", "perhaps",
     "oh", "suppose", "knead", "meanwhile", "quick", "raiders", "whichever", "unstable", "assemble", "do")
+
+private val REGEX_NAMES = setOf(
+    """\p{Lu}\w+ Sea""",
+    """(?:Valley|Brook|Feast|Sea) of \p{Lu}\w+""",
+    """Mount \p{Lu}\w+""",
+)
 
 private val ENGLISH_WORDS: Dictionary by lazy { DictionaryParser.parse("not-names.txt") }
 
@@ -60,19 +67,37 @@ private fun isFirstWordInSentence(studyData: StudyData, wordRange: IntRange): Bo
     return wordRange.first == sentenceRange.first
 }
 
-private fun nameCandidates(studyData: StudyData, exceptNames: Array<out String>): Collection<List<Excerpt>> =
-    studyData.words
-        .map { studyData.excerpt(it).disown() } // non-possessive word Excerpts
-        .filter { isName(studyData, it) }
-        .filter { it.excerptText !in exceptNames }
+private fun wordNames(studyData: StudyData, exceptNames: Array<out String>): DisjointRangeMap<String> =
+    studyData.words.fold(DisjointRangeMap()) { drm, range ->
+        val excerpt: Excerpt = studyData.excerpt(range).disown()
+        drm.apply {
+            if (isName(studyData, excerpt) && excerpt.excerptText !in exceptNames) {
+                put(excerpt.excerptRange, excerpt.excerptText)
+            }
+        }
+    }
+
+private fun regexNames(
+    text: CharSequence,
+    regexes: List<Regex>,
+    exceptNames: Array<out String>,
+): DisjointRangeMap<String> = DisjointRangeMap<String>().apply {
+    regexes.forEach { regex ->
+        regex.findAll(text).forEach {
+            if (it.value !in exceptNames) put(it.range, it.value)
+        }
+    }
+}
+
+private fun nameCandidates(studyData: StudyData, exceptNames: Array<out String>): Collection<List<Excerpt>> {
+    val a: DisjointRangeMap<String> = wordNames(studyData, exceptNames)
+    val b: DisjointRangeMap<String> = regexNames(studyData.text, REGEX_NAMES.map { it.toRegex() }, exceptNames)
+    b.putAllNonIntersecting(a)
+    return b.map { (range, value) -> Excerpt(value, range) }
         .groupBy { it.excerptText.lowercase() } // Map<String, List<Excerpt>>
         .filterKeys { it !in STOP_NAMES } // remove stop names
-//        .filterValues { excerpts ->
-//            excerpts.none { excerpt ->
-//                excerpt.excerptText.first().let { it.isLowerCase() || it.isDigit() }
-//            }
-//        }
         .values // only keep excerpt lists for which all excerpts start with a capital letter
+}
 
 fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
     nameExcerpts.groupBy { it.excerptText }
