@@ -47,7 +47,10 @@ fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
 
             val index: List<WordIndexEntryC> =
                 indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3, formatValue = studyData.verseRefFormat.noBreak().withCount())
+            writeIndex(writer, index, columns = 3,
+                //formatValue = studyData.verseRefFormat.noBreak().withCount(),
+                formatValues = studyData.compactWithCountVerseRefListFormat,
+            )
 
             writer.appendLine("""\newpage""")
 

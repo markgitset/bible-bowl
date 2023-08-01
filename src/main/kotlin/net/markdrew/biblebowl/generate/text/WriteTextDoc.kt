@@ -98,6 +98,22 @@ fun writeBibleDoc2(studyData: StudyData, testDate: LocalDate) {
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
 
+    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(12, customHighlights, testDate))
+    writeOneText("tbb-doc-format2", marksStyle, studyData, TextOptions(10, customHighlights, testDate))
+
+    writeOneText(
+        "tbb-doc-format",
+        defaultStyle,
+        studyData,
+        TextOptions(12, customHighlights, testDate, uniqueWords = true),
+    )
+    writeOneText(
+        "tbb-doc-format2",
+        marksStyle,
+        studyData,
+        TextOptions(10, customHighlights, testDate, uniqueWords = true),
+    )
+
     writeOneText(
         "tbb-doc-format",
         defaultStyle,
