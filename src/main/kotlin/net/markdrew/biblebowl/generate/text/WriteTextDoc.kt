@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate.text
 
 import mu.KLogger
 import mu.KotlinLogging
+import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
@@ -87,10 +88,10 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleDoc2(studyData, LocalDate.of(2024, 4, 6))
+    writeBibleDoc(studyData, LocalDate.of(2024, 4, 6))
 }
 
-fun writeBibleDoc2(studyData: StudyData, testDate: LocalDate) {
+fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex.fromLiteral(it) }.toSet(), // bright yellow
@@ -98,33 +99,36 @@ fun writeBibleDoc2(studyData: StudyData, testDate: LocalDate) {
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
 
-    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(12, customHighlights, testDate))
-    writeOneText("tbb-doc-format2", marksStyle, studyData, TextOptions(10, customHighlights, testDate))
+    // plain
+    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(testDate, 12))
+    writeOneText("marks-doc-format", marksStyle, studyData, TextOptions(testDate, 10))
 
+    // unique words underlined
     writeOneText(
         "tbb-doc-format",
         defaultStyle,
         studyData,
-        TextOptions(12, customHighlights, testDate, uniqueWords = true),
+        TextOptions(testDate, 12, uniqueWords = true),
     )
     writeOneText(
-        "tbb-doc-format2",
+        "marks-doc-format",
         marksStyle,
         studyData,
-        TextOptions(10, customHighlights, testDate, uniqueWords = true),
+        TextOptions(testDate, 10, customHighlights, uniqueWords = true),
     )
 
+    // all highlighting
     writeOneText(
         "tbb-doc-format",
         defaultStyle,
         studyData,
-        TextOptions(12, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
+        TextOptions(testDate, 12, customHighlights, uniqueWords = true, names = true, numbers = true),
     )
     writeOneText(
-        "tbb-doc-format2",
+        "marks-doc-format",
         marksStyle,
         studyData,
-        TextOptions(10, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
+        TextOptions(testDate, 10, customHighlights, uniqueWords = true, names = true, numbers = true),
     )
 }
 
@@ -139,8 +143,8 @@ private fun writeOneText(
         styleParams["mainFontSize"]?.let {
             opts.copy(fontSize = it.toInt() / 2)
         } ?: opts
-    val outputFile = File("$name-bible-text-${modifiedOpts.fileNameSuffix}.docx")
-//    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
+    val outputFile = File("$PRODUCTS_DIR/$name/text/docx/$name-bible-text-${opts.fileNameSuffix}.docx")
+    outputFile.parentFile.mkdirs()
     DocMaker(resourcePath, styleParams).renderText(outputFile, studyData, modifiedOpts)
 }
 

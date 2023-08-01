@@ -43,13 +43,13 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
     writeBibleText(
         studyData,
-        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(customHighlights = customHighlights, uniqueWords = true, names = true, numbers = true)
     )
 }
 
 fun writeBibleText(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
-    val latexFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.tex")
+    val latexFile = File("$PRODUCTS_DIR/$name/text/latex/$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)
     println("Wrote $latexFile")
     latexFile.toPdf(twice = true, keepTexFiles = true, showStdIo = false)
