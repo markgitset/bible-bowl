@@ -2,12 +2,18 @@ package net.markdrew.biblebowl.generate.text
 
 import mu.KLogger
 import mu.KotlinLogging
-import net.markdrew.biblebowl.generate.text.DocMaker.createWmlPackage
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.NAME
+import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
+import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
+import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
+import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
@@ -16,483 +22,540 @@ import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
-import org.docx4j.Docx4J
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import org.docx4j.XmlUtils
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage
-import org.docx4j.openpackaging.parts.PartName
+import org.docx4j.openpackaging.parts.JaxbXmlPart
+import org.docx4j.openpackaging.parts.WordprocessingML.FontTablePart
 import org.docx4j.openpackaging.parts.WordprocessingML.FooterPart
+import org.docx4j.openpackaging.parts.WordprocessingML.FootnotesPart
 import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
-import org.docx4j.openpackaging.parts.WordprocessingML.NumberingDefinitionsPart
-import org.docx4j.openpackaging.parts.relationships.RelationshipsPart
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart
+import org.docx4j.relationships.Relationship
 import org.docx4j.wml.BooleanDefaultTrue
-import org.docx4j.wml.CTFtnProps
-import org.docx4j.wml.CTNumRestart
-import org.docx4j.wml.CTTabStop
-import org.docx4j.wml.CTVerticalAlignRun
-import org.docx4j.wml.Color
-import org.docx4j.wml.Ftr
-import org.docx4j.wml.Lvl
-import org.docx4j.wml.NumFmt
-import org.docx4j.wml.NumberFormat
+import org.docx4j.wml.CTFootnotes
+import org.docx4j.wml.CTFtnEdn
+import org.docx4j.wml.CTFtnEdnRef
+import org.docx4j.wml.CTShd
+import org.docx4j.wml.ContentAccessor
+import org.docx4j.wml.Document
+import org.docx4j.wml.FooterReference
+import org.docx4j.wml.HdrFtrRef
+import org.docx4j.wml.HpsMeasure
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
-import org.docx4j.wml.PPrBase
+import org.docx4j.wml.PPrBase.PStyle
+import org.docx4j.wml.ParaRPr
 import org.docx4j.wml.R
-import org.docx4j.wml.R.FootnoteRef
-import org.docx4j.wml.RFonts
+import org.docx4j.wml.R.ContinuationSeparator
+import org.docx4j.wml.R.Separator
+import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
-import org.docx4j.wml.STLineSpacingRule
-import org.docx4j.wml.STRestartNumber
+import org.docx4j.wml.STFtnEdn
 import org.docx4j.wml.STShd
-import org.docx4j.wml.STTabJc
-import org.docx4j.wml.STVerticalAlignRun
 import org.docx4j.wml.SectPr
-import org.docx4j.wml.Tabs
 import org.docx4j.wml.Text
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
 import java.io.File
-import java.io.InputStream
+import java.io.FileNotFoundException
+import java.io.Reader
 import java.math.BigInteger
 import java.net.URI
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.toPath
 
 private val logger: KLogger = KotlinLogging.logger {}
+
+enum class WmlFont(val value: String) {
+    TIMES_NEW_ROMAN("Times New Roman:liga"),
+    QUATTROCENTO_SANS("Quattrocento Sans"),
+    MONOSPACE("Liberation Mono"),
+    SANS_SERIF("Liberation Sans"),
+}
+
+private typealias RStyler = RPr.() -> Unit
 
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
     val studyData = StudyData.readData(studySet)
-    val customHighlights = mapOf(
-//        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
-        "namesColor" to setOf("John the Baptist".toRegex()),
-    )
+
+    val rStyler: RStyler = { smallCaps = BooleanDefaultTrue().apply { isVal = true } }
+
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleDoc(
+    writeBibleDoc2(studyData, LocalDate.of(2024, 4, 6))
+}
+
+fun writeBibleDoc2(studyData: StudyData, testDate: LocalDate) {
+
+    val customHighlights: Map<String, Set<Regex>> = mapOf(
+        "ffff00" to divineNames.map { Regex.fromLiteral(it) }.toSet(), // bright yellow
+//        "namesColor" to setOf("John the Baptist".toRegex()),
+//        rStyler to setOf(Regex.fromLiteral("LORD")),
+    )
+
+    writeOneText(
+        "tbb-doc-format",
+        defaultStyle,
         studyData,
-//        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
+        TextOptions(12, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
+    )
+    writeOneText(
+        "tbb-doc-format2",
+        marksStyle,
+        studyData,
+        TextOptions(10, customHighlights, testDate, names = true, numbers = true, uniqueWords = true),
     )
 }
 
-fun writeBibleDoc(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
+private fun writeOneText(
+    resourcePath: String,
+    styleParams: Map<String, String>,
+    studyData: StudyData,
+    opts: TextOptions<String>,
+) {
     val name = studyData.studySet.simpleName
-    val outputFile = File("$name-bible-text-${opts.fileNameSuffix}.docx")
+    val modifiedOpts: TextOptions<String> =
+        styleParams["mainFontSize"]?.let {
+            opts.copy(fontSize = it.toInt() / 2)
+        } ?: opts
+    val outputFile = File("$name-bible-text-${modifiedOpts.fileNameSuffix}.docx")
 //    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
-    val wordPackage: WordprocessingMLPackage = createWmlPackage(studyData, opts)
-
-    wordPackage.save(outputFile)
-    println("Wrote $outputFile")
+    DocMaker(resourcePath, styleParams).renderText(outputFile, studyData, modifiedOpts)
 }
 
-object DocMaker {
+val defaultStyle: Map<String, String> = mapOf(
+    "mainFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "verseNumFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "headingFont" to WmlFont.QUATTROCENTO_SANS.value,
+    "headingFontSize" to "32",
+    "chapterFontSize" to "27",
+//    "mainFontSize" to "24", // populate from options
+    "footnoteFontSize" to "20",
+    "justified" to "left",
+)
 
-    private val factory = ObjectFactory()
-    
-    private val qsFonts: RFonts = RFonts().apply {
-        ascii="Quattrocento Sans"
-        cs="Quattrocento Sans"
-        eastAsia="Quattrocento Sans"
-        hAnsi="Quattrocento Sans"
+val marksStyle: Map<String, String> = mapOf(
+    "mainFont" to WmlFont.TIMES_NEW_ROMAN.value,
+    "verseNumFont" to WmlFont.SANS_SERIF.value,
+    "headingFont" to WmlFont.SANS_SERIF.value,
+    "headingFontSize" to "28",
+    "chapterFontSize" to "24",
+//    "mainFontSize" to "20", // populate from options
+    "footnoteFontSize" to "18",
+    "justified" to "both",
+)
+
+class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<String, String> = defaultStyle) {
+
+    val factory = ObjectFactory()
+    private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
+    private val mainPart: MainDocumentPart = wordPackage.mainDocumentPart
+
+    private val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(mainPart) }
+    val footnotes = mutableListOf<CTFtnEdn>()
+    private var nextFootnote = 2L
+
+    private val baseUri: URI = javaClass.getResource("/$resourcePath")?.toURI()
+        ?: throw IllegalStateException("Couldn't find resource in classpath: /$resourcePath")
+    init {
+        mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
 
-    private val black: Color = factory.createColor().apply { `val` = "000000" }
+    private fun <T : ContentAccessor> push(ca: T): T = ca.also { contentStack.addFirst(ca) }
 
-    private fun URI.resolveChild(childString: String): URI =
-        toPath().resolve(childString).toUri()
-    private fun URI.open(childString: String): InputStream =
-        resolveChild(childString).toURL().openStream()
+    @Suppress("UNCHECKED_CAST")
+    private fun <T> pop(): T = contentStack.removeFirst() as T
 
-    private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
-
-    fun createWmlPackage(studyData: StudyData, opts: TextOptions<String> = TextOptions()): WordprocessingMLPackage {
-        val baseUri: URI = javaClass.getResource("/tbb-doc-format")?.toURI()
-            ?: throw IllegalStateException("Couldn't find resource in classpath: /tbb-doc-format")
-        return Docx4J.load(baseUri.open("text-template.docx")).apply {
-            val mappings: Map<String, String> = mapOf(
-                "title" to studyData.studySet.name,
-                "date" to LocalDate.now().format(dateFormatter)
-            )
-            mainDocumentPart.addTargetPart(
-                footerPartFromTemplate("/word/footer2.xml", baseUri.resolveChild("footer2.xml"), mappings),
-                RelationshipsPart.AddPartBehaviour.OVERWRITE_IF_NAME_EXISTS,
-                "rId3"
-            )
-            renderText(mainDocumentPart, studyData, opts)
-        }
-    }
-
-    private fun footerPartFromTemplate(
-        footerPartName: String,
-        templateUri: URI,
-        mappings: Map<String, String>
-    ): FooterPart = FooterPart(PartName(footerPartName)).apply {
-        templateUri.toURL().openStream().use {
-            jaxbElement = XmlUtils.unmarshallFromTemplate(
-                it.reader().readText(), mappings
-            ) as Ftr?
-        }
-    }
-
-
-    private fun renderText(out: MainDocumentPart, studyData: StudyData, opts: TextOptions<String>) {
-        // add a numbering part to the document
-        out.addTargetPart(NumberingDefinitionsPart(PartName("/numbering")).apply {
-            unmarshalDefaultNumbering()
-            abstractListDefinitions["0"]?.abstractNumNode!!.lvl[0].apply {
-                numFmt = NumFmt().apply { `val` = NumberFormat.LOWER_LETTER }
-                lvlText = Lvl.LvlText().apply { `val` = "%1." }
-                rPr = RPr().apply {
-                    rFonts = qsFonts
-                }
+    private fun pushR(styler: RStyler? = null): R {
+        require(contentStack.first() is P) { "Can't push an R into a ${contentStack.first()::class.simpleName}!" }
+        return push(R().apply {
+            if (styler != null) {
+                if (rPr == null) rPr = RPr()
+                rPr.styler()
             }
         })
+    }
+
+    private fun finishR(text: String, opts: TextOptions<String>) {
+        val r = pop<R>()
+        val textToAdd = opts.smallCaps[text] ?: text
+        if (textToAdd.isNotEmpty()) r.addText(textToAdd)
+        if (r.content.isNotEmpty()) add(r)
+    }
+
+    private fun finishP() {
+        if (contentStack.first() is P) add(pop<P>())
+    }
+
+    private fun pushP(style: String = "TextBody"): P {
+        require(contentStack.first() is MainDocumentPart) { "Can't push a P into a ${contentStack.first()::class.simpleName}!" }
+        return push(makeParagraph(style))
+    }
+
+    private fun <T : Any> add(item: T): T = item.also {
+        val container = contentStack.first()
+        require(container is MainDocumentPart && item is P || container is P && item is R || container is R && item is Tab) {
+            "Can't add a ${item::class.simpleName} to a ${container::class.simpleName}!"
+        }
+        container.content.add(it)
+    }
+
+    fun renderText(outputFile: File, studyData: StudyData, opts: TextOptions<String>) {
+        renderText(studyData, opts).save(outputFile)
+        println("Wrote $outputFile")
+    }
+
+    fun renderText(studyData: StudyData, opts: TextOptions<String>): WordprocessingMLPackage {
+        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
+        addFooter(studyData, opts.testDate)
+//        addFrontMatter()
 
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
-        val contentStack = ArrayDeque<MutableList<Any>>()
-        val footnotes = mutableMapOf<String, Any>()
-        var nextFootnote = 0
-        val textToOutput = StringBuilder()
-        var footnoteListId = 2L // this is the ID of the default/first numbered list
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
-            // endings
+            /*
+             * Endings
+             */
 
             if ((transition.isEnded(PARAGRAPH))) {
-                endParagraph(contentStack, transition)
-            }
-            transition.ended(CHAPTER)?.apply {
-                if (footnotes.isNotEmpty()) {
-                    contentStack.last().add(footnotesHeader())
-                    logger.debug { "Added ${FOOTNOTE}s for chapter $value (${transition.present(VERSE)?.value})" }
-                    contentStack.last().addAll(footnotes.values)
-                    contentStack.last().add(paragraph())
-                    footnotes.clear()
-                    nextFootnote = 0
-                    footnoteListId = out.numberingDefinitionsPart.restart(2L, 0L, 1L)
-                }
+                finishP()
+                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
-            // beginnings
-
-            if (transition.isBeginning(AnalysisUnit.STUDY_SET)) {
-                contentStack.addLast(mutableListOf())
-                logger.debug { "Began ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
+            if (transition.isEnded(STUDY_SET)) {
+                logger.debug { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
+
+            /*
+             * Beginnings
+             */
+
+            if (transition.isBeginning(STUDY_SET)) {
+                logger.debug { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
+            }
+
+            val paragraph: Annotation<AnalysisUnit> = transition.present(PARAGRAPH) ?: continue
 
             transition.beginning(AnalysisUnit.HEADING)?.apply {
-                contentStack.last().add(heading(value as String))
+                add(makeParagraph("Heading1")).addRun().addText(value as String)
                 logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
             }
-            if (transition.isBeginning(PARAGRAPH)) startParagraph(contentStack, transition)
 
+            val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
+            val newPoetry: Boolean = transition.isBeginning(POETRY)
+            val inPoetry: Boolean = transition.isPresent(POETRY)
+            val numIndents: Int = if (!inPoetry) 0 else paragraph.value as Int
+            if (newParagraph) {
+                val style = when (numIndents) {
+                    1 -> if (newPoetry) "Poetry0" else "Poetry1"
+                    2 -> "Poetry2"
+                    else -> "TextBody"
+                }
+                pushP(style)
+                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
+            }
 
             // text
-            textToOutput.append(excerpt.excerptText)//.replace("""LORD""".toRegex(), """\\textsc{Lord}""")
-            if (textToOutput.isNotBlank()) {
-                transition.beginning(VERSE)?.apply {
-                    startVerse(value as VerseRef, transition, contentStack, studyData.isMultiBook)
-                }
-                contentStack.last().add(makeRun().apply {
-                    if (transition.isPresent(POETRY)) {
-                        val numIndents = countIndents(textToOutput)
-                        repeat(numIndents) {
-                            content.add(R.Tab())
-                            textToOutput.trimInPlace()
-                            logger.debug { "Added <tab/> ${transition.present(VERSE)?.value}" }
-                        }
-                    }
-                    content.add(makeText(textToOutput))
-                })
-                logger.debug { "Added '$textToOutput' ${transition.present(VERSE)?.value}" }
-                textToOutput.clear()
-            } else {
-                if (!transition.isPresent(POETRY)) textToOutput.clear()
-                if (transition.isEnded(POETRY) && transition.isBeginning(POETRY)) {
-                    contentStack.last().add(paragraph().poetryPPr(0))
+            transition.beginning(VERSE)?.apply {
+                val verseRef: VerseRef = value as VerseRef
+                startVerse(verseRef, transition, studyData.isMultiBook)
+
+                // when we're in poetry in a multi-book set and using chapter labels (that include the book name), the
+                // label will exceed the indent, so rather than adding a tab, just drop to the next line
+                if (inPoetry && studyData.isMultiBook && verseRef.verse == 1) {
+                    add(pop<P>())
+                    pushP("Poetry1")
                 }
             }
 
-            // since footnotes are zero-width (1-width?) and follow the text to which they refer,
-            // we need to handle them before any endings
-            transition.present(FOOTNOTE)?.apply {
+            if (newParagraph && inPoetry) {
+                add(R().apply {
+                    repeat(numIndents) { content.add(Tab()) }
+                })
+                logger.debug { "Added $numIndents <tab/>s ${transition.present(VERSE)?.value}" }
+            }
 
+            // since LEADING footnotes are zero-width and precede the run text to which they are attached,
+            // we need to handle them before any text
+            transition.prePoint(LEADING_FOOTNOTE)?.apply {
                 // subtract/add one from footnote offset to find verse in case
                 // the footnote occurs at the end/beginning of the verse
-                val verseRef = studyData.verses.valueContaining(excerpt.excerptRange.first)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first - 1)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 1)
-                    ?: studyData.verses.valueContaining(excerpt.excerptRange.first + 2)
-                val fnRef = ('a' + nextFootnote++).toString()
-                footnotes[fnRef] = footnoteContent(verseRef!!, value as String, footnoteListId)
-                contentStack.last().add(footnoteRef(fnRef))
+                val verses: DisjointRangeMap<VerseRef> = studyData.verses
+                val excerptRange: IntRange = excerpt.excerptRange
+                val verseRef: VerseRef? = verses.valueContaining(excerptRange.first) // footnote in verse
+                val fnRef = nextFootnote++
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
+                add(footnoteRef2(fnRef))
+                add(R()).addText(" ")
+                logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
+            }
+
+            val r = pushR()
+
+            if (transition.isPresent(UNIQUE_WORD)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    u = U().apply { `val` = UnderlineEnumeration.SINGLE }
+                }
+            }
+
+            if (transition.isPresent(NUMBER)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = "ffb66c" // light orange
+                    }
+                }
+            }
+
+            transition.present(REGEX)?.apply {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = value as String
+                    }
+                }
+            }
+
+            transition.present(SMALL_CAPS)?.apply {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    smallCaps = wmlBoolean(true)
+                }
+            }
+
+            if (transition.isPresent(NAME)) {
+                r.rPr = (r.rPr ?: RPr()).apply {
+                    shd = CTShd().apply {
+                        `val` = STShd.CLEAR
+                        fill = "b4c7dc" // light blue
+                    }
+                }
+            }
+
+            finishR(excerpt.excerptText, opts)
+
+            // since footnotes are zero-width and follow the run text to which they are attached,
+            // we need to handle them before any endings
+            transition.postPoint(FOOTNOTE)?.apply {
+                // subtract/add one from footnote offset to find verse in case
+                // the footnote occurs at the end/beginning of the verse
+                val verses: DisjointRangeMap<VerseRef> = studyData.verses
+                val excerptRange: IntRange = excerpt.excerptRange
+                val verseRef = verses.valueContaining(excerptRange.last) // footnote in verse
+                val fnRef: Long = nextFootnote++
+                footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
+                add(footnoteRef2(fnRef))
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
-            if (transition.isEnded(AnalysisUnit.STUDY_SET)) {
-                out.content.addAll(contentStack.removeLast())
-                logger.debug { "Ended ${AnalysisUnit.STUDY_SET} ${transition.present(VERSE)?.value}" }
-            }
         }
-        out.content.add(SectPr().apply {
-            footnotePr = CTFtnProps().apply {
-                numFmt = NumFmt().apply { `val` = NumberFormat.LOWER_LETTER }
-                numRestart = CTNumRestart().apply { `val` = STRestartNumber.EACH_SECT }
+//        addEndMatter()
+        addFootnotes()
+        return wordPackage
+    }
+
+    private fun addContentsFromDoc(docUri: URI) {
+        try {
+            val doc = docUri.toURL().openStream().use {
+                XmlUtils.unmarshal(it) as Document
             }
+            mainPart.content.addAll(doc.body.content)
+        } catch (_: FileNotFoundException) {
+            // if front/endMatter doesn't exist in the right directory, skip it
+        }
+    }
+
+    private fun addFrontMatter() {
+        addContentsFromDoc(baseUri.resolveChild("frontMatter.xml"))
+    }
+
+    private fun addEndMatter() {
+        addContentsFromDoc(baseUri.resolveChild("endMatter.xml"))
+    }
+
+    private fun addFootnotes() {
+        mainPart.addTargetPart(FootnotesPart())
+        mainPart.footnotesPart.contents = CTFootnotes().apply {
+            footnote.add(0, CTFtnEdn().apply {
+                type = STFtnEdn.SEPARATOR
+                content.add(P().apply {
+                    pPr = PPr().apply {
+                        rPr = ParaRPr().apply {
+                            sz = HpsMeasure().apply { `val` = BigInteger.valueOf(13L) }
+                        }
+                    }
+                    content.add(R().apply {
+                        content.add(Separator())
+                    })
+                })
+            })
+            footnote.add(1, CTFtnEdn().apply {
+                type = STFtnEdn.CONTINUATION_SEPARATOR
+                content.add(P().apply {
+                    pPr = PPr().apply {
+                        rPr = ParaRPr().apply {
+                            sz = HpsMeasure().apply { `val` = BigInteger.valueOf(13L) }
+                        }
+                    }
+                    content.add(R().apply {
+                        content.add(ContinuationSeparator())
+                    })
+                })
+            })
+            footnote.addAll(footnotes)
+        }
+    }
+
+    private fun addFooter(studyData: StudyData, testDate: LocalDate = LocalDate.now()) {
+        val footerRel: Relationship = mainPart.addTargetPart(
+            footerFromTemplate(
+                baseUri.resolveChild("footer1.xml"), mapOf(
+                    "title" to studyData.studySet.name,
+                    "date" to testDate.format(dateFormatter)
+                )
+            )
+        )
+        val sectPr: SectPr = wordPackage.documentModel.sections.last().sectPr
+        sectPr.egHdrFtrReferences.add(FooterReference().apply {
+            id = footerRel.id
+            type = HdrFtrRef.DEFAULT
         })
     }
 
-    private fun startParagraph(
-        contentStack: ArrayDeque<MutableList<Any>>,
-        transition: StateTransition<AnalysisUnit>
-    ) {
-        contentStack.addLast(mutableListOf())
-        logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
-    }
+    private fun R.addText(text: CharSequence): Text = makeText(text).also { content.add(it) }
+    private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
 
-    private fun countIndents(text: CharSequence): Int = text.takeWhile { it.isWhitespace() }.length / 4
-
-    private fun endParagraph(
-        contentStack: ArrayDeque<MutableList<Any>>,
-        transition: StateTransition<AnalysisUnit>,
-    ) {
-        val p = paragraph().also {
-            it.content.addAll(contentStack.removeLast())
-            if (transition.isPresent(POETRY)) it.poetryPPr(1)
-        }
-        contentStack.last().add(p)
-        logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
+    private fun makeParagraph(style: String = "TextBody"): P = P().apply {
+        pPr = PPr().apply { pStyle = pStyle(style) }
     }
 
     private fun startVerse(
         verseRef: VerseRef,
         transition: StateTransition<AnalysisUnit>,
-        contentStack: ArrayDeque<MutableList<Any>>,
         multiBook: Boolean,
     ) {
-        val verseNum: Int = verseRef.verse
         val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
-        if (verseNum == 1) {
-            contentStack.last().add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
+        if (verseRef.verse == 1) {
+            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
             logger.debug { "Skipping verse number for first verse of chapter." }
             logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
-            if (transition.isPresent(POETRY)) {
-                endParagraph(contentStack, transition)
-                startParagraph(contentStack, transition)
-            }
         } else {
-            contentStack.last().add(verseNum(verseNum, addSpace = !transition.isBeginning(PARAGRAPH)))
+            add(verseNumRun(verseRef))
+            if (!transition.isPresent(POETRY)) add(R()).addText(" ")
             logger.debug { "Added $VERSE $verseRef" }
         }
     }
 
-    private fun P.poetryPPr(numIndents: Int): P {
-        pPr.tabs = Tabs().apply {
-            tab.add(CTTabStop().apply { `val` = STTabJc.CLEAR; pos = BigInteger("720") })
-            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("630") })
-            tab.add(CTTabStop().apply { `val` = STTabJc.LEFT; pos = BigInteger("990") })
-        }
-        pPr.spacing.apply {
-            before = BigInteger.ZERO
-            after = BigInteger.ZERO
-        }
-        val indent = when(numIndents) {
-            1 -> 630L
-            2 -> 990L
-            else -> 2000L
-        }
-        pPr.ind = PPrBase.Ind().apply {
-            left = BigInteger.valueOf(indent)
-            hanging = BigInteger.valueOf(indent)
-        }
-        return this
+    private fun pStyle(style: String): PStyle = PStyle().apply { `val` = style }
+    private fun rStyle(style: String): RStyle = RStyle().apply { `val` = style }
+
+    private fun verseNumRun(verseRef: VerseRef): R = R().apply {
+        rPr = RPr().apply { rStyle = rStyle("VerseNum") }
+//        content.add(makeText("${verseRef.bookName.first()}${verseRef.chapter}:${verseRef.verse}"))
+        content.add(makeText(verseRef.verse.toString()))
     }
 
-    private fun heading(heading: String, size: Long = 32): P = P().apply {
-        pPr = PPr().apply {
-            keepNext = wmlBoolean(true)
-            spacing = factory.createPPrBaseSpacing().apply {
-                after = BigInteger.valueOf(150)
-                line = BigInteger.valueOf(240)
-                before = BigInteger.valueOf(300)
-                lineRule = STLineSpacingRule.AUTO
-            }
-        }
-        content.add(factory.createR().apply {
-            rPr = factory.createRPr().apply {
-                rFonts = qsFonts
-                b = BooleanDefaultTrue()
-                color = black
-                sz = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
-                szCs = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
-                rtl = BooleanDefaultTrue()
-            }
-            content.add(makeText(heading))
-        })
-    }
-
-    private fun verseNum(verseNum: Int, addSpace: Boolean): R = factory.createR().apply {
-        rPr = factory.createRPr().apply {
-            rFonts = qsFonts
-            b = BooleanDefaultTrue()
-            color = black
-            vertAlign = factory.createCTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
-        }
-        var text = "$verseNum "
-        if (addSpace) text = " $text"
-        content.add(makeText(text))
-    }
-
-    private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat, size: Long = 27): R = factory.createR().apply {
-        rPr = factory.createRPr().apply {
-            rFonts = qsFonts
-            b = wmlBoolean(true)
-            color = black
-            sz = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
-            szCs = factory.createHpsMeasure().apply { `val` = BigInteger.valueOf(size) }
-            rtl = wmlBoolean(false)
-        }
+    private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat): R = R().apply {
+        rPr = RPr().apply { rStyle = rStyle("ChapterNum") }
         content.add(makeText("${chapterRef.format(bookFormat)} "))
     }
 
-    private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text = Text().apply {
-        value = text.toString()
-        if (preserveSpace) space = "preserve"
-    }
-
-    private fun makeRun(): R = R().apply {
-        rPr = factory.createRPr().apply {
-            rFonts = qsFonts
-            color = black
+    private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text =
+        Text().apply {
+            require(text.isNotEmpty()) { "Don't create text with no text in it!" }
+            value = text.toString()
+            if (preserveSpace) space = "preserve"
         }
-    }
-
-    fun paragraph(): P = factory.createP().apply {
-        pPr = factory.createPPr().apply {
-            shd = factory.createCTShd().apply {
-                fill = "ffffff"
-                `val` = STShd.CLEAR
-            }
-            spacing = factory.createPPrBaseSpacing().apply {
-                before = BigInteger.valueOf(280)
-                after = BigInteger.valueOf(280)
-                lineRule = STLineSpacingRule.AUTO
-            }
-            rPr = factory.createParaRPr().apply {
-                rFonts = qsFonts
-                color = black
-            }
-        }
-    }
-
-    private fun footnotesHeader(): P = factory.createP().apply {
-        pPr = factory.createPPr().apply {
-            keepNext = wmlBoolean(true)
-            spacing = factory.createPPrBaseSpacing().apply {
-                before = BigInteger.valueOf(300)
-                after = BigInteger.valueOf(150)
-                lineRule = STLineSpacingRule.AUTO
-            }
-            rPr = factory.createParaRPr().apply {
-                rFonts = qsFonts
-                b = wmlBoolean(true)
-                color = black
-            }
-        }
-        content.add(R().apply {
-            rPr = RPr().apply {
-                rFonts = qsFonts
-                b = wmlBoolean(true)
-                color = black
-                rtl = wmlBoolean(false)
-            }
-            content.add(makeText("Footnotes"))
-        })
-    }
 
     private fun wmlBoolean(value: Boolean): BooleanDefaultTrue = BooleanDefaultTrue().apply { isVal = value }
 
     private fun footnoteContent(
         verseRef: VerseRef,
         fnContent: String,
-        footnoteListId: Long
-    ): P = factory.createP().apply {
-        // footnotes come in with asterisks around what should be italicized--compute the distinct runs
-        val runsSeq = " $fnContent".splitToSequence('*')
-
-        pPr = factory.createPPr().apply {
-            numPr = PPrBase.NumPr().apply {
-                ilvl = PPrBase.NumPr.Ilvl().apply { `val` = BigInteger.ZERO }
-                numId = PPrBase.NumPr.NumId().apply { `val` = BigInteger.valueOf(footnoteListId) }
+        footnoteId: Long,
+        opts: TextOptions<String>,
+    ): CTFtnEdn = CTFtnEdn().apply {
+        id = BigInteger.valueOf(footnoteId)
+        content.add(makeParagraph("Footnote").apply {
+            // footnotes come in with asterisks around what should be italicized--compute the distinct runs
+            val runsSeq = " $fnContent".splitToSequence('*')
+            addRun(R().apply {
+                rPr = RPr().apply {
+                    u = U().apply { `val` = UnderlineEnumeration.SINGLE }
+                }
+                content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
+            })
+            runsSeq.forEachIndexed { index, s ->
+                if (s.isNotEmpty()) {
+                    val italic = index % 2 == 1
+                    // this is kind of fragile because it requires that the small caps portion already
+                    // be its own run, but at least in Exodus, that seems to always be the case
+                    val smallCaps = s in opts.smallCaps || (s == "Lord" && italic)
+                    content.add(makeRun(s, italic, smallCaps))
+                }
             }
-            shd = factory.createCTShd().apply {
-                fill = "ffffff"
-                `val` = STShd.CLEAR
-            }
-            ind = PPrBase.Ind().apply {
-                left = BigInteger("720")
-                hanging = BigInteger("360")
-            }
-            spacing = factory.createPPrBaseSpacing().apply {
-                before = BigInteger.valueOf(0)
-                after = BigInteger.valueOf(0)
-                lineRule = STLineSpacingRule.AUTO
-            }
-            rPr = factory.createParaRPr().apply {
-                rFonts = qsFonts
-                color = black
-            }
-        }
-        content.add(R().apply {
-            rPr = RPr().apply {
-                rFonts = qsFonts
-                color = black
-                u = U().apply { `val` = UnderlineEnumeration.SINGLE }
-                rtl = wmlBoolean(false)
-            }
-            content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
         })
-        runsSeq.forEachIndexed { index, s ->
-            content.add(makeRun(s, italic = index % 2 == 1))
-        }
     }
 
-    private fun makeRun(textContent: String, italic: Boolean = false): R = R().apply {
-        rPr = RPr().apply {
-            rFonts = qsFonts
-            color = black
-            rtl = wmlBoolean(false)
-            if (italic) {
-                i = wmlBoolean(true)
-                iCs = wmlBoolean(true)
-            }
+    private fun makeRun(textContent: String, italic: Boolean = false, smallCaps: Boolean = false): R = R().apply {
+        if (italic || smallCaps) {
+            rPr = RPr()
+            if (italic) { rPr.i = wmlBoolean(true) }
+            if (smallCaps) { rPr.smallCaps = wmlBoolean(true) }
         }
         content.add(makeText(textContent))
     }
 
     // for real footnotes
-    fun footnoteRef2(id: Int): R = R().apply {
-        rPr = RPr().apply {
-            rStyle = RStyle().apply { `val` = "FootnoteCharacters" }
-            rFonts = qsFonts
-            color = black
-        }
-        content.add(FootnoteRef())
-    }
-    private fun footnoteRef(ref: String): R = R().apply {
-        rPr = RPr().apply {
-            rFonts = qsFonts
-            color = black
-            vertAlign = CTVerticalAlignRun().apply { `val` = STVerticalAlignRun.SUPERSCRIPT }
-        }
-        content.add(makeText(ref))
+    private fun footnoteRef2(id: Long): R = R().apply {
+        rPr = RPr().apply { rStyle = rStyle("FootnoteAnchor") }
+        content.add(factory.createRFootnoteReference(CTFtnEdnRef().apply { setId(BigInteger.valueOf(id)) }))
     }
 
-    private fun StringBuilder.trimInPlace() {
-        replace(0, Int.MAX_VALUE, trim().toString())
+    companion object {
+        private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu") // e.g. June 12, 2023
+
+        private fun stylesPartFromTemplate(
+            templateUri: URI,
+            mappings: Map<String, String> = emptyMap(),
+            opts: TextOptions<String>
+        ): StyleDefinitionsPart =
+            StyleDefinitionsPart().unmarshallFromTemplate(
+                templateUri,
+                mappings + ("mainFontSize" to (2 * opts.fontSize).toString()),
+            )
+
+        private fun fontTableFromTemplate(
+            templateUri: URI,
+            mappings: Map<String, String> = emptyMap()
+        ): FontTablePart =
+            FontTablePart().unmarshallFromTemplate(templateUri, mappings)
+
+        private fun footerFromTemplate(
+            templateUri: URI,
+            mappings: Map<String, String> = emptyMap()
+        ): FooterPart =
+            FooterPart().unmarshallFromTemplate(templateUri, mappings)
+
+        private fun <E, P : JaxbXmlPart<E>> P.unmarshallFromTemplate(
+            templateUri: URI,
+            mappings: Map<String, String> = emptyMap()
+        ): P = apply {
+            templateUri.toURL().openStream().reader().use {
+                unmarshallFromTemplate(it, mappings)
+            }
+        }
+
+        private fun <E, P : JaxbXmlPart<E>> P.unmarshallFromTemplate(
+            template: Reader,
+            mappings: Map<String, String> = emptyMap()
+        ): P = apply {
+            @Suppress("UNCHECKED_CAST")
+            jaxbElement = XmlUtils.unmarshallFromTemplate(template.readText(), mappings) as E
+        }
     }
 }
