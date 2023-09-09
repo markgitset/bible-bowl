@@ -11,6 +11,7 @@ data class TextOptions<T>(
     val numbers: Boolean = false,
     val chapterBreaksPage: Boolean = false,
     val smallCaps: Map<String, String> = smallCapsNames,
+    val twoColumns: Boolean = false,
 ) {
     val fileNameSuffix: String by lazy {
         (if (names) "names-" else "") +

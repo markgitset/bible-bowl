@@ -9,12 +9,12 @@
       </w:pPr>
       <w:r>
         <w:rPr>
-          <w:sz w:val="18"/>
-          <w:szCs w:val="18"/>
+          <w:sz w:val="16"/>
+          <w:szCs w:val="16"/>
         </w:rPr>
-        <w:t xml:space="preserve">Taken from the ESV ® Bible (The Holy Bible, English Standard Version®), Copyright © 2001</w:t>
+        <w:t xml:space="preserve">Taken from the ESV ® Bible (The Holy Bible, English Standard Version®), </w:t>
         <w:br/>
-        <w:t>by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
+        <w:t>Copyright © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
       </w:r>
     </w:p>
   </w:body>

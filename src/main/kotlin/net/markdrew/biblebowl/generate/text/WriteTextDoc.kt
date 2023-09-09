@@ -34,15 +34,21 @@ import org.docx4j.openpackaging.parts.WordprocessingML.MainDocumentPart
 import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart
 import org.docx4j.relationships.Relationship
 import org.docx4j.wml.BooleanDefaultTrue
+import org.docx4j.wml.CTColumns
+import org.docx4j.wml.CTDocGrid
 import org.docx4j.wml.CTFootnotes
 import org.docx4j.wml.CTFtnEdn
 import org.docx4j.wml.CTFtnEdnRef
+import org.docx4j.wml.CTFtnProps
+import org.docx4j.wml.CTPageNumber
 import org.docx4j.wml.CTShd
 import org.docx4j.wml.ContentAccessor
 import org.docx4j.wml.Document
 import org.docx4j.wml.FooterReference
 import org.docx4j.wml.HdrFtrRef
 import org.docx4j.wml.HpsMeasure
+import org.docx4j.wml.NumFmt
+import org.docx4j.wml.NumberFormat
 import org.docx4j.wml.ObjectFactory
 import org.docx4j.wml.P
 import org.docx4j.wml.PPr
@@ -50,14 +56,17 @@ import org.docx4j.wml.PPrBase.PStyle
 import org.docx4j.wml.ParaRPr
 import org.docx4j.wml.R
 import org.docx4j.wml.R.ContinuationSeparator
+import org.docx4j.wml.R.FootnoteRef
 import org.docx4j.wml.R.Separator
 import org.docx4j.wml.R.Tab
 import org.docx4j.wml.RPr
 import org.docx4j.wml.RStyle
+import org.docx4j.wml.STDocGrid
 import org.docx4j.wml.STFtnEdn
 import org.docx4j.wml.STShd
 import org.docx4j.wml.SectPr
 import org.docx4j.wml.Text
+import org.docx4j.wml.TextDirection
 import org.docx4j.wml.U
 import org.docx4j.wml.UnderlineEnumeration
 import java.io.File
@@ -80,14 +89,13 @@ enum class WmlFont(val value: String) {
 private typealias RStyler = RPr.() -> Unit
 
 fun main(args: Array<String>) {
+    // parse the argument (if present)
     val studySet = StandardStudySet.parse(args.firstOrNull())
+
+    // load the Bible data for the requested study set
     val studyData = StudyData.readData(studySet)
 
-    val rStyler: RStyler = { smallCaps = BooleanDefaultTrue().apply { isVal = true } }
-
-//    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
-//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
-//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
+    // write a bunch of variations of the Bible text
     writeBibleDoc(studyData, LocalDate.of(2024, 4, 6))
 }
 
@@ -99,37 +107,30 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
 
-    // plain
-    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(testDate, 12))
-    writeOneText("marks-doc-format", marksStyle, studyData, TextOptions(testDate, 10))
-
-    // unique words underlined
-    writeOneText(
-        "tbb-doc-format",
-        defaultStyle,
-        studyData,
-        TextOptions(testDate, 12, uniqueWords = true),
-    )
-    writeOneText(
-        "marks-doc-format",
-        marksStyle,
-        studyData,
-        TextOptions(testDate, 10, customHighlights, uniqueWords = true),
-    )
+//    // plain
+//    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(testDate, 12))
+//    writeOneText("marks-doc-format", marksStyle, studyData, TextOptions(testDate, 10))
+//
+//    // unique words underlined
+//    writeOneText(
+//        "tbb-doc-format",
+//        defaultStyle,
+//        studyData,
+//        TextOptions(testDate, 12, uniqueWords = true),
+//    )
+//    writeOneText(
+//        "marks-doc-format",
+//        marksStyle,
+//        studyData,
+//        TextOptions(testDate, 10, customHighlights, uniqueWords = true),
+//    )
 
     // all highlighting
-    writeOneText(
-        "tbb-doc-format",
-        defaultStyle,
-        studyData,
-        TextOptions(testDate, 12, customHighlights, uniqueWords = true, names = true, numbers = true),
-    )
-    writeOneText(
-        "marks-doc-format",
-        marksStyle,
-        studyData,
-        TextOptions(testDate, 10, customHighlights, uniqueWords = true, names = true, numbers = true),
-    )
+    val tbbOpts = TextOptions(testDate, 12, customHighlights, uniqueWords = true, names = true, numbers = true)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbOpts)
+
+    val marksOpts = tbbOpts.copy(fontSize = 10, twoColumns = true)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksOpts)
 }
 
 private fun writeOneText(
@@ -139,6 +140,7 @@ private fun writeOneText(
     opts: TextOptions<String>,
 ) {
     val name = studyData.studySet.simpleName
+    // FIXME this is an ugly hack
     val modifiedOpts: TextOptions<String> =
         styleParams["mainFontSize"]?.let {
             opts.copy(fontSize = it.toInt() / 2)
@@ -182,6 +184,7 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
 
     private val baseUri: URI = javaClass.getResource("/$resourcePath")?.toURI()
         ?: throw IllegalStateException("Couldn't find resource in classpath: /$resourcePath")
+
     init {
         mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
     }
@@ -226,15 +229,100 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
     }
 
     fun renderText(outputFile: File, studyData: StudyData, opts: TextOptions<String>) {
-        renderText(studyData, opts).save(outputFile)
+        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
+
+        val footerRel: Relationship = mainPart.addTargetPart(
+            footerFromTemplate(
+                baseUri.resolveChild("footer.xml"), mapOf(
+                    "title" to studyData.studySet.name,
+                    "date" to opts.testDate.format(dateFormatter)
+                )
+            )
+        )
+
+//        addFrontMatter()
+//        if (opts.twoColumns) endOneCol(footerRel)
+        renderText(studyData, opts)
+        if (opts.twoColumns) endTwoCols(footerRel)
+        addEndMatter()
+        finalSection(footerRel)
+        addFootnotes()
+
+        wordPackage.save(outputFile)
         println("Wrote $outputFile")
     }
 
-    fun renderText(studyData: StudyData, opts: TextOptions<String>): WordprocessingMLPackage {
-        mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
-        addFooter(studyData, opts.testDate)
-//        addFrontMatter()
+    private fun endOneCol(footerRelationship: Relationship?) {
+        add(P().apply {
+            pPr = PPr().apply {
+                sectPr = sectionProperties(footerRelationship)//sectionType = "nextPage")
+            }
+        })
+    }
 
+    private fun endTwoCols(footerRelationship: Relationship) {
+        add(P().apply {
+            pPr = PPr().apply {
+                sectPr = sectionProperties(footerRelationship, twoColumns = true)
+            }
+        })
+    }
+
+    /**
+     * A section's properties are stored in a sectPr element. For all sections except the last section, the sectPr
+     * element is stored as a child element of the last paragraph in the section. For the last section, the sectPr is
+     * stored as a child element of the body element.
+     */
+    private fun sectionProperties(
+        footerRelationship: Relationship? = null,
+        sectionType: String = "continuous",
+        twoColumns: Boolean = false,
+    ): SectPr = SectPr().update(footerRelationship, sectionType, twoColumns)
+
+    private fun SectPr.update(
+        footerRelationship: Relationship? = null,
+        sectionType: String = "continuous",
+        twoColumns: Boolean = false,
+    ): SectPr {
+        if (footerRelationship != null) egHdrFtrReferences.add(FooterReference().apply {
+            id = footerRelationship.id
+            type = HdrFtrRef.DEFAULT
+        })
+        footnotePr = CTFtnProps().apply {
+            numFmt = NumFmt().apply { `val` = NumberFormat.DECIMAL }
+        }
+        type = SectPr.Type().apply { `val` = sectionType }
+        pgSz = SectPr.PgSz().apply {
+            w = BigInteger.valueOf(12240)
+            h = BigInteger.valueOf(15840)
+        }
+        if (twoColumns) cols = CTColumns().apply {
+            num = BigInteger.TWO
+            space = BigInteger.valueOf(288)
+            isEqualWidth = true
+            isSep = false
+        }
+        pgMar = SectPr.PgMar().apply {
+            left = BigInteger.valueOf(1440)
+            right = BigInteger.valueOf(1440)
+            gutter = BigInteger.ZERO
+            header = BigInteger.ZERO
+            top = BigInteger.valueOf(1440)
+            footer = BigInteger.valueOf(720)
+            bottom = BigInteger.valueOf(1440)
+        }
+        pgNumType = CTPageNumber().apply { fmt = NumberFormat.DECIMAL }
+        formProt = wmlBoolean(false)
+        textDirection = TextDirection().apply { `val` = "lrTb" }
+        docGrid = CTDocGrid().apply {
+            type = STDocGrid.DEFAULT
+            linePitch = BigInteger.valueOf(100)
+            charSpace = BigInteger.ZERO
+        }
+        return this
+    }
+
+    fun renderText(studyData: StudyData, opts: TextOptions<String>) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
@@ -371,11 +459,7 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
                 add(footnoteRef2(fnRef))
                 logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
-
         }
-//        addEndMatter()
-        addFootnotes()
-        return wordPackage
     }
 
     private fun addContentsFromDoc(docUri: URI) {
@@ -430,27 +514,18 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
         }
     }
 
-    private fun addFooter(studyData: StudyData, testDate: LocalDate = LocalDate.now()) {
-        val footerRel: Relationship = mainPart.addTargetPart(
-            footerFromTemplate(
-                baseUri.resolveChild("footer1.xml"), mapOf(
-                    "title" to studyData.studySet.name,
-                    "date" to testDate.format(dateFormatter)
-                )
-            )
-        )
-        val sectPr: SectPr = wordPackage.documentModel.sections.last().sectPr
-        sectPr.egHdrFtrReferences.add(FooterReference().apply {
-            id = footerRel.id
-            type = HdrFtrRef.DEFAULT
-        })
+    private fun finalSection(footerRel: Relationship) {
+        wordPackage.documentModel.sections.last().sectPr.update(footerRel)
     }
 
     private fun R.addText(text: CharSequence): Text = makeText(text).also { content.add(it) }
     private fun P.addRun(r: R = R()): R = r.also { content.add(it) }
 
     private fun makeParagraph(style: String = "TextBody"): P = P().apply {
-        pPr = PPr().apply { pStyle = pStyle(style) }
+        pPr = PPr().apply {
+            pStyle = pStyle(style)
+            rPr = ParaRPr()
+        }
     }
 
     private fun startVerse(
@@ -504,10 +579,15 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
             // footnotes come in with asterisks around what should be italicized--compute the distinct runs
             val runsSeq = " $fnContent".splitToSequence('*')
             addRun(R().apply {
+                rPr = RPr().apply { rStyle = rStyle("FootnoteCharacters") }
+                content.add(FootnoteRef())
+            })
+            addRun(R().apply {
                 rPr = RPr().apply {
                     u = U().apply { `val` = UnderlineEnumeration.SINGLE }
                 }
-                content.add(makeText(verseRef.format(FULL_BOOK_FORMAT)))
+                content.add(Tab())
+                content.add(makeText(verseRef.format(FULL_BOOK_FORMAT), preserveSpace = false))
             })
             runsSeq.forEachIndexed { index, s ->
                 if (s.isNotEmpty()) {
@@ -524,8 +604,12 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
     private fun makeRun(textContent: String, italic: Boolean = false, smallCaps: Boolean = false): R = R().apply {
         if (italic || smallCaps) {
             rPr = RPr()
-            if (italic) { rPr.i = wmlBoolean(true) }
-            if (smallCaps) { rPr.smallCaps = wmlBoolean(true) }
+            if (italic) {
+                rPr.i = BooleanDefaultTrue()
+            }
+            if (smallCaps) {
+                rPr.smallCaps = BooleanDefaultTrue()
+            }
         }
         content.add(makeText(textContent))
     }
