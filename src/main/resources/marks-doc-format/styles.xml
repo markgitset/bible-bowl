@@ -127,6 +127,7 @@
     <w:name w:val="Body Text"/>
     <w:basedOn w:val="Normal"/>
     <w:pPr>
+      <w:widowControl/>
       <w:spacing w:before="234" w:after="234"/>
     </w:pPr>
     <w:rPr/>
@@ -193,13 +194,13 @@
     <w:pPr>
       <w:widowControl/>
       <w:tabs>
-        <w:tab w:val="left" w:pos="450" w:leader="none"/>
+        <w:tab w:val="left" w:pos="400" w:leader="none"/>
       </w:tabs>
       <w:suppressAutoHyphens w:val="false"/>
       <w:overflowPunct w:val="false"/>
       <w:bidi w:val="0"/>
       <w:spacing w:before="0" w:after="0"/>
-      <w:ind w:left="450" w:right="0" w:hanging="450"/>
+      <w:ind w:left="400" w:right="0" w:hanging="400"/>
       <w:jc w:val="left"/>
     </w:pPr>
     <w:rPr/>
@@ -219,9 +220,9 @@
     <w:qFormat/>
     <w:pPr>
       <w:tabs>
-        <w:tab w:val="left" w:pos="670" w:leader="none"/>
+        <w:tab w:val="left" w:pos="620" w:leader="none"/>
       </w:tabs>
-      <w:ind w:left="670" w:right="0" w:hanging="670"/>
+      <w:ind w:left="620" w:right="0" w:hanging="620"/>
     </w:pPr>
     <w:rPr/>
   </w:style>

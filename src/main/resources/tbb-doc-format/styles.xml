@@ -125,6 +125,7 @@
     <w:name w:val="Body Text"/>
     <w:basedOn w:val="Normal"/>
     <w:pPr>
+      <w:widowControl/>
       <w:spacing w:before="234" w:after="234"/>
     </w:pPr>
     <w:rPr/>
