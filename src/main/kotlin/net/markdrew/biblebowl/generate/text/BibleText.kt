@@ -5,7 +5,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.findNumbers
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -52,7 +52,7 @@ fun writeBibleText(studyData: StudyData, opts: TextOptions<String> = TextOptions
     val latexFile = File("$PRODUCTS_DIR/$name/text/latex/$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)
     println("Wrote $latexFile")
-    latexFile.toPdf(twice = true, keepTexFiles = true, showStdIo = false)
+    latexFile.latexToPdf(twice = true, keepTexFiles = true, showStdIo = false)
 }
 //
 //fun writeBibleText(book: Book, opts: TextOptions) {

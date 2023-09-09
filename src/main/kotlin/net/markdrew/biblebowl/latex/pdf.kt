@@ -2,13 +2,13 @@ package net.markdrew.biblebowl.latex
 
 import java.io.File
 
-fun File.toPdf(
+fun File.latexToPdf(
     showStdIo: Boolean = false,
     keepLogFiles: Boolean = false,
     keepTexFiles: Boolean = false,
     twice: Boolean = false
 ): File {
-    if (twice) toPdf(showStdIo, keepLogFiles = true, keepTexFiles = true, twice = false)
+    if (twice) latexToPdf(showStdIo, keepLogFiles = true, keepTexFiles = true, twice = false)
 
     val processBuilder = ProcessBuilder(
         "pdflatex",
@@ -31,10 +31,31 @@ fun File.toPdf(
     }
 }
 
+fun File.docxToPdf(
+    showStdIo: Boolean = false,
+    keepDocxFiles: Boolean = true,
+): File {
+    // soffice --convert-to pdf --outdir . *.docx
+    val processBuilder = ProcessBuilder(
+        "soffice",
+        "--convert-to", "pdf",
+        "--outdir", parent,
+        absolutePath
+    ).inheritIO()
+    // without this, it may hang when the output buffer fills up
+    if (!showStdIo) processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD)
+    val process = processBuilder.start()
+    process.waitFor()
+    if (!keepDocxFiles) resolveSibling("$nameWithoutExtension.docx").delete()
+    return resolveSibling("$nameWithoutExtension.pdf").also {
+        println("Wrote $it")
+    }
+}
+
 fun showPdf(pdfFile: File): File = pdfFile.also {
     ProcessBuilder("evince", pdfFile.absolutePath).inheritIO().start()
 }
 
 fun main() {
-    showPdf(File("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").toPdf())
+    showPdf(File("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").latexToPdf())
 }

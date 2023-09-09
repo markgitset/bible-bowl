@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
@@ -72,7 +72,7 @@ fun writeFindTheVerse(
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, practiceTest)
     }
-    return outputFile.toPdf(keepTexFiles = true)
+    return outputFile.latexToPdf(keepTexFiles = true)
 }
 
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")

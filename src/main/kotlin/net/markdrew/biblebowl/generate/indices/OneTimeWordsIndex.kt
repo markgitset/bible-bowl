@@ -6,7 +6,7 @@ import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.latex.IndexEntry
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -50,7 +50,7 @@ fun writeOneTimeWordsIndex(studyData: StudyData): File {
             )
         }
     }
-    return file.toPdf(keepTexFiles = true)
+    return file.latexToPdf(keepTexFiles = true)
 }
 
 private fun oneTimeWordsIndexByWord(studyData: StudyData): List<WordIndexEntry> = oneTimeWords(studyData).map {

@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.ChapterRef
@@ -92,5 +92,5 @@ fun writeHeadingsPdf(studyData: StudyData) {
             writer.appendLine("""\end{multicols}""")
         }
     }
-    file.toPdf(keepTexFiles = true)
+    file.latexToPdf(keepTexFiles = true)
 }

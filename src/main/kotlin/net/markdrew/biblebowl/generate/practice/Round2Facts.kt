@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.showPdf
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -57,7 +57,7 @@ private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null
     }
 
     println("Wrote $texFile")
-    return texFile.toPdf(keepTexFiles = true)
+    return texFile.latexToPdf(keepTexFiles = true)
 }
 
 private fun escapeLatex(s: String): String =

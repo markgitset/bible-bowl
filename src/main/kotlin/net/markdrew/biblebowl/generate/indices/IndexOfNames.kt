@@ -7,7 +7,7 @@ import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.latex.IndexEntry
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -71,5 +71,5 @@ fun writeNamesIndex(studyData: StudyData) {
                        columns = 5)
         }
     }
-    file.toPdf(keepTexFiles = true)
+    file.latexToPdf(keepTexFiles = true)
 }

@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.generate.text
 import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.latex.docxToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
@@ -151,6 +152,8 @@ private fun writeOneText(
     val outputFile = File("$PRODUCTS_DIR/$name/text/docx/$name-bible-text-${opts.fileNameSuffix}.docx")
     outputFile.parentFile.mkdirs()
     DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile, studyData)
+
+    outputFile.docxToPdf()
 }
 
 val defaultStyle: Map<String, String> = mapOf(

@@ -6,7 +6,7 @@ import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
 import net.markdrew.biblebowl.analysis.buildPhrasesIndex
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
@@ -66,7 +66,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
             )
         }
     }
-    file.toPdf()
+    file.latexToPdf()
 }
 
 public fun writeNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
@@ -98,6 +98,6 @@ public fun writeNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int 
             )
         }
     }
-    file.toPdf(keepTexFiles = true)
+    file.latexToPdf(keepTexFiles = true)
 }
 

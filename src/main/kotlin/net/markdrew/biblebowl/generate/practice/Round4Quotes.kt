@@ -2,7 +2,7 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.showPdf
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -48,7 +48,7 @@ fun writeRound4Quotes(practiceTest: PracticeTest): File {
         toLatexInWhatChapter(writer, practiceTest, quotesToFind)
         println("Wrote $latexFile")
     }
-    return latexFile.toPdf()
+    return latexFile.latexToPdf()
 }
 
 private fun round4CluePool(practiceTest: PracticeTest): Map<IntRange, ChapterRef> {

@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.showPdf
-import net.markdrew.biblebowl.latex.toPdf
+import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.AbsoluteChapterNum
 import net.markdrew.biblebowl.model.BCV_FACTOR
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
     val practice: PracticeContent = studyData.practice(28)
-    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = 1)).toPdf())
+    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = 1)).latexToPdf())
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
