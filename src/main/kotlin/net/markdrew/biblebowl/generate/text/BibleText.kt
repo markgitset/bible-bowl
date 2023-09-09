@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
     writeBibleText(
         studyData,
-        TextOptions(customHighlights = customHighlights, uniqueWords = true, names = true, numbers = true)
+        TextOptions(customHighlights = customHighlights, underlineUniqueWords = true, highlightNames = true, highlightNumbers = true)
     )
 }
 
@@ -79,10 +79,10 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
-            if (opts.uniqueWords && transition.isEnded(UNIQUE_WORD)) out.append("}}")
+            if (opts.underlineUniqueWords && transition.isEnded(UNIQUE_WORD)) out.append("}}")
             if (transition.isEnded(REGEX)) out.append('}')
-            if (opts.names && transition.isEnded(NAME)) out.append('}')
-            if (opts.numbers && transition.isEnded(NUMBER)) out.append('}')
+            if (opts.highlightNames && transition.isEnded(NAME)) out.append('}')
+            if (opts.highlightNumbers && transition.isEnded(NUMBER)) out.append('}')
 
             // since footnotes are zero-width and follow the text to which they refer,
             // we need to handle them before any endings
@@ -94,8 +94,8 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
 
                 // before inserting a footnote, need to end highlighting
                 if (outerAnn?.key == REGEX) out.append('}')
-                if (opts.names && outerAnn?.key == NAME) out.append('}')
-                if (opts.numbers && outerAnn?.key == NUMBER) out.append('}')
+                if (opts.highlightNames && outerAnn?.key == NAME) out.append('}')
+                if (opts.highlightNumbers && outerAnn?.key == NUMBER) out.append('}')
 
                 // subtract/add one from footnote offset to find verse in case
                 // the footnote occurs at the end/beginning of the verse
@@ -105,8 +105,8 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
                 out.append(renderFootNote(verseRef!!, value as String))
 
                 // after inserting a footnote, need to resume highlighting
-                if (opts.names && outerAnn?.key == NAME) out.append("""\myname{""")
-                if (opts.numbers && outerAnn?.key == NUMBER) out.append("""\mynumber{""")
+                if (opts.highlightNames && outerAnn?.key == NAME) out.append("""\myname{""")
+                if (opts.highlightNumbers && outerAnn?.key == NUMBER) out.append("""\mynumber{""")
                 if (outerAnn?.key == REGEX) {
                     val color = outerAnn.value
                     out.append("""\myhl[$color]{""")
@@ -145,9 +145,9 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
                 )
             }
 
-            if (opts.uniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""{\uline{""")
-            if (opts.names && transition.isBeginning(NAME)) out.append("""\myname{""")
-            if (opts.numbers && transition.isBeginning(NUMBER)) out.append("""\mynumber{""")
+            if (opts.underlineUniqueWords && transition.isBeginning(UNIQUE_WORD)) out.append("""{\uline{""")
+            if (opts.highlightNames && transition.isBeginning(NAME)) out.append("""\myname{""")
+            if (opts.highlightNumbers && transition.isBeginning(NUMBER)) out.append("""\mynumber{""")
             if (transition.isBeginning(REGEX)) {
                 val color = transition.beginning.first { it.key == REGEX }.value
                 out.append("""\myhl[$color]{""")
@@ -303,8 +303,8 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
                 setAnnotations(SMALL_CAPS, DisjointRangeSet(
                     studyData.findAll(*opts.smallCaps.keys.map { Regex.fromLiteral(it) }.toTypedArray())
                 ))
-                if (opts.uniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
-                if (opts.names) {
+                if (opts.underlineUniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
+                if (opts.highlightNames) {
                     val namesRangeSet = DisjointRangeSet(
                         findNames(studyData, exceptNames = divineNames.toTypedArray())
                             .map { it.excerptRange }.toList()
@@ -313,7 +313,7 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
                     val deconflicted = namesRangeSet.minusEnclosedBy(regexAnnotationsRangeMap)
                     setAnnotations(NAME, deconflicted)
                 }
-                if (opts.numbers) {
+                if (opts.highlightNumbers) {
                     val numbersRangeSet = DisjointRangeSet(findNumbers(studyData.text).map { it.excerptRange }.toList())
                     setAnnotations(NUMBER, numbersRangeSet)
                 }

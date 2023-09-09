@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.NAME
 import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
@@ -16,10 +17,8 @@ import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
 import net.markdrew.biblebowl.model.AnalysisUnit.STUDY_SET
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
-import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
-import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
@@ -107,30 +106,34 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
 
-//    // plain
-//    writeOneText("tbb-doc-format", defaultStyle, studyData, TextOptions(testDate, 12))
-//    writeOneText("marks-doc-format", marksStyle, studyData, TextOptions(testDate, 10))
-//
-//    // unique words underlined
-//    writeOneText(
-//        "tbb-doc-format",
-//        defaultStyle,
-//        studyData,
-//        TextOptions(testDate, 12, uniqueWords = true),
-//    )
-//    writeOneText(
-//        "marks-doc-format",
-//        marksStyle,
-//        studyData,
-//        TextOptions(testDate, 10, customHighlights, uniqueWords = true),
-//    )
+    // plain
+    val tbbPlainOpts = TextOptions<String>(testDate, fontSize = 12)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts)
+
+    val marksPlainOpts = tbbPlainOpts.copy(fontSize = 10, twoColumns = true, useHeadingsForChapters = true)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts)
+
+    // unique words underlined
+    val tbbUniqueWordsOpts = tbbPlainOpts.copy(underlineUniqueWords = true)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts)
+
+    val marksUniqueWordsOpts = marksPlainOpts.copy(underlineUniqueWords = true)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts)
 
     // all highlighting
-    val tbbOpts = TextOptions(testDate, 12, customHighlights, uniqueWords = true, names = true, numbers = true)
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbOpts)
+    val tbbFullOpts = tbbUniqueWordsOpts.copy(
+        customHighlights = customHighlights,
+        highlightNames = true,
+        highlightNumbers = true,
+    )
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts)
 
-    val marksOpts = tbbOpts.copy(fontSize = 10, twoColumns = true)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksOpts)
+    val marksFullOpts = marksUniqueWordsOpts.copy(
+        customHighlights = customHighlights,
+        highlightNames = true,
+        highlightNumbers = true,
+    )
+    writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts)
 }
 
 private fun writeOneText(
@@ -147,7 +150,7 @@ private fun writeOneText(
         } ?: opts
     val outputFile = File("$PRODUCTS_DIR/$name/text/docx/$name-bible-text-${opts.fileNameSuffix}.docx")
     outputFile.parentFile.mkdirs()
-    DocMaker(resourcePath, styleParams).renderText(outputFile, studyData, modifiedOpts)
+    DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile, studyData)
 }
 
 val defaultStyle: Map<String, String> = mapOf(
@@ -165,21 +168,25 @@ val marksStyle: Map<String, String> = mapOf(
     "mainFont" to WmlFont.TIMES_NEW_ROMAN.value,
     "verseNumFont" to WmlFont.SANS_SERIF.value,
     "headingFont" to WmlFont.SANS_SERIF.value,
-    "headingFontSize" to "28",
-    "chapterFontSize" to "24",
+    "chapterFontSize" to "28",
+    "headingFontSize" to "24",
 //    "mainFontSize" to "20", // populate from options
     "footnoteFontSize" to "18",
     "justified" to "both",
 )
 
-class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<String, String> = defaultStyle) {
+class DocMaker(
+    resourcePath: String = "tbb-doc-format",
+    private val styleParams: Map<String, String> = defaultStyle,
+    private val opts: TextOptions<String>,
+) {
 
     val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
     private val mainPart: MainDocumentPart = wordPackage.mainDocumentPart
 
     private val contentStack = ArrayDeque<ContentAccessor>().apply { addFirst(mainPart) }
-    val footnotes = mutableListOf<CTFtnEdn>()
+    private val footnotes = mutableListOf<CTFtnEdn>()
     private var nextFootnote = 2L
 
     private val baseUri: URI = javaClass.getResource("/$resourcePath")?.toURI()
@@ -228,7 +235,7 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
         container.content.add(it)
     }
 
-    fun renderText(outputFile: File, studyData: StudyData, opts: TextOptions<String>) {
+    fun renderText(outputFile: File, studyData: StudyData) {
         mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
 
         val footerRel: Relationship = mainPart.addTargetPart(
@@ -242,7 +249,7 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
 
 //        addFrontMatter()
 //        if (opts.twoColumns) endOneCol(footerRel)
-        renderText(studyData, opts)
+        renderText(studyData)
         if (opts.twoColumns) endTwoCols(footerRel)
         addEndMatter()
         finalSection(footerRel)
@@ -322,7 +329,7 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
         return this
     }
 
-    fun renderText(studyData: StudyData, opts: TextOptions<String>) {
+    private fun renderText(studyData: StudyData) {
         val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
         for ((excerpt, transition) in annotatedDoc.stateTransitions()) {
 
@@ -347,11 +354,19 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
                 logger.debug { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
 
+            // Get the current paragraph annotation, and if we're not in a paragraph, skip the remainder of this loop
             val paragraph: Annotation<AnalysisUnit> = transition.present(PARAGRAPH) ?: continue
 
-            transition.beginning(AnalysisUnit.HEADING)?.apply {
+            transition.beginning(CHAPTER)?.apply {
+                if (opts.useHeadingsForChapters) {
+                    add(makeParagraph("Heading1")).addRun(chapterNum(value as ChapterRef, studyData.isMultiBook))
+                    logger.debug { "Added $CHAPTER: $value (${transition.present(VERSE)?.value})" }
+                }
+            }
+
+            transition.beginning(HEADING)?.apply {
                 add(makeParagraph("Heading1")).addRun().addText(value as String)
-                logger.debug { "Added ${AnalysisUnit.HEADING}: $value (${transition.present(VERSE)?.value})" }
+                logger.debug { "Added $HEADING: $value (${transition.present(VERSE)?.value})" }
             }
 
             val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
@@ -374,8 +389,9 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
                 startVerse(verseRef, transition, studyData.isMultiBook)
 
                 // when we're in poetry in a multi-book set and using chapter labels (that include the book name), the
-                // label will exceed the indent, so rather than adding a tab, just drop to the next line
-                if (inPoetry && studyData.isMultiBook && verseRef.verse == 1) {
+                // book-and-chapter label will exceed the indent, so rather than adding a tab after the label on the
+                // same line, just drop to the next line (this handles a rare, corner case such as in Deut 32)
+                if (!opts.useHeadingsForChapters && inPoetry && studyData.isMultiBook && verseRef.verse == 1) {
                     add(pop<P>())
                     pushP("Poetry1")
                 }
@@ -533,9 +549,10 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
         transition: StateTransition<AnalysisUnit>,
         multiBook: Boolean,
     ) {
-        val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef ?: throw Exception("Not in any chapter?!")
-        if (verseRef.verse == 1) {
-            add(chapterNum(chapterRef, if (multiBook) FULL_BOOK_FORMAT else NO_BOOK_FORMAT))
+        val chapterRef: ChapterRef = transition.present(CHAPTER)?.value as? ChapterRef
+            ?: throw Exception("Not in any chapter?!")
+        if (verseRef.verse == 1 && !opts.useHeadingsForChapters) {
+            add(chapterNum(chapterRef, multiBook))
             logger.debug { "Skipping verse number for first verse of chapter." }
             logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
         } else {
@@ -554,9 +571,12 @@ class DocMaker(resourcePath: String = "tbb-doc-format", val styleParams: Map<Str
         content.add(makeText(verseRef.verse.toString()))
     }
 
-    private fun chapterNum(chapterRef: ChapterRef, bookFormat: BookFormat): R = R().apply {
+    private fun chapterNum(chapterRef: ChapterRef, multiBook: Boolean): R = R().apply {
+        val bookLabel: String =
+            if (multiBook) chapterRef.format(FULL_BOOK_FORMAT)
+            else "Chapter ${chapterRef.chapter}"
         rPr = RPr().apply { rStyle = rStyle("ChapterNum") }
-        content.add(makeText("${chapterRef.format(bookFormat)} "))
+        content.add(makeText("$bookLabel "))
     }
 
     private fun makeText(text: CharSequence, preserveSpace: Boolean = true): Text =

@@ -14,6 +14,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
+import net.markdrew.biblebowl.ws.downloadAndIndex
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.enclose
@@ -26,6 +27,7 @@ import java.io.PrintWriter
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.SortedMap
+import kotlin.io.path.notExists
 
 typealias CharOffset = Int
 
@@ -341,6 +343,9 @@ class StudyData(
 
         fun readData(studySet: StudySet = StandardStudySet.DEFAULT, inPath: Path = Paths.get(DATA_DIR)): StudyData {
             val bookDir = inPath.resolve(studySet.simpleName)
+            if (bookDir.notExists()) {
+                downloadAndIndex(studySet)
+            }
             val text = bookDir.resolve(studySet.simpleName + ".txt").toFile().readText()
             val verses = readVerses(bookDir.resolve(indexFileName(studySet, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(studySet, HEADING)))
