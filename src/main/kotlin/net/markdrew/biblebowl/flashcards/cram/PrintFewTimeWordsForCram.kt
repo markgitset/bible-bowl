@@ -1,8 +1,9 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneSectionWords
+import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData

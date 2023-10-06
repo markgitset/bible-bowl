@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR

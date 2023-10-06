@@ -5,9 +5,9 @@ package net.markdrew.biblebowl.analysis
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.generate.blankOut
-import net.markdrew.biblebowl.generate.cram.Card
-import net.markdrew.biblebowl.generate.cram.CardWriter
-import net.markdrew.biblebowl.generate.cram.FillInTheBlank
+import net.markdrew.biblebowl.flashcards.Card
+import net.markdrew.biblebowl.flashcards.cram.CardWriter
+import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT

@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printNameFrequencies
 import net.markdrew.biblebowl.analysis.printNameMatches
+import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet

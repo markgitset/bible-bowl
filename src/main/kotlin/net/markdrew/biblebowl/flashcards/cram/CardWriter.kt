@@ -1,5 +1,6 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
+import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.chupacabra.core.NonCloseableWriter.Companion.stdout
 import java.io.Closeable
 import java.io.File

@@ -109,31 +109,32 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
 
     // plain
     val tbbPlainOpts = TextOptions<String>(testDate, fontSize = 12)
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts)
-
     val marksPlainOpts = tbbPlainOpts.copy(fontSize = 10, twoColumns = true, useHeadingsForChapters = true)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts)
-
     // unique words underlined
     val tbbUniqueWordsOpts = tbbPlainOpts.copy(underlineUniqueWords = true)
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts)
-
     val marksUniqueWordsOpts = marksPlainOpts.copy(underlineUniqueWords = true)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts)
-
     // all highlighting
     val tbbFullOpts = tbbUniqueWordsOpts.copy(
         customHighlights = customHighlights,
         highlightNames = true,
         highlightNumbers = true,
     )
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts)
-
     val marksFullOpts = marksUniqueWordsOpts.copy(
         customHighlights = customHighlights,
         highlightNames = true,
         highlightNumbers = true,
     )
+
+    // plain
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts)
+
+    // unique words underlined
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts)
+
+    // all highlighting
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts)
     writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts)
 }
 
@@ -142,7 +143,7 @@ private fun writeOneText(
     styleParams: Map<String, String>,
     studyData: StudyData,
     opts: TextOptions<String>,
-) {
+): File {
     val name = studyData.studySet.simpleName
     // FIXME this is an ugly hack
     val modifiedOpts: TextOptions<String> =
@@ -153,7 +154,7 @@ private fun writeOneText(
     outputFile.parentFile.mkdirs()
     DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile, studyData)
 
-    outputFile.docxToPdf()
+    return outputFile.docxToPdf()
 }
 
 val defaultStyle: Map<String, String> = mapOf(
@@ -342,11 +343,11 @@ class DocMaker(
 
             if ((transition.isEnded(PARAGRAPH))) {
                 finishP()
-                logger.debug { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
+                logger.trace { "Ended $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
             if (transition.isEnded(STUDY_SET)) {
-                logger.debug { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
+                logger.trace { "Ended $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
 
             /*
@@ -354,7 +355,7 @@ class DocMaker(
              */
 
             if (transition.isBeginning(STUDY_SET)) {
-                logger.debug { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
+                logger.trace { "Began $STUDY_SET ${transition.present(VERSE)?.value}" }
             }
 
             // Get the current paragraph annotation, and if we're not in a paragraph, skip the remainder of this loop
@@ -363,13 +364,13 @@ class DocMaker(
             transition.beginning(CHAPTER)?.apply {
                 if (opts.useHeadingsForChapters) {
                     add(makeParagraph("Heading1")).addRun(chapterNum(value as ChapterRef, studyData.isMultiBook))
-                    logger.debug { "Added $CHAPTER: $value (${transition.present(VERSE)?.value})" }
+                    logger.trace { "Added $CHAPTER: $value (${transition.present(VERSE)?.value})" }
                 }
             }
 
             transition.beginning(HEADING)?.apply {
                 add(makeParagraph("Heading1")).addRun().addText(value as String)
-                logger.debug { "Added $HEADING: $value (${transition.present(VERSE)?.value})" }
+                logger.trace { "Added $HEADING: $value (${transition.present(VERSE)?.value})" }
             }
 
             val newParagraph: Boolean = transition.isBeginning(PARAGRAPH)
@@ -383,7 +384,7 @@ class DocMaker(
                     else -> "TextBody"
                 }
                 pushP(style)
-                logger.debug { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
+                logger.trace { "Began $PARAGRAPH ${transition.present(VERSE)?.value}" }
             }
 
             // text
@@ -404,7 +405,7 @@ class DocMaker(
                 add(R().apply {
                     repeat(numIndents) { content.add(Tab()) }
                 })
-                logger.debug { "Added $numIndents <tab/>s ${transition.present(VERSE)?.value}" }
+                logger.trace { "Added $numIndents <tab/>s ${transition.present(VERSE)?.value}" }
             }
 
             // since LEADING footnotes are zero-width and precede the run text to which they are attached,
@@ -419,7 +420,7 @@ class DocMaker(
                 footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
                 add(footnoteRef2(fnRef))
                 add(R()).addText(" ")
-                logger.debug { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
+                logger.trace { "Added $LEADING_FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
 
             val r = pushR()
@@ -476,7 +477,7 @@ class DocMaker(
                 val fnRef: Long = nextFootnote++
                 footnotes.add(footnoteContent(verseRef!!, value as String, fnRef, opts))
                 add(footnoteRef2(fnRef))
-                logger.debug { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
+                logger.trace { "Added $FOOTNOTE ref ${transition.present(VERSE)?.value}" }
             }
         }
     }
@@ -556,12 +557,12 @@ class DocMaker(
             ?: throw Exception("Not in any chapter?!")
         if (verseRef.verse == 1 && !opts.useHeadingsForChapters) {
             add(chapterNum(chapterRef, multiBook))
-            logger.debug { "Skipping verse number for first verse of chapter." }
-            logger.debug { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
+            logger.trace { "Skipping verse number for first verse of chapter." }
+            logger.trace { "Added $CHAPTER: ${chapterRef.chapter} ($verseRef)" }
         } else {
             add(verseNumRun(verseRef))
             if (!transition.isPresent(POETRY)) add(R()).addText(" ")
-            logger.debug { "Added $VERSE $verseRef" }
+            logger.trace { "Added $VERSE $verseRef" }
         }
     }
 

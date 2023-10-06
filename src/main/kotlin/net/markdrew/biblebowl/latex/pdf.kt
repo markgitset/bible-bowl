@@ -1,6 +1,7 @@
 package net.markdrew.biblebowl.latex
 
 import java.io.File
+import java.lang.ProcessBuilder.Redirect.DISCARD
 
 fun File.latexToPdf(
     showStdIo: Boolean = false,
@@ -17,7 +18,7 @@ fun File.latexToPdf(
         absolutePath
     ).inheritIO()
     // without this, it may hang when the output buffer fills up
-    if (!showStdIo) processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD)
+    if (!showStdIo) processBuilder.redirectOutput(DISCARD)
     val process = processBuilder.start()
     process.waitFor()
     if (!keepLogFiles) {
@@ -35,15 +36,15 @@ fun File.docxToPdf(
     showStdIo: Boolean = false,
     keepDocxFiles: Boolean = true,
 ): File {
-    // soffice --convert-to pdf --outdir . *.docx
     val processBuilder = ProcessBuilder(
-        "soffice",
+        "libreoffice7.6",
         "--convert-to", "pdf",
         "--outdir", parent,
         absolutePath
     ).inheritIO()
+    processBuilder.environment()["HOME"] = parent
     // without this, it may hang when the output buffer fills up
-    if (!showStdIo) processBuilder.redirectOutput(ProcessBuilder.Redirect.DISCARD)
+    if (!showStdIo) processBuilder.redirectOutput(DISCARD).redirectError(DISCARD)
     val process = processBuilder.start()
     process.waitFor()
     if (!keepDocxFiles) resolveSibling("$nameWithoutExtension.docx").delete()

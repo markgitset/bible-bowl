@@ -19,9 +19,9 @@ private const val VERSES_PER_PAGE = 20
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val content = PracticeContent(studyData, studySet.toChapter(Book.MAT.chapterRef(17)))
+    val content = PracticeContent(studyData, studySet.toChapter(Book.EXO.chapterRef(8)))
     writeFindTheVerse(
-        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 50)
+        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 0)
     )
 //    val content: PracticeContent = StudyData.readData().practice(1..14)
 //    showPdf(writeFindTheVerse(

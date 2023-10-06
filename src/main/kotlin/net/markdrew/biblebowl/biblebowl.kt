@@ -2,12 +2,12 @@ package net.markdrew.biblebowl
 
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.oneTimeWords
-import net.markdrew.biblebowl.generate.cram.writeCramFewTimeWords
-import net.markdrew.biblebowl.generate.cram.writeCramHeadings
-import net.markdrew.biblebowl.generate.cram.writeCramNameBlanks
-import net.markdrew.biblebowl.generate.cram.writeCramOneTimeWords
-import net.markdrew.biblebowl.generate.cram.writeCramReverseHeadings
-import net.markdrew.biblebowl.generate.cram.writeCramVerses
+import net.markdrew.biblebowl.flashcards.cram.writeCramFewTimeWords
+import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramNameBlanks
+import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
+import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsCsv
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf

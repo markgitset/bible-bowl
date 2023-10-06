@@ -1,4 +1,4 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.PRODUCTS_DIR
@@ -41,7 +41,7 @@ fun main(args: Array<String>) {
 //        printHeadings(studyData, chunk.first()..chunk.last())
 //    }
 
-    writeCramHeadings(studyData, studyData.chapterRange(9, 12))
+    writeCramHeadings(studyData)//, studyData.chapterRange(1, 9))
 }
 
 private fun makePath(studyData: StudyData, fileType: String, chapterRange: ChapterRange): Path {

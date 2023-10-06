@@ -1,9 +1,10 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.anki
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.flashcards.cram.highlightVerse
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -12,10 +13,11 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
 import java.io.File
+import java.io.PrintWriter
 import java.nio.file.Paths
 
-fun highlightVerse(target: String, verse: String): String =
-    verse.replace(Regex("""\b$target\b"""), "<b><u>$0</u></b>")
+//fun highlightVerse(target: String, verse: String): String =
+//    verse.replace(Regex("""\b$target\b"""), "<b><u>$0</u></b>")
 
 fun main(args: Array<String>) {
     println(BANNER)
@@ -40,15 +42,17 @@ fun writeCramOneTimeWords(
 ) {
     val simpleName = studyData.studySet.simpleName
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
-    val uniqueWordsFile = File("$PRODUCTS_DIR/$simpleName/cram", "$simpleName-cram-one-words$scopeString.tsv")
-    CardWriter(uniqueWordsFile).use { writer ->
+    val uniqueWordsFile = File("$PRODUCTS_DIR/$simpleName/anki", "$simpleName-anki-one-words$scopeString.tsv").also {
+        it.parentFile.mkdirs()
+    }
+    uniqueWordsFile.printWriter().use { writer ->
         writeCards(writer, oneTimeWords, studyData, chapterRange)
     }
     println("Wrote $uniqueWordsFile")
 }
 
 private fun writeCards(
-    writer: CardWriter,
+    writer: PrintWriter,
     oneTimeWords: List<IntRange>,
     studyData: StudyData,
     chapterRange: ChapterRange?
@@ -63,7 +67,6 @@ private fun writeCards(
         val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
         val heading = studyData.headingCharRanges.valueEnclosing(wordRange)
         val verseRefString = verseRef.format(FULL_BOOK_FORMAT)
-        val answer = "$heading<br/><b>$verseRefString</b><br/>$highlightedVerse"
-        writer.write(word, answer, hint = highlightedVerse)
+        writer.println(listOf(word, highlightedVerse, heading, verseRefString).joinToString("\t"))
     }
 }

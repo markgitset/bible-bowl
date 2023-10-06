@@ -1,5 +1,6 @@
-package net.markdrew.biblebowl.generate.cram
+package net.markdrew.biblebowl.flashcards.cram
 
+import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
