@@ -67,7 +67,7 @@ class ApiExamples {
         val book = getBook(bookInitials) ?: return ""
 
         val key = book.getKey(reference)
-        val data: BookData = BookData(book, key)
+        val data = BookData(book, key)
         return OSISUtil.getCanonicalText(data.osisFragment)
     }
 
@@ -289,10 +289,12 @@ class ApiExamples {
         // If you want a greater selection of Books:
         var books = Books.installed().books
         book = books[0]
+        if (book != null) println(book.initials)
 
         // Or you can narrow the range a bit
         books = Books.installed().getBooks(BookFilters.getOnlyBibles())
         book = books[0]
+        if (book != null) println(book.initials)
 
         // There are implementations of BookFilter for all sorts of things in
         // the BookFilters class
@@ -302,9 +304,7 @@ class ApiExamples {
         val test = Books.installed().getBooks(MyBookFilter("ESV"))
         book = test[0]
 
-        if (book != null) {
-            println(book.initials)
-        }
+        if (book != null) println(book.initials)
 
         // If you want to know about new books as they arrive:
         Books.installed().addBooksListener(MyBooksListener())

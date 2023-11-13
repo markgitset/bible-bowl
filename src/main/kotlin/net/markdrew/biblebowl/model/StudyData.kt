@@ -181,11 +181,6 @@ class StudyData(
         min..max
     }
 
-    val numberOfChapters: Int = chapters.size
-
-    fun chapterRangeOfNChapters(nChapters: Int, offset: Int = 0): ChapterRange =
-        with (chapterRefs.drop(offset).take(nChapters)) { first()..last() }
-
     /**
      * Returns the character range corresponding to the given chapter range
      */
@@ -204,9 +199,8 @@ class StudyData(
     /**
      * Returns chapter [[Heading]]s that intersect the given chapter range
      */
-    @Deprecated("Doesn't work great for multi-book sets")
     fun headings(chapterRange: ChapterRange): List<Heading> =
-        headings.filter { it.verseRange.start.chapterRef in chapterRefs }
+        headings.filter { it.verseRange.start.chapterRef in chapterRange }
 
     /**
      * Returns chapter [[Heading]]s that intersect the given chapter range
@@ -243,11 +237,11 @@ class StudyData(
 
     fun wordCount(range: IntRange): Int = words.enclosedBy(range).size
 
-    fun splitLong(textRange: IntRange, maxLengthGoal: Int = 22): List<IntRange> {
-        if (wordCount(textRange) <= maxLengthGoal) return listOf(textRange)
-        TODO()
-        return listOf(textRange)
-    }
+//    fun splitLong(textRange: IntRange, maxLengthGoal: Int = 22): List<IntRange> {
+//        if (wordCount(textRange) <= maxLengthGoal) return listOf(textRange)
+//        TODO()
+//        return listOf(textRange)
+//    }
 
     fun enclosingSingleVerseSentence(range: IntRange): IntRange? = oneVerseSentParts.keyEnclosing(range)
     fun singleVerseSentenceContext(range: IntRange): Excerpt? =
@@ -281,19 +275,7 @@ class StudyData(
             drs
         }
 
-    @Deprecated("doesn't work well with multi-book sets")
-    fun practice(throughChapter: Int?): PracticeContent {
-        if (throughChapter == null) return practice(chapterRange)
-        require(throughChapter > 0)
-        val firstChapterRef: ChapterRef = chapters.values.first()
-        val lastChapterRef: ChapterRef = chapters.values.drop(throughChapter - 1).first()
-        return practice(firstChapterRef..lastChapterRef)
-    }
-
-    @Deprecated("doesn't work well with multi-book sets")
-    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = practice(chapters.endInclusive)
-
-    fun practice(throughChapter: ChapterRef?): PracticeContent =
+    fun practice(throughChapter: ChapterRef? = null): PracticeContent =
         if (throughChapter == null) PracticeContent(this)
         else PracticeContent(this, chapterRefs.take(chapterRefs.indexOf(throughChapter) + 1))
 

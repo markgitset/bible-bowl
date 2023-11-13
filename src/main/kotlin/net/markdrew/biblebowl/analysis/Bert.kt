@@ -159,8 +159,8 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the pooled embeddings for the sequences, in the order the input [java.lang.Iterable] provided them
      * @since 1.0.3
      */
-    fun embedSequences(sequences: Iterable<String>?): Array<FloatArray> {
-        val list: List<String> = Lists.newArrayList(sequences)
+    fun embedSequences(sequences: Iterable<String?>): Array<FloatArray> {
+        val list: ArrayList<String?> = Lists.newArrayList(sequences)
         return embedSequences(*list.toTypedArray())
     }
 
@@ -173,8 +173,8 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the pooled embeddings for the sequences, in the order the input [java.util.Iterator] provided them
      * @since 1.0.3
      */
-    fun embedSequences(sequences: Iterator<String>?): Array<FloatArray> {
-        val list: List<String> = Lists.newArrayList(sequences)
+    fun embedSequences(sequences: Iterator<String?>): Array<FloatArray> {
+        val list: ArrayList<String?> = Lists.newArrayList(sequences)
         return embedSequences(*list.toTypedArray())
     }
 
@@ -187,7 +187,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the pooled embeddings for the sequences, in the order they were provided
      * @since 1.0.3
      */
-    fun embedSequences(vararg sequences: String): Array<FloatArray> {
+    fun embedSequences(vararg sequences: String?): Array<FloatArray> {
         return getInputs(sequences).use { inputs ->
             val output = bundle.session().runner()
                     .feed(model.inputIds, inputs.inputIds)
@@ -212,8 +212,8 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the token embeddings for the sequences, in the order the input [java.lang.Iterable] provided them
      * @since 1.0.3
      */
-    fun embedTokens(sequences: Iterable<String>?): Array<Array<FloatArray>> {
-        val list: List<String> = Lists.newArrayList(sequences)
+    fun embedTokens(sequences: Iterable<String?>): Array<Array<FloatArray>> {
+        val list: ArrayList<String?> = Lists.newArrayList(sequences)
         return embedTokens(*list.toTypedArray())
     }
 
@@ -226,8 +226,8 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the token embeddings for the sequences, in the order the input [java.util.Iterator] provided them
      * @since 1.0.3
      */
-    fun embedTokens(sequences: Iterator<String>?): Array<Array<FloatArray>> {
-        val list: List<String> = Lists.newArrayList(sequences)
+    fun embedTokens(sequences: Iterator<String?>): Array<Array<FloatArray>> {
+        val list: List<String?> = Lists.newArrayList(sequences)
         return embedTokens(*list.toTypedArray())
     }
 
@@ -239,7 +239,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the token embeddings for the sequence
      * @since 1.0.3
      */
-    fun embedTokens(sequence: String): Array<FloatArray> {
+    fun embedTokens(sequence: String?): Array<FloatArray> {
         getInputs(sequence).use { inputs ->
             val output: MutableList<Tensor<*>> = bundle.session().runner()
                     .feed(model.inputIds, inputs.inputIds)
@@ -269,7 +269,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
      * @return the token embeddings for the sequences, in the order they were provided
      * @since 1.0.3
      */
-    fun embedTokens(vararg sequences: String): Array<Array<FloatArray>> {
+    fun embedTokens(vararg sequences: String?): Array<Array<FloatArray>> {
         getInputs(sequences).use { inputs ->
             val output = bundle.session().runner()
                     .feed(model.inputIds, inputs.inputIds)
@@ -289,8 +289,8 @@ class Bert private constructor(private val bundle: SavedModelBundle,
         }
     }
 
-    private fun getInputs(sequence: String): Inputs {
-        val tokens: Array<String> = tokenizer.tokenize(sequence)
+    private fun getInputs(sequence: String?): Inputs {
+        val tokens: Array<String?> = tokenizer.tokenize(sequence)
         println("tokens = " + tokens.joinToString())
         val inputIds = IntBuffer.allocate(model.maxSequenceLength)
         val inputMask = IntBuffer.allocate(model.maxSequenceLength)
@@ -328,7 +328,7 @@ class Bert private constructor(private val bundle: SavedModelBundle,
         return Inputs(inputIds, inputMask, segmentIds, 1)
     }
 
-    private fun getInputs(sequences: Array<out String>): Inputs {
+    private fun getInputs(sequences: Array<out String?>): Inputs {
         val tokens = tokenizer.tokenize(*sequences)
         val inputIds = IntBuffer.allocate(sequences.size * model.maxSequenceLength)
         val inputMask = IntBuffer.allocate(sequences.size * model.maxSequenceLength)

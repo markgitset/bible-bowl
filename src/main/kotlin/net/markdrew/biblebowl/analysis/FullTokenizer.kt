@@ -86,8 +86,8 @@ class FullTokenizer @JvmOverloads constructor(vocabularyPath: Path,
      * @return the inputIds for the tokens
      * @since 1.0.3
      */
-    fun convert(tokens: Array<String>): IntArray =
-            tokens.map { key: String -> vocabulary[key]!! }.toIntArray()
+    fun convert(tokens: Array<String?>): IntArray =
+            tokens.map { key: String? -> vocabulary[key]!! }.toIntArray()
 
     //    @Override
     //    public String[] tokenize(final String sequence) {
@@ -95,7 +95,7 @@ class FullTokenizer @JvmOverloads constructor(vocabularyPath: Path,
     //                .flatMap(Stream::of)
     //                .toArray(String[]::new);
     //    }
-    override fun tokenize(sequence: String): Array<String> =
+    override fun tokenize(sequence: String?): Array<String?> =
             wordpiece.tokenize(*basic.tokenize(sequence)).flatten().toTypedArray()
 
     //    @Override
@@ -106,7 +106,7 @@ class FullTokenizer @JvmOverloads constructor(vocabularyPath: Path,
     //                    .toArray(String[]::new)
     //                ).toArray(String[][]::new);
     //    }
-    override fun tokenize(vararg sequences: String): Array<Array<String>> = basic.tokenize(*sequences)
+    override fun tokenize(vararg sequences: String?): Array<Array<String?>> = basic.tokenize(*sequences)
             .map { tokens -> wordpiece.tokenize(*tokens).flatten().toTypedArray() }
             .toTypedArray()
 

@@ -284,7 +284,7 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
         appendLine("{${chapterRef.chapter}}")
     }
 
-    private fun Appendable.appendBookTitle(book: Book) {
+    private fun Appendable.appendBookTitle(@Suppress("UNUSED_PARAMETER") book: Book) {
         //appendLine("\n\n\\mychapter{${book.fullName}}")
     }
 

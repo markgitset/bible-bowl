@@ -71,7 +71,7 @@ fun buildNGramIndex(
             else words to excerpts.map { it.excerptRange }.reduce { r1, r2 -> r1.enclose(r2) }
         }.filterNotNull()
     val index: Map<List<String>, List<IntRange>> = windowed.groupBy({ it.first }, { it.second })
-    return index.filter { (phrase, ranges) ->
+    return index.filter { (_ /*phrase*/, ranges) ->
         /*phrase !in stopWords &&*/ ranges.size in frequencyRange
     }.map { (phrase, ranges) ->
         PhraseIndexEntry(phrase, ranges.map { phraseRange ->

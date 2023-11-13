@@ -2,7 +2,6 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -31,9 +30,9 @@ fun main(args: Array<String>) {
 //    ))
 
     val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in studyData.chapters.values) {
-        if (throughChapter < Book.EXO.chapterRef(20)) continue
-        val content = studyData.practice(studyData.chapterRange.start..throughChapter)
+    for (throughChapter in studyData.chapterRefs) {
+        //if (throughChapter < Book.EXO.chapterRef(20)) continue
+        val content = studyData.practice(throughChapter)
         for (seed in seeds) {
             writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
         }

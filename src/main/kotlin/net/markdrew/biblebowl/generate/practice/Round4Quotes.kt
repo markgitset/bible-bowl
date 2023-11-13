@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 //    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
 //        writeRound4Quotes(Book.DEFAULT, numQuestions = 33, randomSeed = 1, throughChapter = lastChapter)
 //    }
-    val content: PracticeContent = studyData.practice(studyData.chapterRange)
+    val content: PracticeContent = studyData.practice()
     showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 

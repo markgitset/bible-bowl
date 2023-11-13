@@ -2,7 +2,6 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.showPdf
-import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -15,7 +14,7 @@ import kotlin.random.Random
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val practice = PracticeContent(studyData, studyData.chapterRangeOfNChapters(13))
+    val practice = PracticeContent(studyData)
     showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)))
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
@@ -38,7 +37,7 @@ private data class Question2(
     val wrongAnswers = answers.drop(nCorrectAnswers)
 }
 
-private fun multiChoice2(qAndA: Question2, coveredChapters: ChapterRange?, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
+private fun multiChoice2(qAndA: Question2, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
     val allChoices: List<String> =
         qAndA.wrongAnswers.shuffled(random).take(nChoices - 1) + qAndA.correctAnswers.single()
     return MultiChoiceQuestion2(qAndA, allChoices.shuffled(random))
@@ -66,14 +65,13 @@ private fun factsCluePool(practiceTest: PracticeTest, nChoices: Int): List<Multi
     val resourceName = "/${practiceTest.studySet.name.lowercase()}/manual-questions.tsv"
     val resource: URL = object {}.javaClass.getResource(resourceName)
         ?: throw Exception("Could not find resource '$resourceName'!")
-    val content = practiceTest.content
     val questions: List<Question2> = parseTsv(resource.openStream()) { fields ->
         val (ref, question, nCorrect) = fields
         val choices = fields.drop(3)
         Question2(escapeLatex(question), nCorrect.toInt(), choices.map { escapeLatex(it) }, ref)
     }.filter { it.nCorrectAnswers == 1 } // for round two, only 1-answer questions used
     return questions.shuffled(practiceTest.random).take(practiceTest.numQuestions)
-        .map { multiChoice2(it, null, practiceTest.random, nChoices) }
+        .map { multiChoice2(it, practiceTest.random, nChoices) }
 }
 
 private fun toLatexFactFinder(

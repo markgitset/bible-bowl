@@ -41,7 +41,10 @@ fun findNames(studyData: StudyData, vararg exceptNames: String): Sequence<Excerp
         .sortedWith(compareBy(rangeFirstLastComparator) { it.excerptRange })
         .asSequence()
 
-private fun isName(studyData: StudyData, wordExcerpt: Excerpt): Boolean {
+private fun isName(
+    @Suppress("UNUSED_PARAMETER") studyData: StudyData,
+    wordExcerpt: Excerpt
+): Boolean {
 
     // names don't start with digits or lower-cased letters
     val word: String = wordExcerpt.excerptText
@@ -51,7 +54,7 @@ private fun isName(studyData: StudyData, wordExcerpt: Excerpt): Boolean {
     if (lowerWord in STOP_NAMES) return false
 
     val englishWord: Boolean = lowerWord in ENGLISH_WORDS
-    val firstWordInSentence: Boolean = isFirstWordInSentence(studyData, wordExcerpt.excerptRange)
+    //val firstWordInSentence: Boolean = isFirstWordInSentence(studyData, wordExcerpt.excerptRange)
 
     return !englishWord
 }

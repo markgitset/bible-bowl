@@ -4,7 +4,6 @@ import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.ReferencedVerse
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.chupacabra.core.StringSubsequenceKernel
 import net.markdrew.chupacabra.core.levenshtein
 import java.util.TreeMap
 import kotlin.math.abs
@@ -27,7 +26,7 @@ class TopNMap<K, V>(val topN: Int) : TreeMap<K, V>() {
 
 fun buildSimilaritiesIndex(studyData: StudyData): Map<VerseRef, TopNMap<Double, VerseRef>> {
     val topNSize = 3
-    val ssk = StringSubsequenceKernel()
+//    val ssk = StringSubsequenceKernel()
     val verses: List<ReferencedVerse> = studyData.verseList()
     val tmpMap: Map<VerseRef, TopNMap<Double, VerseRef>> = buildMap {
         for (v in verses) {

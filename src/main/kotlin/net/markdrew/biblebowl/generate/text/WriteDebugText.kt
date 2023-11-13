@@ -13,10 +13,10 @@ private val logger: KLogger = KotlinLogging.logger {}
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
     val studyData = StudyData.readData(studySet)
-    val customHighlights = mapOf(
-//        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
-        "namesColor" to setOf("John the Baptist".toRegex()),
-    )
+//    val customHighlights = mapOf(
+////        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
+//        "namesColor" to setOf("John the Baptist".toRegex()),
+//    )
 //    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
