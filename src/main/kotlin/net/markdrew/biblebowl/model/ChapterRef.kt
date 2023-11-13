@@ -9,6 +9,7 @@ fun ChapterRange.format(bookFormat: BookFormat = FULL_BOOK_FORMAT, separator: St
     return start.format(bookFormat) + if (start == endInclusive) "" else "$separator${endInclusive.chapter}"
 }
 fun ChapterRange.toAbsoluteRange(): IntRange = start.absoluteChapter..endInclusive.absoluteChapter
+fun Collection<ChapterRef>.toAbsoluteRange(): IntRange = first().absoluteChapter..last().absoluteChapter
 
 data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef> {
 

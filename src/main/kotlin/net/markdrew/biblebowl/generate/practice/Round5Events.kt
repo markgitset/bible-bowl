@@ -1,12 +1,10 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.model.AbsoluteChapterNum
-import net.markdrew.biblebowl.model.BCV_FACTOR
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
+import net.markdrew.biblebowl.model.Book.NUM
 import net.markdrew.biblebowl.model.BookFormat
-import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
@@ -15,19 +13,15 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.toAbsoluteRange
-import net.markdrew.biblebowl.model.toChapterRef
-import net.markdrew.chupacabra.core.intersect
 import java.io.File
-import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val practice: PracticeContent = studyData.practice(28)
-    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = 1)).latexToPdf())
+    val practice: PracticeContent = studyData.practice(throughChapter = NUM.chapterRef(3))
+    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).latexToPdf())
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
@@ -46,26 +40,34 @@ data class Question(
     val answerRefs: List<VerseRef>? = null,
 )
 
-fun multiChoice(qAndA: Question, coveredChapters: ChapterRange, random: Random, nChoices: Int = 5): MultiChoiceQuestion {
+fun multiChoice(
+    qAndA: Question,
+    coveredChapters: List<ChapterRef>,
+    random: Random,
+    nChoices: Int = 5
+): MultiChoiceQuestion {
     val nSpecificChoices = nChoices - 1 // nChoices minus 1 for the "none of these" answer
     val answerIsNone = random.nextInt(1..nChoices) == 1 // i.e., 1/nChoices chance of the answer being none of these
     val nCorrectChoices = if (answerIsNone) 0 else 1
-    val maxOffset = ((nSpecificChoices + 0.4) / qAndA.answers.size).roundToInt() - nCorrectChoices
-    val correctAnswers: List<AbsoluteChapterNum> = qAndA.answers.map { it.absoluteChapter }
-    val wrongChoicesPool: List<AbsoluteChapterNum> = correctAnswers
+    val maxOffset = nSpecificChoices - nCorrectChoices
+    val correctAnswers: List<ChapterRef> = qAndA.answers
+    val wrongChoicesPool: List<ChapterRef> = correctAnswers
         .flatMap { answer ->
-            ((answer - maxOffset)..(answer + maxOffset))
-                .intersect(coveredChapters.toAbsoluteRange())
+            val i = coveredChapters.indexOf(answer)
+            coveredChapters.subList(
+                (i - maxOffset).coerceAtLeast(0),
+                (i + maxOffset + 1).coerceAtMost(coveredChapters.size)
+            )
         }
-        .filterNot { it in correctAnswers || it % BCV_FACTOR == 0 }
+        .filterNot { it in correctAnswers }
         .distinct()
         .shuffled(random)
 
-    val specificChoices: List<AbsoluteChapterNum> =
+    val specificChoices: List<ChapterRef> =
         if (answerIsNone) wrongChoicesPool.take(nSpecificChoices)
         else wrongChoicesPool.take(nSpecificChoices - 1) + correctAnswers.first()
 
-    val allChoices: List<ChapterRef?> = specificChoices.sorted().map { it.toChapterRef() } + null
+    val allChoices: List<ChapterRef?> = specificChoices.sorted() + null
     return MultiChoiceQuestion(qAndA, allChoices, nSpecificChoices)
 }
 

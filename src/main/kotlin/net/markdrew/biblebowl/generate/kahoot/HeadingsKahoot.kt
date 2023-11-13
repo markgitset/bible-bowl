@@ -6,6 +6,9 @@ import net.markdrew.biblebowl.generate.practice.MultiChoiceQuestion
 import net.markdrew.biblebowl.generate.practice.PracticeTest
 import net.markdrew.biblebowl.generate.practice.Round
 import net.markdrew.biblebowl.generate.practice.headingsCluePool
+import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
+import net.markdrew.biblebowl.model.Book.NUM
+import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -16,12 +19,15 @@ import kotlin.random.Random
 import kotlin.random.nextInt
 
 fun main() {
-    writeHeadingsKahoot(StandardStudySet.DEFAULT, throughChapter = 10, randomSeed = 1)
+    writeHeadingsKahoot(StandardStudySet.DEFAULT, throughChapter = NUM.chapterRef(1), randomSeed = 1)
 }
+
+private fun formatChapterRef(chapterRef: ChapterRef?): String =
+    chapterRef?.format(BRIEF_BOOK_FORMAT) ?: "None of these"
 
 private fun writeHeadingsKahoot(
     studySet: StudySet = StandardStudySet.DEFAULT,
-    throughChapter: Int? = null,
+    throughChapter: ChapterRef? = null,
     numQuestions: Int = Int.MAX_VALUE,
     timeLimit: KahootTimeLimit = KahootTimeLimit.SEC_10,
     randomSeed: Int = Random.nextInt(1..9_999)
@@ -34,7 +40,7 @@ private fun writeHeadingsKahoot(
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 4)
 
     var fileName = "$setName-headings-kahoot"
-    if (!content.allChapters) fileName += "-to-ch-${content.coveredChapters.endInclusive}"
+    if (!content.allChapters) fileName += "-to-${content.coveredChapters.last().toString().lowercase()}"
     fileName += "-%04d".format(randomSeed)
 
     val xlsxFile = File("$PRODUCTS_DIR/$setName/kahoot/$fileName.xlsx")
@@ -43,10 +49,10 @@ private fun writeHeadingsKahoot(
             question(
                 KahootQuestion(
                     multiChoice.question.question,
-                    multiChoice.choices[0] ?: "none of these",
-                    multiChoice.choices[1] ?: "none of these",
-                    multiChoice.choices[2] ?: "none of these",
-                    multiChoice.choices[3] ?: "none of these",
+                    formatChapterRef(multiChoice.choices[0]),
+                    formatChapterRef(multiChoice.choices[1]),
+                    formatChapterRef(multiChoice.choices[2]),
+                    formatChapterRef(multiChoice.choices[3]),
                     timeLimit,
                     listOf(multiChoice.correctChoice + 1)
                 )

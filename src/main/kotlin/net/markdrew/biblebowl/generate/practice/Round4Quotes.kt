@@ -1,8 +1,8 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -61,7 +61,7 @@ private fun round4CluePool(practiceTest: PracticeTest): Map<IntRange, ChapterRef
                 trim(studyData.text, range) { c -> c in " :,‘’“”\n" }
             }.filterNot { (range, _) -> range.isEmpty() })
     if (!practiceTest.content.allChapters) {
-        val lastIncludedOffset: Int = studyData.chapterIndex[chapters.endInclusive]?.last ?: throw Exception()
+        val lastIncludedOffset: Int = studyData.chapterIndex[chapters.last()]?.last ?: throw Exception()
         cluePool = cluePool.enclosedBy(0..lastIncludedOffset)
     }
     val longEnoughClues = cluePool.filterKeys { it.length() >= 15 }

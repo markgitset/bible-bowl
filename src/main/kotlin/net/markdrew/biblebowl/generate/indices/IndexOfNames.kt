@@ -25,7 +25,7 @@ fun main() {
 
 private fun writeNamesList(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
-    val names: Sequence<String> = findNames(studyData).map { it.excerptText }.sorted()
+    val names: Sequence<String> = findNames(studyData).map { it.excerptText }.sorted().distinct()
     val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
     val file = dir.resolve("$studyName-list-names.txt")
     file.writer().use { writer ->

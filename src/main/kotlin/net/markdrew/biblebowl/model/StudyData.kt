@@ -170,9 +170,12 @@ class StudyData(
         return null
     }
 
+    /** All chapter refs in this data, in Bible order */
+    val chapterRefs: List<ChapterRef> = chapters.values.toList()
+
     /** The range of chapters in this book */
     val chapterRange: ChapterRange by lazy {
-        val values = chapters.values
+        val values = chapterRefs
         val min = values.minOrNull() ?: throw Exception("Should never happen!")
         val max = values.maxOrNull() ?: throw Exception("Should never happen!")
         min..max
@@ -181,7 +184,7 @@ class StudyData(
     val numberOfChapters: Int = chapters.size
 
     fun chapterRangeOfNChapters(nChapters: Int, offset: Int = 0): ChapterRange =
-        with (chapters.values.drop(offset).take(nChapters)) { first()..last() }
+        with (chapterRefs.drop(offset).take(nChapters)) { first()..last() }
 
     /**
      * Returns the character range corresponding to the given chapter range
@@ -201,8 +204,15 @@ class StudyData(
     /**
      * Returns chapter [[Heading]]s that intersect the given chapter range
      */
+    @Deprecated("Doesn't work great for multi-book sets")
     fun headings(chapterRange: ChapterRange): List<Heading> =
-        headings.filter { it.verseRange.start.chapterRef in chapterRange }
+        headings.filter { it.verseRange.start.chapterRef in chapterRefs }
+
+    /**
+     * Returns chapter [[Heading]]s that intersect the given chapter range
+     */
+    fun headings(chapterRefs: Collection<ChapterRef>): List<Heading> =
+        headings.filter { it.chapterRange.start in chapterRefs }
 
     /**
      * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
@@ -223,8 +233,8 @@ class StudyData(
     /**
      * For multi-book sets, these are relative chapters, not necessarily book chapters
      */
-    fun chapterRange(first: Int, last: Int): ChapterRange =
-        with (chapters.values.toList()) { this[first - 1]..this[last - 1] }
+    fun relativeChapterRange(first: Int, last: Int): ChapterRange =
+        with (chapterRefs.toList()) { this[first - 1]..this[last - 1] }
 
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
@@ -271,6 +281,7 @@ class StudyData(
             drs
         }
 
+    @Deprecated("doesn't work well with multi-book sets")
     fun practice(throughChapter: Int?): PracticeContent {
         if (throughChapter == null) return practice(chapterRange)
         require(throughChapter > 0)
@@ -279,7 +290,12 @@ class StudyData(
         return practice(firstChapterRef..lastChapterRef)
     }
 
-    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = PracticeContent(this, chapters)
+    @Deprecated("doesn't work well with multi-book sets")
+    fun practice(chapters: ChapterRange = chapterRange): PracticeContent = practice(chapters.endInclusive)
+
+    fun practice(throughChapter: ChapterRef?): PracticeContent =
+        if (throughChapter == null) PracticeContent(this)
+        else PracticeContent(this, chapterRefs.take(chapterRefs.indexOf(throughChapter) + 1))
 
     companion object {
 

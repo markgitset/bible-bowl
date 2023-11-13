@@ -21,12 +21,12 @@ data class PracticeTest(
         if (content.allChapters) return ""
         val chapters = content.coveredChapters
         val firstBook =
-            if (content.studyData.isMultiBook) chapters.start.book.name.lowercase()
+            if (content.studyData.isMultiBook) chapters.first().book.name.lowercase()
             else "chap"
         val lastBook =
-            if (chapters.endInclusive.book == chapters.start.book) ""
-            else chapters.endInclusive.book.name.lowercase()
-        return "-%s%02dto%s%02d".format(firstBook, chapters.start.chapter, lastBook, chapters.endInclusive.chapter)
+            if (chapters.last().book == chapters.first().book) ""
+            else chapters.last().book.name.lowercase()
+        return "-%s%02dto%s%02d".format(firstBook, chapters.first().chapter, lastBook, chapters.last().chapter)
     }
 
     fun buildTexFileName(directory: File? = null): File {

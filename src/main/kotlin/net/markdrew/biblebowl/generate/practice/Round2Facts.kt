@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -38,7 +38,7 @@ private data class Question2(
     val wrongAnswers = answers.drop(nCorrectAnswers)
 }
 
-private fun multiChoice2(qAndA: Question2, coveredChapters: ChapterRange, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
+private fun multiChoice2(qAndA: Question2, coveredChapters: ChapterRange?, random: Random, nChoices: Int = 3): MultiChoiceQuestion2 {
     val allChoices: List<String> =
         qAndA.wrongAnswers.shuffled(random).take(nChoices - 1) + qAndA.correctAnswers.single()
     return MultiChoiceQuestion2(qAndA, allChoices.shuffled(random))
@@ -73,7 +73,7 @@ private fun factsCluePool(practiceTest: PracticeTest, nChoices: Int): List<Multi
         Question2(escapeLatex(question), nCorrect.toInt(), choices.map { escapeLatex(it) }, ref)
     }.filter { it.nCorrectAnswers == 1 } // for round two, only 1-answer questions used
     return questions.shuffled(practiceTest.random).take(practiceTest.numQuestions)
-        .map { multiChoice2(it, content.coveredChapters, practiceTest.random, nChoices) }
+        .map { multiChoice2(it, null, practiceTest.random, nChoices) }
 }
 
 private fun toLatexFactFinder(

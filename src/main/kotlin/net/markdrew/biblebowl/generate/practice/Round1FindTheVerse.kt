@@ -19,25 +19,25 @@ private const val VERSES_PER_PAGE = 20
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val content = PracticeContent(studyData, studySet.toChapter(Book.EXO.chapterRef(8)))
-    writeFindTheVerse(
-        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 0)
-    )
+
+//    val content = PracticeContent(studyData, studySet.toChapter(Book.EXO.chapterRef(20)))
+//    writeFindTheVerse(
+//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 0)
+//    )
+
 //    val content: PracticeContent = StudyData.readData().practice(1..14)
 //    showPdf(writeFindTheVerse(
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
 //    ))
 
-//    val seeds = setOf(10, 20, 30, 40, 50)
-//    for (throughChapter in studyData.chapterRange) {
-//        for (seed in seeds) {
-//            writeFindTheVerse(
-//                PracticeTest(Round.FIND_THE_VERSE, throughChapter, numQuestions = 20, randomSeed = seed),
-//                studyData = studyData,
-//                directory = directory
-//            )
-//        }
-//    }
+    val seeds = setOf(10, 20, 30, 40, 50)
+    for (throughChapter in studyData.chapters.values) {
+        if (throughChapter < Book.EXO.chapterRef(20)) continue
+        val content = studyData.practice(studyData.chapterRange.start..throughChapter)
+        for (seed in seeds) {
+            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
+        }
+    }
 }
 
 fun writeFindTheVerse(
@@ -45,8 +45,8 @@ fun writeFindTheVerse(
     minCharLength: Int = 15,
     directory: File? = null,
 ): File {
-    val content = practiceTest.content
-    val studyData = content.studyData
+    val content: PracticeContent = practiceTest.content
+    val studyData: StudyData = content.studyData
     var cluePool: DisjointRangeMap<VerseRef> = studyData.oneVerseSentParts
     if (!content.allChapters) {
         cluePool = cluePool.enclosedBy(content.coveredOffsets)
@@ -75,6 +75,7 @@ fun writeFindTheVerse(
     return outputFile.latexToPdf(keepTexFiles = true)
 }
 
+/** Strings containing pairs of characters that normally occur as pairs */
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
 
 fun removeUnmatchedCharPairs(str: String): String =

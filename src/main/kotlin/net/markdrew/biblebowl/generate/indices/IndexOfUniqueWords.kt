@@ -11,18 +11,24 @@ import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
-import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
 import java.nio.file.Paths
 
 fun main() {
-    writeOneTimeWordsIndex(StandardStudySet.DEFAULT)
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+//    writeOneTimeWordsIndex(studyData)
+    writeOneTimeWordsList(studyData)
 }
 
-fun writeOneTimeWordsIndex(studySet: StudySet): File {
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
-    return writeOneTimeWordsIndex(studyData)
+private fun writeOneTimeWordsList(studyData: StudyData) {
+    val studyName = studyData.studySet.simpleName
+    val names: List<String> = oneTimeWords(studyData).map { studyData.excerpt(it).excerptText }.sorted()
+    val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
+    val file = dir.resolve("$studyName-list-unique-words.txt")
+    file.writer().use { writer ->
+        for (name in names) writer.appendLine(name)
+    }
 }
 
 fun writeOneTimeWordsIndex(studyData: StudyData): File {
