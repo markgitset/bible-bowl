@@ -82,7 +82,12 @@ class StudyData(
 
     val verseRefFormat: (VerseRef) -> String by lazy {
         if (isMultiBook) { verseRef: VerseRef -> verseRef.format(BRIEF_BOOK_FORMAT) }
-        else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }.noBreak()//.withCount()
+        else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }.noBreak()
+    }
+
+    val chapterRefFormat: (ChapterRef) -> String by lazy {
+        if (isMultiBook) { chapterRef: ChapterRef -> chapterRef.format(BRIEF_BOOK_FORMAT) }
+        else { chapterRef: ChapterRef -> chapterRef.format(NO_BOOK_FORMAT) }.noBreak()
     }
 
     val compactVerseRefListFormat: (List<VerseRef>) -> String by lazy {
@@ -252,6 +257,7 @@ class StudyData(
 
     fun getVerse(verseRef: VerseRef): String = text.substring(verseIndex.getValue(verseRef))
     fun verseEnclosing(charRange: IntRange): VerseRef? = verses.valueEnclosing(charRange)
+    fun chapterEnclosing(charRange: IntRange): ChapterRef? = chapters.valueEnclosing(charRange)
     fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)
 
     /**

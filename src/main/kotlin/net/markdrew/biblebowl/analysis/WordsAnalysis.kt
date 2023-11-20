@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.IndexEntry
+import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -28,6 +29,7 @@ data class WithCount<T>(val item: T, val count: Int)
 typealias WordIndexEntryC = IndexEntry<String, WithCount<VerseRef>>
 typealias WordIndexEntry = IndexEntry<String, VerseRef>
 typealias VerseIndexEntry = IndexEntry<VerseRef, String>
+typealias ChapterIndexEntry = IndexEntry<ChapterRef, String>
 
 private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
     buildWordIndex

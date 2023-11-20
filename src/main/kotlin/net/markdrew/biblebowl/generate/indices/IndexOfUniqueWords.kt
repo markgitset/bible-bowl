@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.analysis.ChapterIndexEntry
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
@@ -17,7 +18,8 @@ import java.nio.file.Paths
 
 fun main() {
     val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
-//    writeOneTimeWordsIndex(studyData)
+    writeOneTimeWordsIndex(studyData)
+    writeOneTimeWordsHomework(studyData)
     writeOneTimeWordsList(studyData)
 }
 
@@ -31,7 +33,7 @@ private fun writeOneTimeWordsList(studyData: StudyData) {
     }
 }
 
-fun writeOneTimeWordsIndex(studyData: StudyData): File {
+fun writeOneTimeWordsIndex(studyData: StudyData) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData)
@@ -44,7 +46,6 @@ fun writeOneTimeWordsIndex(studyData: StudyData): File {
             docPreface = "The following words only appear one time in ${set.longName}.",
             allowParagraphBreaks = false,
         ) {
-
             writeIndex(
                 writer, indexEntriesByWord.sortedBy { it.key.lowercase() }, "Alphabetical",
                 columns = 4, formatValue = studyData.verseRefFormat.noBreak()
@@ -56,7 +57,28 @@ fun writeOneTimeWordsIndex(studyData: StudyData): File {
             )
         }
     }
-    return file.latexToPdf(keepTexFiles = true)
+    file.latexToPdf(keepTexFiles = true)
+}
+
+fun writeOneTimeWordsHomework(studyData: StudyData) {
+    val simpleName = studyData.studySet.simpleName
+    val set = studyData.studySet
+    val indexEntriesByChapter: List<ChapterIndexEntry> = oneTimeWordsIndexByChapter(studyData)
+    val dir = File("$PRODUCTS_DIR/$simpleName/homework").also { it.mkdirs() }
+    val file = dir.resolve("$simpleName-homework-one-time-words.tex")
+    file.writer().use { writer ->
+        writeDoc(
+            writer, "${set.name} One-Time Words Homework",
+            docPreface = "The following words only appear one time in ${set.longName}.",
+            allowParagraphBreaks = false,
+        ) {
+            writeIndex(
+                writer, indexEntriesByChapter.sortedBy { it.key }, "In Order of Appearance",
+                columns = 4, formatKey = studyData.chapterRefFormat
+            )
+        }
+    }
+    file.latexToPdf(keepTexFiles = true)
 }
 
 private fun oneTimeWordsIndexByWord(studyData: StudyData): List<WordIndexEntry> = oneTimeWords(studyData).map {
@@ -67,6 +89,13 @@ private fun oneTimeWordsIndexByWord(studyData: StudyData): List<WordIndexEntry> 
 private fun oneTimeWordsIndexByVerse(studyData: StudyData): List<VerseIndexEntry> = oneTimeWords(studyData)
     .groupBy {
         studyData.verseEnclosing(it) ?: throw Exception()
+    }.map { (ref, wordRanges) ->
+        IndexEntry(ref, wordRanges.map { studyData.excerpt(it).excerptText })
+    }
+
+private fun oneTimeWordsIndexByChapter(studyData: StudyData): List<ChapterIndexEntry> = oneTimeWords(studyData)
+    .groupBy {
+        studyData.chapterEnclosing(it) ?: throw Exception()
     }.map { (ref, wordRanges) ->
         IndexEntry(ref, wordRanges.map { studyData.excerpt(it).excerptText })
     }
