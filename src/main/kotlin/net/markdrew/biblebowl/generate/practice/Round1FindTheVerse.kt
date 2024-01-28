@@ -29,6 +29,7 @@ fun main(args: Array<String>) {
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
 //    ))
 
+    // PRODUCE THE FULL SET
     val seeds = setOf(10, 20, 30, 40, 50)
     for (throughChapter in studyData.chapterRefs) {
         //if (throughChapter < Book.EXO.chapterRef(20)) continue

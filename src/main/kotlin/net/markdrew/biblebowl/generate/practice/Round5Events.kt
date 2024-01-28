@@ -1,9 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
-import net.markdrew.biblebowl.model.Book.NUM
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
@@ -20,17 +18,17 @@ import kotlin.random.nextInt
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-    val practice: PracticeContent = studyData.practice(throughChapter = NUM.chapterRef(3))
-    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).latexToPdf())
+//    val practice: PracticeContent = studyData.practice(throughChapter = NUM.chapterRef(22))
+//    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).latexToPdf())
 
-//    val seeds = setOf(10, 20, 30, 40, 50)
-//    val directory = File("matthew-round5-set")
-//    for (throughChapter in studyData.chapterRange.drop(5)) {
-//        val practice: PracticeContent = studyData.practice(1..throughChapter)
-//        for (seed in seeds) {
-//            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed), directory).toPdf()
-//        }
-//    }
+    // PRODUCE THE FULL SET
+    val seeds = setOf(10, 20, 30, 40, 50)
+    for (throughChapter in studyData.chapterRefs.drop(5)) {
+        val practice: PracticeContent = studyData.practice(throughChapter)
+        for (seed in seeds) {
+            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed)).latexToPdf()
+        }
+    }
 }
 
 data class Question(

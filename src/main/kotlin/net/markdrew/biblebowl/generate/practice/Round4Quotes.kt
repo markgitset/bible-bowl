@@ -2,9 +2,7 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.ChapterRef
-import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -23,8 +21,19 @@ fun main(args: Array<String>) {
 //    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
 //        writeRound4Quotes(Book.DEFAULT, numQuestions = 33, randomSeed = 1, throughChapter = lastChapter)
 //    }
-    val content: PracticeContent = studyData.practice()
-    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
+
+    // PRODUCE THE FULL SET
+    val seeds = setOf(10, 20, 30, 40, 50)
+    for (throughChapter in studyData.chapterRefs) {
+        val content = studyData.practice(throughChapter)
+        for (seed in seeds) {
+            writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = seed))
+        }
+    }
+
+
+//    val content: PracticeContent = studyData.practice()
+//    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 
 fun writeRound4Quotes(practiceTest: PracticeTest): File {

@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet)
 
     // write a bunch of variations of the Bible text
-    writeBibleDoc(studyData, LocalDate.of(2024, 4, 6))
+    writeBibleDoc(studyData, LocalDate.of(2025, 4, 5))
 }
 
 fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
