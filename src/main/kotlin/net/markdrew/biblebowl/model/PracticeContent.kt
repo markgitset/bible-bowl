@@ -11,12 +11,13 @@ data class PracticeContent internal constructor(
             : this(studyData, studyData.chapterRefs.filter { it in coveredChapters })
 
     init {
-        require(!coveredChapters.isEmpty()) { "Requested chapter range is empty!" }
+        require(coveredChapters.isNotEmpty()) { "Requested chapter range is empty!" }
         require(studyData.chapterRefs.containsAll(coveredChapters)) {
             "These requested chapters are not in range: ${coveredChapters - studyData.chapterRefs.toSet()})!"
         }
     }
 
+    /** True if this [PracticeContent] covers a whole [StudySet] */
     val allChapters: Boolean = coveredChapters == studyData.chapterRange
 
     val coveredOffsets: IntRange = with(studyData.chapterIndex) {

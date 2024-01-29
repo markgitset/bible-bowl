@@ -3,15 +3,14 @@
 ## Text
 1. Docx format
    1. Both Styles
-      1. Copyright notice (and other preface and front/end matter)
+      1. Preface and front/end matter
       2. Address/improve MSWord compatibility
       3. Highlight multi-word names (e.g., "Baal of Peor")
       4. Parameterize colors
    2. TBB Style
       1. Fix underlined gap in footnotes
    3. Mark's Style
-      1. Two columns
-      2. Chapter labels
+      1. Large blank parts of columns
 2. Latex format
    1. Fix latex bug with underlining highlighted words with letters that drop low!
    2. Fix footnotes
@@ -22,6 +21,7 @@
 3. Function to break long passages (> 22 words) at conjunctions (e.g., for round 4)
 4. Generate power round one-time word ordering questions (by grouping related one-time words)
 5. Add chapter headings to answer key for round 1
+6. Add chapter headings to answer key for round 4
 
 ## Indices
 1. Test framework to detect changes in names/numbers for a whole book

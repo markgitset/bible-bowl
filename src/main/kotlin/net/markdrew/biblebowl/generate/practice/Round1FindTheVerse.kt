@@ -2,6 +2,8 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.latex.showPdf
+import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -19,25 +21,21 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
 
-//    val content = PracticeContent(studyData, studySet.toChapter(Book.EXO.chapterRef(20)))
-//    writeFindTheVerse(
-//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 0)
-//    )
-
-//    val content: PracticeContent = StudyData.readData().practice(1..14)
-//    showPdf(writeFindTheVerse(
-//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
-//    ))
+    // JUST DO ONE
+    val content: PracticeContent = studyData.practice(Book.EXO.chapterRef(20))
+    showPdf(writeFindTheVerse(
+        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
+    ))
 
     // PRODUCE THE FULL SET
-    val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in studyData.chapterRefs) {
-        //if (throughChapter < Book.EXO.chapterRef(20)) continue
-        val content = studyData.practice(throughChapter)
-        for (seed in seeds) {
-            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
-        }
-    }
+//    val seeds = setOf(10, 20, 30, 40, 50)
+//    for (throughChapter in studyData.chapterRefs) {
+//        //if (throughChapter < Book.EXO.chapterRef(20)) continue
+//        val content = studyData.practice(throughChapter)
+//        for (seed in seeds) {
+//            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
+//        }
+//    }
 }
 
 fun writeFindTheVerse(
