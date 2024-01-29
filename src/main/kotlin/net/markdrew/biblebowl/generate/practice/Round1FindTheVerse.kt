@@ -150,7 +150,9 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \begin{enumerate}
     """.trimIndent())
     this.forEach {
-        appendable.appendLine("    \\item ${it.reference.format(FULL_BOOK_FORMAT)}")
+        val heading: String = practiceTest.content.studyData.headingEnclosing(it.reference)
+            ?: throw Exception("No chapter heading found for ${it.reference}!")
+        appendable.appendLine("""    \item ${it.reference.format(FULL_BOOK_FORMAT)}\\$heading""")
     }
     appendable.appendLine("""
         \end{enumerate}

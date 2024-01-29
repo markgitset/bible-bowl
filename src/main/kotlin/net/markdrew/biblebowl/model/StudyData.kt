@@ -30,6 +30,7 @@ import java.util.SortedMap
 import kotlin.io.path.notExists
 
 typealias CharOffset = Int
+typealias CharOffsetRange = IntRange
 
 class StudyData(
     val studySet: StudySet,
@@ -256,8 +257,9 @@ class StudyData(
         verses.entries.map { (range, verseRef) -> ReferencedVerse(verseRef, text.substring(range)) }
 
     fun getVerse(verseRef: VerseRef): String = text.substring(verseIndex.getValue(verseRef))
-    fun verseEnclosing(charRange: IntRange): VerseRef? = verses.valueEnclosing(charRange)
-    fun chapterEnclosing(charRange: IntRange): ChapterRef? = chapters.valueEnclosing(charRange)
+    fun verseEnclosing(charRange: CharOffsetRange): VerseRef? = verses.valueEnclosing(charRange)
+    fun headingEnclosing(verseRef: VerseRef): String? = headingCharRanges.valueEnclosing(verseIndex.getValue(verseRef))
+    fun chapterEnclosing(charRange: CharOffsetRange): ChapterRef? = chapters.valueEnclosing(charRange)
     fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)
 
     /**

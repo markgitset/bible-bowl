@@ -20,8 +20,7 @@
 2. Build question bank for generating power round
 3. Function to break long passages (> 22 words) at conjunctions (e.g., for round 4)
 4. Generate power round one-time word ordering questions (by grouping related one-time words)
-5. Add chapter headings to answer key for round 1
-6. Add chapter headings to answer key for round 4
+5. Add chapter headings to answer key for round 4
 
 ## Indices
 1. Test framework to detect changes in names/numbers for a whole book
@@ -64,3 +63,4 @@
 19. Build human-oriented word indices for reference while studying
 20. Generate round 1 (find the verse)
 21. Generate round 5 (events)
+22. Add chapter headings to answer key for round 1
