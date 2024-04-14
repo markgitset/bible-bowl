@@ -37,12 +37,11 @@ fun File.docxToPdf(
     keepDocxFiles: Boolean = true,
 ): File {
     val processBuilder = ProcessBuilder(
-        "libreoffice7.6",
+        "libreoffice24.2",
         "--convert-to", "pdf",
-        "--outdir", parent,
         absolutePath
     ).inheritIO()
-    processBuilder.environment()["HOME"] = parent
+    processBuilder.directory(parentFile)
     // without this, it may hang when the output buffer fills up
     if (!showStdIo) processBuilder.redirectOutput(DISCARD).redirectError(DISCARD)
     val process = processBuilder.start()

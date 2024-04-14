@@ -102,7 +102,7 @@ fun main(args: Array<String>) {
 fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
-        "ffff00" to divineNames.map { Regex.fromLiteral(it) }.toSet(), // bright yellow
+        "ffff00" to divineNames.map { Regex(it) }.toSet(), // bright yellow
 //        "namesColor" to setOf("John the Baptist".toRegex()),
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )

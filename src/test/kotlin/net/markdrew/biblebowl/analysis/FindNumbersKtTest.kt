@@ -129,6 +129,7 @@ internal class FindNumbersKtTest {
     @Test
     fun `findNumbers finds first as an ordinal`() {
         assertFound("the first month of the year", "first")
+        assertFound("he said to the first, ‘How much do you owe my master?’", "first")
     }
 
     @Test

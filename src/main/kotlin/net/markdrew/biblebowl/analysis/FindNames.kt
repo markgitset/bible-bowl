@@ -12,16 +12,23 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
+import org.intellij.lang.annotations.Language
 import java.nio.file.Paths
 
 private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "omega", "almighty", "hallelujah", "praise",
     "why", "yes", "release", "sir", "father", "pay", "sovereign", "mount", "remember", "hurry", "possessor", "perhaps",
     "oh", "suppose", "knead", "meanwhile", "quick", "raiders", "whichever", "unstable", "assemble", "do", "god")
 
+@Language("RegExp")
 private val REGEX_NAMES = setOf(
     """\p{Lu}\w+ Sea""",
     """(?:Valley|Brook|Feast|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
-    """Mount \p{Lu}\w+""",
+    """Mount (of )?\p{Lu}\w+""",
+    "John the Baptist",
+    """(?<=“)Legion(?=,”)""", // Luke 8:30
+    """Lot(’s)?""", // Luke 17:28-31
+    "The Skull", // Luke 23:33
+    "King of the Jews", // Luke 23:3,37,38
 )
 
 private val ENGLISH_WORDS: Dictionary by lazy { DictionaryParser.parse("not-names.txt") }

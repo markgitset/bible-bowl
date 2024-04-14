@@ -45,7 +45,7 @@ enum class StandardStudySet(val set: StudySet) {
     REVELATION(StudySet(Book.REV, "rev")),;
 
     companion object {
-        val DEFAULT: StudySet = LIFE_OF_MOSES.set
+        val DEFAULT: StudySet = LUKE.set
 
         // lenient parsing for user input, e.g.
         fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =
