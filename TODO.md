@@ -1,7 +1,9 @@
 # To Do List
 
 ## Text
-1. Docx format
+1. All formats
+   1. Red-letter words of Jesus
+2. Docx format
    1. Both Styles
       1. Preface and front/end matter
       2. Address/improve MSWord compatibility
@@ -11,9 +13,10 @@
       1. Fix underlined gap in footnotes
    3. Mark's Style
       1. Large blank parts of columns
-2. Latex format
+3. Latex format
    1. Fix latex bug with underlining highlighted words with letters that drop low!
    2. Fix footnotes
+4. ODT format
 
 ## Practice Tests
 1. Build question bank for generating rounds 2 and 3 (use ChatGPT?!)
@@ -23,11 +26,13 @@
 5. Add chapter headings to answer key for round 4
 
 ## Indices
-1. Test framework to detect changes in names/numbers for a whole book
-2. For reoccurring non-local phrases, index by each word
-3. For reoccurring non-local phrases, improve deduplication
-4. Compute word co-occurrence stats
-5. One-time words without verses (for Julian's homework)
+1. Indices for foods, animals, colors, footnotes (footnotes with ch: vs reference), 
+   body parts, men, women, angels/demons, quotes
+2. Test framework to detect changes in names/numbers for a whole book
+3. For reoccurring non-local phrases, index by each word
+4. For reoccurring non-local phrases, improve deduplication
+5. Compute word co-occurrence stats
+6. One-time words without verses (for Julian's homework)
 
 ## Flash Cards
 1. Add chapter headings to back of fill-in-blank cards
