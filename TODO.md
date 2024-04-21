@@ -26,8 +26,7 @@
 5. Add chapter headings to answer key for round 4
 
 ## Indices
-1. Indices for foods, animals, colors, footnotes (footnotes with ch: vs reference), 
-   body parts, men, women, angels/demons, quotes
+1. footnotes (footnotes with ch:vs reference), quotes
 2. Test framework to detect changes in names/numbers for a whole book
 3. For reoccurring non-local phrases, index by each word
 4. For reoccurring non-local phrases, improve deduplication
@@ -69,3 +68,4 @@
 20. Generate round 1 (find the verse)
 21. Generate round 5 (events)
 22. Add chapter headings to answer key for round 1
+23. Indices for foods, animals, colors, body parts, men, women, angels/demons

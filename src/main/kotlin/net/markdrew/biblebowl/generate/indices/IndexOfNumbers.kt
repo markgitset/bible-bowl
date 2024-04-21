@@ -27,35 +27,44 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS)
                 WithCount(verseRef, count)
             }
         )
-    }
+    }.filterNot { it.key in stopWords }
+    writeLatexIndex(studyData, indexEntries, "Number")
+}
+
+fun writeLatexIndex(
+    studyData: StudyData,
+    indexEntries: List<WordIndexEntryC>,
+    singularIndexType: String,
+    pluralIndexType: String = "${singularIndexType}s",
+) {
     val fullName = studyData.studySet.name
     val longName = studyData.studySet.longName
     val simpleName = studyData.studySet.simpleName
     val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-index-numbers.tex")
-    val docPreface = "The following is a complete index of all numbers in $longName"
+    val file = dir.resolve("$simpleName-index-${pluralIndexType.lowercase().replace(' ', '-')}.tex")
+    val docPreface = "The following is a complete index of all ${pluralIndexType.lowercase()} in $longName"
     file.writer().use { writer ->
-        writeDoc(writer, "$fullName Numbers Index", docPreface) {
+        writeDoc(writer, "$fullName $pluralIndexType Index", docPreface) {
 
-            val index: List<WordIndexEntryC> =
-                indexEntries.filterNot { it.key in stopWords }.sortedBy { it.key.lowercase() }
-            writeIndex(writer, index, columns = 3,
+            val index: List<WordIndexEntryC> = indexEntries.sortedBy { it.key.lowercase() }
+            writeIndex(
+                writer, index, columns = 3,
                 //formatValue = studyData.verseRefFormat.noBreak().withCount(),
                 formatValues = studyData.compactWithCountVerseRefListFormat,
             )
 
             writer.appendLine("""\newpage""")
 
-            val freqs: List<IndexEntry<String, Int>> = indexEntries
+            val frequencies: List<IndexEntry<String, Int>> = indexEntries
                 .map { IndexEntry(it.key, listOf(it.values.sumOf { withCount -> withCount.count })) }
-//                .filter { it.values.single() > 1 }
                 .sortedWith(compareBy({ it.values.single() }, { it.key }))
-            writeIndex(writer, freqs, "Numbers in $fullName in Order of Increasing Frequency",
-                       indexPreface = "Each number here occurs in $longName " +
-                               "the number of times shown next to it.",
-                       columns = 4)
+            writeIndex(
+                writer, frequencies, "$pluralIndexType in $fullName in Order of Increasing Frequency",
+                indexPreface = "Each ${singularIndexType.lowercase()} here occurs in $longName " +
+                        "the number of times shown next to it.",
+                columns = 4
+            )
         }
     }
     file.latexToPdf(keepTexFiles = true)
-//    println("Wrote $file")
 }

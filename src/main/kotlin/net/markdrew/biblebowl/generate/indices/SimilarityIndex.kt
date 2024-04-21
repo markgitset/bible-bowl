@@ -14,6 +14,12 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
 
+/*
+    This appears to be a work in progress.  I think I intended to index the most similar words/sentences/verses
+
+    It does not appear to be in good working order yet, and appears to have been copied from PhrasesIndex.kt
+ */
+
 fun main() {
     val studyData = StudyData.readData(StandardStudySet.DEFAULT)
     writePhrasesIndex(studyData, maxPhraseLength = 23)

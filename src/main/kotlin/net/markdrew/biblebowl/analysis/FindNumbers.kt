@@ -7,14 +7,10 @@ import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.flashcards.cram.CardWriter
 import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
-import net.markdrew.biblebowl.generate.blankOut
-import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
-import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.model.VerseRef
 import org.intellij.lang.annotations.Language
 import java.nio.file.Paths
 
@@ -49,7 +45,7 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(studyData.text)
-    printNumberMatches(numberExcerpts, studyData)
+    printExcerpts(numberExcerpts, studyData)
 
     val setName = studySet.simpleName
     val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
@@ -59,11 +55,11 @@ fun main(args: Array<String>) {
 
 }
 
-public fun findNumbers(text: String): Sequence<Excerpt> =
+fun findNumbers(text: String): Sequence<Excerpt> =
     NUMBER_REGEX.findAll(text).map { Excerpt(it.value, it.range) }
 
-public fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
-    NUMBER_REGEX.findAll(studyData.text).map { Excerpt(it.value, it.range) }
+fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
+    findNumbers(studyData.text)
         .groupBy { it.excerptText.lowercase() }
         .map { (key, excerpts) ->
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
@@ -79,15 +75,5 @@ private fun toCards(numberExcerpts: Sequence<Excerpt>, studyData: StudyData): Li
             numExcerpts,
             studyData.verseEnclosing(sentTextPair.first.excerptRange) ?: throw Exception()
         ).toCramCard()
-    }
-}
-
-private fun printNumberMatches(numberExcerpts: Sequence<Excerpt>, studyData: StudyData) {
-    numberExcerpts.forEachIndexed { i, numExcerpt ->
-        val (numString, numRange) = numExcerpt
-        val sentRange: Excerpt? = studyData.sentenceContext(numRange)
-        val sentenceString: String = sentRange?.formatRange(numRange, blankOut())?.normalizeWS().orEmpty()
-        val ref: VerseRef? = studyData.verseEnclosing(numRange)
-        println("%3d  %7s %20s    %s".format(i, ref?.format(NO_BOOK_FORMAT), numString, sentenceString))
     }
 }

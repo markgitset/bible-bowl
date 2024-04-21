@@ -2,14 +2,10 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.generate.blankOut
-import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
-import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.rangeFirstLastComparator
 import org.intellij.lang.annotations.Language
@@ -119,16 +115,6 @@ fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
         }
 }
 
-fun printNameMatches(nameExcerpts: Sequence<Excerpt>, studyData: StudyData) {
-    nameExcerpts.forEachIndexed { i, numExcerpt ->
-        val (nameString, nameRange) = numExcerpt
-        val sentRange: Excerpt? = studyData.sentenceContext(nameRange)
-        val sentenceString: String = sentRange?.formatRange(nameRange, blankOut())?.normalizeWS().orEmpty()
-        val ref: VerseRef? = studyData.verseEnclosing(nameRange)
-        println("%3d  %15s %15s    %s".format(i, ref?.format(NO_BOOK_FORMAT), nameString, sentenceString))
-    }
-}
-
 fun main(args: Array<String>) {
 
     println(BANNER)
@@ -141,5 +127,5 @@ fun main(args: Array<String>) {
         .filter { it.excerptText.lowercase() in dict }
 
 //    printNameFrequencies(nameExcerpts)
-    printNameMatches(nameExcerpts, studyData)
+    printExcerpts(nameExcerpts, studyData)
 }

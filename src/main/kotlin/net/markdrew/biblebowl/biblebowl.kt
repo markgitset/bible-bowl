@@ -54,6 +54,12 @@ private val runOfNonLetterOrDigit = """[^0-9a-z]+""".toRegex()
 
 fun normalizeFileName(name: String): String = runOfNonLetterOrDigit.replace(name.lowercase(), "-")
 
+val FANCY_QUOTES_START = '“'
+val FANCY_QUOTES_END = '”'
+val FANCY_QUOTE_START = '‘'
+val FANCY_QUOTE_END = '’'
+val FANCY_APOSTROPHE = FANCY_QUOTE_END
+
 /**
  * Build a whole set of resources
  */

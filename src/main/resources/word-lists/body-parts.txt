@@ -1,0 +1,56 @@
+arm
+belly
+bladder
+bone
+breast
+cheek
+chin
+ear
+elbow
+eye(?! of a needle)
+eyebrow
+eyelid
+face(?! of the whole earth)
+feet
+finger
+foot
+forehead
+gallbladder
+hair
+hand
+head(?!s of grain)
+heart
+heel
+hip
+intestine
+joint
+kidney
+knee
+leg
+lip
+liver
+loin
+lung
+marrow
+mouth
+muscle
+neck
+nerve
+nose
+palm
+pancreas
+ribcage
+scalp
+shoulder
+sinew
+(?<!the )skin
+skull
+spine
+spleen
+stomach
+teeth
+tendon
+thigh
+toe
+tongue
+womb

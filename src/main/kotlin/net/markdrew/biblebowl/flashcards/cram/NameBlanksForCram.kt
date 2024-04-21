@@ -5,7 +5,7 @@ import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printNameFrequencies
-import net.markdrew.biblebowl.analysis.printNameMatches
+import net.markdrew.biblebowl.analysis.printExcerpts
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.Excerpt
@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
 
     val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
     printNameFrequencies(nameExcerpts)
-    printNameMatches(nameExcerpts, studyData)
+    printExcerpts(nameExcerpts, studyData)
 
     val stepByNChapters = 10
     val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
