@@ -6,8 +6,8 @@ import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import net.markdrew.biblebowl.parseTsv
 import java.io.File
-import java.io.InputStream
 import java.net.URL
 import kotlin.random.Random
 
@@ -59,8 +59,8 @@ private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null
     return texFile.latexToPdf(keepTexFiles = true)
 }
 
-private fun escapeLatex(s: String): String =
-    s.replace("_", "\\_")
+private fun escapeLatex(s: String): String = s.replace("_", "\\_")
+
 private fun factsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion2> {
     val resourceName = "/${practiceTest.studySet.name.lowercase()}/manual-questions.tsv"
     val resource: URL = object {}.javaClass.getResource(resourceName)
@@ -170,10 +170,3 @@ private fun toLatexAnswerKey(
     appendable.appendLine("""\end{enumerate}""")
     appendable.appendLine("""\end{multicols}""")
 }
-
-private fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
-    stream.bufferedReader().useLines { linesSeq ->
-        linesSeq.drop(headerLines.coerceAtLeast(0)).map { line ->
-            parseFun(line.split('\t'))
-        }.toList()
-    }

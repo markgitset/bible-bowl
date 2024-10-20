@@ -30,6 +30,7 @@ import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -59,6 +60,19 @@ val FANCY_QUOTES_END = '”'
 val FANCY_QUOTE_START = '‘'
 val FANCY_QUOTE_END = '’'
 val FANCY_APOSTROPHE = FANCY_QUOTE_END
+
+fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
+    stream.bufferedReader().useLines { linesSeq ->
+        val headerOffset = headerLines.coerceAtLeast(0)
+        val lineOffset = headerOffset + 1
+        linesSeq.drop(headerOffset).mapIndexed { index, line ->
+            try {
+                parseFun(line.split('\t'))
+            } catch (e: Exception) {
+                throw Exception("Parse error on line ${index + lineOffset}: ${e.message}", e)
+            }
+        }.toList()
+    }
 
 /**
  * Build a whole set of resources
