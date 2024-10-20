@@ -27,7 +27,7 @@ private fun makePath(studyData: StudyData, fileType: String): Path {
 fun writeMailMergeHeadings(studyData: StudyData) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
     val mailMergeHeadingsPath = makePath(studyData, "mail-merge-headings")
-    MailMergeCardWriter(10, 2, mailMergeHeadingsPath).use { writer ->
+    MailMergeCardWriter(10, mailMergeHeadingsPath).use { writer ->
         studyData.headings.groupBy {
             it.title
         }.forEach { (headingTitle, headingList) ->
