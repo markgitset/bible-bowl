@@ -52,17 +52,17 @@ enum class StandardStudySet(val set: StudySet) {
             if (queryName == null) {
                 default
             } else {
-                val standardStudySet: StandardStudySet? = try {
-                    StandardStudySet.valueOf(queryName.uppercase())
+                val studySet: StudySet? = try {
+                    valueOf(queryName.uppercase())
                 } catch (e: IllegalArgumentException) {
                     val lowerQueryName = queryName.lowercase()
-                    StandardStudySet.values().firstOrNull { sss ->
+                    entries.firstOrNull { sss ->
                         setOf(sss.name, sss.set.simpleName, sss.set.name).any {
                             it.lowercase().startsWith(lowerQueryName)
                         }
                     }
-                }
-                standardStudySet?.set ?: default
+                }?.set
+                studySet ?: Book.parse(queryName, null)?.let { StudySet(it) } ?: default
             }
     }
 }

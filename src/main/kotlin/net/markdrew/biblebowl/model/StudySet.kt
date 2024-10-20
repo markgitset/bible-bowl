@@ -20,7 +20,8 @@ data class StudySet(
     constructor(name: String, simpleName: String, vararg chapterRanges: ChapterRange)
             : this(name, simpleName, chapterRanges.asList())
 
-    constructor(book: Book, simpleName: String) : this(book.fullName, simpleName, book.allChapters())
+    constructor(book: Book, simpleName: String = book.briefName.filterNot { it.isWhitespace() }.lowercase()) :
+            this(book.fullName, simpleName, book.allChapters())
 
     operator fun contains(chapterRef: ChapterRef): Boolean = chapterRanges.any { chapterRef in it }
 

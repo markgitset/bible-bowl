@@ -83,7 +83,7 @@ enum class Book(val fullName: String, val briefName: String = fullName, private 
         fun fromNumber(n: Int): Book = entries[n-1]
 
         // lenient parsing for user input, e.g.
-        fun parse(s: String?, default: Book = DEFAULT): Book = if (s == null) default else try {
+        fun parse(s: String?, default: Book? = DEFAULT): Book? = if (s == null) default else try {
             valueOf(s.uppercase())
         } catch (e: IllegalArgumentException) {
             entries.firstOrNull { it.fullName.lowercase().startsWith(s.lowercase()) } ?: default

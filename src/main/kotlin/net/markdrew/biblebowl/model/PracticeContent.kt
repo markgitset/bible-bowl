@@ -10,6 +10,9 @@ data class PracticeContent internal constructor(
     constructor(studyData: StudyData, coveredChapters: ClosedRange<ChapterRef>)
             : this(studyData, studyData.chapterRefs.filter { it in coveredChapters })
 
+    constructor(studyData: StudyData, singleChapter: ChapterRef)
+            : this(studyData, listOf(singleChapter))
+
     init {
         require(coveredChapters.isNotEmpty()) { "Requested chapter range is empty!" }
         require(studyData.chapterRefs.containsAll(coveredChapters)) {
