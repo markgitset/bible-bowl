@@ -34,7 +34,9 @@ class MailMergeCardWriter(
     ) : this(cardsPerPage, cardsPerRow, path.toFile(), delimiter, charset)
 
     init {
-        (1..cardsPerPage).joinTo(writer, delimiter.toString()) { "Card$it" }
+        (1..cardsPerPage).asSequence()
+            .flatMap { sequenceOf("Front$it", "Back$it") }
+            .joinTo(writer, delimiter.toString())
         writer.appendLine()
     }
 
@@ -59,16 +61,16 @@ class MailMergeCardWriter(
     private fun flushBuffer() {
         val cards: List<Card> = cardBuffer//.pad(cardsPerPage, Card.EMPTY)
 
-        cards.joinTo(writer, delimiter.toString()) { """"${it.front}"""" }
+        cards.flatMap { sequenceOf(""""${it.front}"""", """"${it.back}"""") }.joinTo(writer, delimiter.toString())
         writer.appendLine()
 
         // backs are trickier because we want to put the back on the back of the page in a position corresponding to its
         // correct front
-        cards.windowed(cardsPerRow, cardsPerRow)
-            .map { it.reversed() }
-            .flatten()
-            .joinTo(writer, delimiter.toString()) { """"${it.front}"""" }
-        writer.appendLine()
+//        cards.windowed(cardsPerRow, cardsPerRow)
+//            .map { it.reversed() }
+//            .flatten()
+//            .joinTo(writer, delimiter.toString()) { """"${it.back}"""" }
+//        writer.appendLine()
 
         cardBuffer.clear()
     }
