@@ -21,7 +21,7 @@ fun main() {
     val studySet: StudySet = StandardStudySet.DEFAULT
     val studyData: StudyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
     // need to skip the first few chapters to ensure we're covering enough chapters for some possible wrong choices
-    for (throughChapter in studyData.chapterRefs.drop(5)) {
+    for (throughChapter in studyData.chapterRefs.drop(3)) {
         val content = studyData.practice(throughChapter)
         writeHeadingsKahoot(content, randomSeed = 1)
     }

@@ -2,8 +2,6 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.showPdf
-import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -22,20 +20,20 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet)
 
     // JUST DO ONE
-    val content: PracticeContent = studyData.practice(Book.EXO.chapterRef(20))
-    showPdf(writeFindTheVerse(
-        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
-    ))
+//    val content: PracticeContent = studyData.practice(Book.EXO.chapterRef(20))
+//    showPdf(writeFindTheVerse(
+//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
+//    ))
 
     // PRODUCE THE FULL SET
-//    val seeds = setOf(10, 20, 30, 40, 50)
-//    for (throughChapter in studyData.chapterRefs) {
-//        //if (throughChapter < Book.EXO.chapterRef(20)) continue
-//        val content = studyData.practice(throughChapter)
-//        for (seed in seeds) {
-//            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
-//        }
-//    }
+    val seeds = setOf(10, 20, 30, 40, 50)
+    for (throughChapter in studyData.chapterRefs) {
+        //if (throughChapter < Book.EXO.chapterRef(20)) continue
+        val content = studyData.practice(throughChapter)
+        for (seed in seeds) {
+            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
+        }
+    }
 }
 
 fun writeFindTheVerse(
@@ -70,7 +68,7 @@ fun writeFindTheVerse(
     outputFile.writer().use { writer ->
         versesToFind.toLatexInWhatChapter(writer, practiceTest)
     }
-    return outputFile.latexToPdf(keepTexFiles = true)
+    return outputFile.latexToPdf(keepTexFiles = false)
 }
 
 /** Strings containing pairs of characters that normally occur as pairs */
@@ -147,12 +145,16 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
         \clearpage
         \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
         \begin{multicols}{2}
+        \raggedright
         \begin{enumerate}
     """.trimIndent())
     this.forEach {
-        val heading: String = practiceTest.content.studyData.headingEnclosing(it.reference)
-            ?: throw Exception("No chapter heading found for ${it.reference}!")
-        appendable.appendLine("""    \item ${it.reference.format(FULL_BOOK_FORMAT)}\\$heading""")
+        val verseRef: VerseRef = it.reference
+        val headings: List<String> = practiceTest.content.studyData.headingsIntersecting(verseRef)
+        if (headings.isEmpty()) throw Exception("No chapter heading(s) found for $verseRef!")
+        appendable.append("""    \item ${verseRef.format(FULL_BOOK_FORMAT)}\\""")
+        headings.joinTo(appendable, """ AND \\""")
+        appendable.appendLine()
     }
     appendable.appendLine("""
         \end{enumerate}
