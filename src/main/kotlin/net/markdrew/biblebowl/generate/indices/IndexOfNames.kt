@@ -31,6 +31,7 @@ private fun writeNamesList(studyData: StudyData) {
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
     }
+    println("Wrote $file")
 }
 
 fun writeNamesIndex(studyData: StudyData) {

@@ -1,11 +1,11 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNumbersIndex
+import net.markdrew.biblebowl.fileForProduct
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
@@ -37,11 +37,19 @@ fun writeLatexIndex(
     singularIndexType: String,
     pluralIndexType: String = "${singularIndexType}s",
 ) {
+    val file = fileForProduct(studyData, "indices", "index-$pluralIndexType")
+    writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, file)
+}
+
+fun writeLatexIndex(
+    studyData: StudyData,
+    pluralIndexType: String,
+    indexEntries: List<WordIndexEntryC>,
+    singularIndexType: String,
+    file: File
+) {
     val fullName = studyData.studySet.name
     val longName = studyData.studySet.longName
-    val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-index-${pluralIndexType.lowercase().replace(' ', '-')}.tex")
     val docPreface = "The following is a complete index of all ${pluralIndexType.lowercase()} in $longName"
     file.writer().use { writer ->
         writeDoc(writer, "$fullName $pluralIndexType Index", docPreface) {
@@ -68,3 +76,4 @@ fun writeLatexIndex(
     }
     file.latexToPdf(keepTexFiles = true)
 }
+

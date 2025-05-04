@@ -29,6 +29,7 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.nio.file.Path
@@ -129,4 +130,11 @@ fun main(args: Array<String>) {
     writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50))
     writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = 50))
     writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50))
+}
+
+fun fileForProduct(studyData: StudyData, productDirName: String, productName: String): File {
+    val simpleName = studyData.studySet.simpleName
+    val dir = File("$PRODUCTS_DIR/$simpleName/$productDirName").also { it.mkdirs() }
+    val file = dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
+    return file
 }
