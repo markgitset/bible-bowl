@@ -26,8 +26,13 @@ import java.io.File
 import java.io.PrintWriter
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.SortedMap
 import kotlin.io.path.notExists
+import kotlin.io.path.useLines
 
 typealias CharOffset = Int
 typealias CharOffsetRange = IntRange
@@ -118,7 +123,10 @@ class StudyData(
     private fun writeText(outPath: Path) {
         val outFile: File = outPath.toFile()
         outFile.parentFile.mkdirs()
-        outFile.writeText(text)
+        val timestamp: String = DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(
+            LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault())
+        )
+        outFile.writeText("# Downloaded on $timestamp\n$text")
         println("Wrote text to: $outPath")
     }
 
@@ -360,12 +368,19 @@ class StudyData(
             }.toMap().toSortedMap()
         }
 
-        fun readData(studySet: StudySet = StandardStudySet.DEFAULT, inPath: Path = Paths.get(DATA_DIR)): StudyData {
+        fun readData(
+            studySet: StudySet = StandardStudySet.DEFAULT,
+            inPath: Path = Paths.get(DATA_DIR),
+            forceDownload: Boolean = false
+        ): StudyData {
             val bookDir = inPath.resolve(studySet.simpleName)
             if (bookDir.notExists()) {
-                downloadAndIndex(studySet)
+                downloadAndIndex(studySet, forceDownload)
             }
-            val text = bookDir.resolve(studySet.simpleName + ".txt").toFile().readText()
+            val text = bookDir.resolve(studySet.simpleName + ".txt").useLines { lines ->
+                // Ignore leading comments (that start with '#')
+                lines.dropWhile { it.startsWith("#") }.joinToString("\n")
+            }
             val verses = readVerses(bookDir.resolve(indexFileName(studySet, VERSE)))
             val headings = readHeadings(bookDir.resolve(indexFileName(studySet, HEADING)))
             val chapters = readChapters(bookDir.resolve(indexFileName(studySet, CHAPTER)))

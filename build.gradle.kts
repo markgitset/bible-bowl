@@ -21,7 +21,8 @@ kotlin {
 }
 
 application {
-    mainClass.set("net.markdrew.biblebowl.MainKt")
+//    mainClass.set("net.markdrew.biblebowl.MainKt")
+    mainClass.set("net.markdrew.biblebowl.cli.BibleBowlCliKt")
 }
 
 dependencies {
@@ -44,6 +45,7 @@ dependencies {
 //    implementation("org.docx4j:docx4j-bundle:11.4.9")
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("com.github.ajalt.clikt:clikt:4.3.0")
 }
 
 tasks.named<Test>("test") {
