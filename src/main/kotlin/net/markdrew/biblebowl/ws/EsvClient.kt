@@ -14,6 +14,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import kotlin.io.path.createDirectories
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
@@ -153,20 +155,41 @@ class EsvClient(
 
     private fun retrieveCachedPassage(chapterRef: ChapterRef): Passage? {
         //println("Checking cache for $chapterRef...")
-        val path = cachePathFor(chapterRef)
-        return if (path.isReadable()) Passage.deserialize(path.readText()) else null
+        val dir = cachePathFor(chapterRef, null).parent
+        if (!dir.toFile().exists()) return null
+        
+        // Find all files for this chapter and get the most recent one
+        val prefix = "${chapterRef.chapter}_"
+        val mostRecentFile = dir.toFile().listFiles { file -> 
+            file.name.startsWith(prefix)
+        }?.maxByOrNull { it.name.substringAfter(prefix) }
+            ?.toPath()
+            
+        return if (mostRecentFile?.isReadable() == true) Passage.deserialize(mostRecentFile.readText()) else null
     }
 
     private fun updateCachedPassage(chapterRef: ChapterRef, passage: Passage) {
+        // Check if content has changed from most recent version
+        val existingPassage = retrieveCachedPassage(chapterRef)
+        if (existingPassage != null && existingPassage.serialize() == passage.serialize()) {
+            println("Content unchanged for $chapterRef, skipping cache update")
+            return
+        }
+
         println("Updating cache for $chapterRef...")
-        val path = cachePathFor(chapterRef)
+        val path = cachePathFor(chapterRef, LocalDateTime.now())
         path.parent.createDirectories()
         path.writeText(passage.serialize())
     }
 
-    private fun cachePathFor(chapterRef: ChapterRef): Path {
+    private fun cachePathFor(chapterRef: ChapterRef, timestamp: LocalDateTime?): Path {
         val bookDirName: String = "%02d-${chapterRef.bookName}".format(chapterRef.book.number)
-        return Paths.get(RAW_DATA_DIR).resolve(bookDirName).resolve(chapterRef.chapter.toString())
+        val fileName = if (timestamp != null) {
+            "${chapterRef.chapter}_${timestamp.format(dateFormatter)}"
+        } else {
+            "${chapterRef.chapter}_"  // Just the prefix for searching
+        }
+        return Paths.get(RAW_DATA_DIR).resolve(bookDirName).resolve(fileName)
     }
 
     private fun rangeByChapters(
@@ -189,6 +212,8 @@ class EsvClient(
     }
 
     companion object {
+
+        private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
 
         private fun chapterRefToQuery(chapterRef: ChapterRef): String = with(chapterRef.verseRange()) {
             "${start.absoluteVerse}-${endInclusive.absoluteVerse}"
