@@ -26,9 +26,9 @@ import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
+import net.markdrew.biblebowl.ws.PassageCache
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -92,7 +92,7 @@ fun main(args: Array<String>) {
         println("File not found: ${e.message}")
         println("Downloading and indexing the study set for ${studySet.name}...")
         val indexer = EsvIndexer(studySet)
-        val chapterPassages: Sequence<Passage> = EsvClient().bookByChapters(studySet, forceDownload = false)
+        val chapterPassages: Sequence<Passage> = PassageCache().bookByChapters(studySet)
         indexer.indexBook(chapterPassages).also {
             it.writeData(dataPath)
         }

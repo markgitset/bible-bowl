@@ -16,9 +16,9 @@ import net.markdrew.biblebowl.RAW_DATA_DIR
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
+import net.markdrew.biblebowl.ws.PassageCache
 import java.io.FileNotFoundException
 import java.nio.file.Path
 import kotlin.io.path.Path
@@ -69,7 +69,7 @@ class BibleBowlCli : CliktCommand(
             echo("Downloading and indexing the study set for ${studySet.name} (forceDownload=$forceDownload)...")
             val indexer = EsvIndexer(studySet)
             val chapterPassages: Sequence<Passage> =
-                EsvClient().bookByChapters(studySet, forceDownload)
+                PassageCache(forceDownload).bookByChapters(studySet)
             indexer.indexBook(chapterPassages).also {
                 it.writeData(dataDir)
             }

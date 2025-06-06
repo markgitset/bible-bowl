@@ -18,7 +18,8 @@ fun main(vararg args: String) {
 
 fun downloadAndIndex(studySet: StudySet, forceDownload: Boolean = false) {
     val indexer = EsvIndexer(studySet)
-    val studyData: StudyData = indexer.indexBook(EsvClient().bookByChapters(studySet, forceDownload))
+    val chapterPassages: Sequence<Passage> = PassageCache(forceDownload).bookByChapters(studySet)
+    val studyData: StudyData = indexer.indexBook(chapterPassages)
     studyData.writeData(Paths.get(DATA_DIR))
 }
 //fun main(vararg args: String) {

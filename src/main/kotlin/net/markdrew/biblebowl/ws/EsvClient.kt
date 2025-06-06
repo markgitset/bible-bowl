@@ -1,27 +1,11 @@
 package net.markdrew.biblebowl.ws
 
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
-import net.markdrew.biblebowl.RAW_DATA_DIR
-import net.markdrew.biblebowl.model.Book
-import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
-import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.model.VerseRef
-import net.markdrew.biblebowl.model.toVerseRef
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import kotlin.io.path.createDirectories
-import kotlin.io.path.isReadable
-import kotlin.io.path.readText
-import kotlin.io.path.writeText
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * @param includePassageReferences Include a line at the top displaying the reference of the passage.
@@ -101,119 +85,13 @@ class EsvClient(
         lineLength
     )
 
-    private fun queryPassage(singleQuery: String): Passage {
-        require(',' !in singleQuery) { "singleQuery may not contain a comma!" }
-        println("query = $singleQuery")
-        val call: Call<PassageText> = query(singleQuery)
+    fun queryPassage(chapterRef: ChapterRef): Passage {
+        val call: Call<PassageText> = query(chapterRefToQuery(chapterRef))
         val response: Response<PassageText> = call.execute()
         return response.body()?.single() ?: throw Exception(response.errorBody()?.string())
     }
 
-    fun bookByChapters(book: Book): Sequence<Passage> {
-        var chapterNum: Int? = 1
-        return generateSequence {
-            if (chapterNum == null) null
-            else {
-                val chapter = queryPassage("$book$chapterNum")
-                val nextChapterV1: VerseRef? = chapter.meta.nextChapter?.first()?.toVerseRef()
-                chapterNum = if (nextChapterV1?.book == book) nextChapterV1.chapter else null
-                chapter
-            }
-        }
-    }
-
-    fun bookByChapters(
-        studySet: StudySet,
-        forceDownload: Boolean,
-        timeBetweenChapters: Duration = 1.seconds,
-    ): Sequence<Passage> =
-        studySet.chapterRanges.asSequence().flatMap {
-            rangeByChapters(it, forceDownload, timeBetweenChapters)
-        }
-
-    private fun retrievePassage(
-        chapterRef: ChapterRef,
-        timeBetweenChapters: Duration,
-        forceDownload: Boolean,
-    ): Passage {
-        val cached: Passage? = if (forceDownload) null else retrieveCachedPassage(chapterRef)
-        if (cached != null) {
-            println("Using cached $chapterRef")
-            return cached
-        }
-
-        Thread.sleep(timeBetweenChapters.inWholeMilliseconds)
-        val passage: Passage = retrievePassageFromService(chapterRef)
-        updateCachedPassage(chapterRef, passage)
-        return passage
-    }
-
-    private fun retrievePassageFromService(chapterRef: ChapterRef): Passage {
-        println("Querying $chapterRef...")
-        return queryPassage(chapterRefToQuery(chapterRef))
-    }
-
-    private fun retrieveCachedPassage(chapterRef: ChapterRef): Passage? {
-        //println("Checking cache for $chapterRef...")
-        val dir = cachePathFor(chapterRef, null).parent
-        if (!dir.toFile().exists()) return null
-        
-        // Find all files for this chapter and get the most recent one
-        val prefix = "${chapterRef.chapter}_"
-        val mostRecentFile = dir.toFile().listFiles { file -> 
-            file.name.startsWith(prefix)
-        }?.maxByOrNull { it.name.substringAfter(prefix) }
-            ?.toPath()
-            
-        return if (mostRecentFile?.isReadable() == true) Passage.deserialize(mostRecentFile.readText()) else null
-    }
-
-    private fun updateCachedPassage(chapterRef: ChapterRef, passage: Passage) {
-        // Check if content has changed from most recent version
-        val existingPassage = retrieveCachedPassage(chapterRef)
-        if (existingPassage != null && existingPassage.serialize() == passage.serialize()) {
-            println("Content unchanged for $chapterRef, skipping cache update")
-            return
-        }
-
-        println("Updating cache for $chapterRef...")
-        val path = cachePathFor(chapterRef, LocalDateTime.now())
-        path.parent.createDirectories()
-        path.writeText(passage.serialize())
-    }
-
-    private fun cachePathFor(chapterRef: ChapterRef, timestamp: LocalDateTime?): Path {
-        val bookDirName: String = "%02d-${chapterRef.bookName}".format(chapterRef.book.number)
-        val fileName = if (timestamp != null) {
-            "${chapterRef.chapter}_${timestamp.format(dateFormatter)}"
-        } else {
-            "${chapterRef.chapter}_"  // Just the prefix for searching
-        }
-        return Paths.get(RAW_DATA_DIR).resolve(bookDirName).resolve(fileName)
-    }
-
-    private fun rangeByChapters(
-        chapterRange: ChapterRange,
-        forceDownload: Boolean,
-        timeBetweenChapters: Duration,
-    ): Sequence<Passage> {
-        var chapterRef: ChapterRef? = chapterRange.start
-        return generateSequence {
-            chapterRef?.let {
-                val chapter: Passage = retrievePassage(it, timeBetweenChapters, forceDownload)
-                val nextChapterV1: VerseRef? = chapter.meta.nextChapter?.first()?.toVerseRef()
-                if (nextChapterV1 == null) null
-                else {
-                    chapterRef = if (nextChapterV1.chapterRef in chapterRange) nextChapterV1.chapterRef else null
-                    chapter
-                }
-            }
-        }
-    }
-
     companion object {
-
-        private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")
 
         private fun chapterRefToQuery(chapterRef: ChapterRef): String = with(chapterRef.verseRange()) {
             "${start.absoluteVerse}-${endInclusive.absoluteVerse}"
@@ -223,7 +101,5 @@ class EsvClient(
             .baseUrl("https://api.esv.org/")
             .addConverterFactory(GsonConverterFactory.create())
             .build().create(EsvClient::class.java)
-
     }
-
 }
