@@ -13,14 +13,16 @@ import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
 import net.markdrew.biblebowl.RAW_DATA_DIR
+import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
+import net.markdrew.biblebowl.generate.text.writeBibleDoc
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
-import java.io.FileNotFoundException
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.io.path.Path
 
 class BibleBowlCli : CliktCommand(
@@ -63,20 +65,28 @@ class BibleBowlCli : CliktCommand(
 
 //        val dataPath = Paths.get(dataDir)
         val studyData = try {
-            StudyData.readData(studySet, dataDir, forceDownload)
-        } catch (e: FileNotFoundException) {
+            StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
+        } catch (e: NoSuchFileException) {
             echo("Data missing: ${e.message}")
             echo("Downloading and indexing the study set for ${studySet.name} (forceDownload=$forceDownload)...")
             val indexer = EsvIndexer(studySet)
-            val chapterPassages: Sequence<Passage> =
-                EsvClient().bookByChapters(studySet, forceDownload)
+            val chapterPassages: Sequence<Passage> = EsvClient(rawDataDir).bookByChapters(studySet, forceDownload)
             indexer.indexBook(chapterPassages).also {
                 it.writeData(dataDir)
             }
         }
 
-//        // Generate files (rest unchanged from BiblebowlKt.main)
-//        writeOneTimeWordsIndex(studyData)
+        // Write LaTEX-set PDFs of the text
+//        writeBibleText(studyData, productsDir)
+//        writeBibleText(studyData, productsDir,
+//            TextOptions(highlightNames = true, highlightNumbers = true, underlineUniqueWords = true)
+//        )
+
+        // write a bunch of variations of the Bible text
+        writeBibleDoc(studyData, LocalDate.of(2026, 3, 28), productsDir)
+
+        // Generate files (rest unchanged from BiblebowlKt.main)
+        writeOneTimeWordsIndex(studyData, productsDir)
 //        writeFullIndex(studyData)
 //        writeNumbersIndex(studyData)
 //        writeNamesIndex(studyData)
@@ -85,7 +95,7 @@ class BibleBowlCli : CliktCommand(
 //
 //        writeHeadingsText(studyData)
 //        writeHeadingsCsv(studyData)
-//
+
 //        writeCramVerses(studyData)
 //        writeCramHeadings(studyData)
 //        writeCramReverseHeadings(studyData)

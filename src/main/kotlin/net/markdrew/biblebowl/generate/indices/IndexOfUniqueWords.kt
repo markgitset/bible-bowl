@@ -14,6 +14,8 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main() {
@@ -33,14 +35,14 @@ private fun writeOneTimeWordsList(studyData: StudyData) {
     }
 }
 
-fun writeOneTimeWordsIndex(studyData: StudyData) {
+fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR)) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData)
     val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(studyData)
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(simpleName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$simpleName-index-one-time-words.tex")
-    file.writer().use { writer ->
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(
             writer, "${set.name} One-Time Words",
             docPreface = "The following words only appear one time in ${set.longName}.",
