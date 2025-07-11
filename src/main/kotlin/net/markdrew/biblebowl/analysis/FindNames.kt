@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.RAW_DATA_DIR
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -119,7 +120,7 @@ fun main(args: Array<String>) {
 
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR), Paths.get(RAW_DATA_DIR))
 
 //    val dict = DictionaryParser.parse("words_alpha.txt")
     val dict = DictionaryParser.parse("english.txt")

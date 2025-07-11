@@ -4,6 +4,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.RAW_DATA_DIR
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.flashcards.cram.CardWriter
 import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
@@ -42,7 +43,7 @@ fun main(args: Array<String>) {
 
     println("Bible Bowl!")
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR), Paths.get(RAW_DATA_DIR))
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(studyData.text)
     printExcerpts(numberExcerpts, studyData)

@@ -74,6 +74,8 @@ import java.io.FileNotFoundException
 import java.io.Reader
 import java.math.BigInteger
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -99,7 +101,7 @@ fun main(args: Array<String>) {
     writeBibleDoc(studyData, LocalDate.of(2025, 4, 5))
 }
 
-fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
+fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path = Path.of(PRODUCTS_DIR)) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex(it) }.toSet(), // bright yellow
@@ -126,16 +128,16 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
     )
 
     // plain
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts, productsPath)
 
     // unique words underlined
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts, productsPath)
 
     // all highlighting
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts, productsPath)
 }
 
 private fun writeOneText(
@@ -143,16 +145,17 @@ private fun writeOneText(
     styleParams: Map<String, String>,
     studyData: StudyData,
     opts: TextOptions<String>,
-): File {
+    productsPath: Path,
+): Path {
     val name = studyData.studySet.simpleName
     // FIXME this is an ugly hack
     val modifiedOpts: TextOptions<String> =
         styleParams["mainFontSize"]?.let {
             opts.copy(fontSize = it.toInt() / 2)
         } ?: opts
-    val outputFile = File("$PRODUCTS_DIR/$name/text/docx/$name-bible-text-${opts.fileNameSuffix}.docx")
-    outputFile.parentFile.mkdirs()
-    DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile, studyData)
+    val outputFile = productsPath.resolve(name, "text", "docx", "$name-bible-text-${opts.fileNameSuffix}.docx")
+    Files.createDirectories(outputFile.parent)
+    DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile.toFile(), studyData)
 
     return outputFile.docxToPdf()
 }

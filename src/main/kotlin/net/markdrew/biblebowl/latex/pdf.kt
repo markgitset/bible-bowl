@@ -2,6 +2,14 @@ package net.markdrew.biblebowl.latex
 
 import java.io.File
 import java.lang.ProcessBuilder.Redirect.DISCARD
+import java.nio.file.Path
+
+fun Path.latexToPdf(
+    showStdIo: Boolean = false,
+    keepLogFiles: Boolean = false,
+    keepTexFiles: Boolean = false,
+    twice: Boolean = false
+): Path = toFile().latexToPdf(showStdIo, keepLogFiles, keepTexFiles, twice).toPath()
 
 fun File.latexToPdf(
     showStdIo: Boolean = false,
@@ -32,12 +40,15 @@ fun File.latexToPdf(
     }
 }
 
+fun Path.docxToPdf(showStdIo: Boolean = false, keepDocxFiles: Boolean = true): Path =
+    toFile().docxToPdf(showStdIo, keepDocxFiles).toPath()
+
 fun File.docxToPdf(
     showStdIo: Boolean = false,
     keepDocxFiles: Boolean = true,
 ): File {
     val processBuilder = ProcessBuilder(
-        "libreoffice24.2",
+        "libreoffice",
         "--convert-to", "pdf",
         absolutePath
     ).inheritIO()

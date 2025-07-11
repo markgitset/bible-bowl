@@ -30,6 +30,7 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.io.File
+import java.nio.file.Path
 
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
@@ -43,13 +44,13 @@ fun main(args: Array<String>) {
 //    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
     writeBibleText(
         studyData,
-        TextOptions(customHighlights = customHighlights, underlineUniqueWords = true, highlightNames = true, highlightNumbers = true)
+        opts = TextOptions(customHighlights = customHighlights, underlineUniqueWords = true, highlightNames = true, highlightNumbers = true)
     )
 }
 
-fun writeBibleText(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
+fun writeBibleText(studyData: StudyData, productsPath: Path = Path.of(PRODUCTS_DIR), opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
-    val latexFile = File("$PRODUCTS_DIR/$name/text/latex/$name-bible-text-${opts.fileNameSuffix}.tex")
+    val latexFile = productsPath.resolve(name, "text", "latex", "$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)
     println("Wrote $latexFile")
     latexFile.latexToPdf(twice = true, keepTexFiles = true, showStdIo = false)
@@ -68,6 +69,9 @@ private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
 
 class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
 
+    fun renderToFile(file: Path, studyData: StudyData) {
+        renderToFile(file.toFile(), studyData)
+    }
     fun renderToFile(file: File, studyData: StudyData) {
         file.parentFile.mkdirs()
         file.writer().use {

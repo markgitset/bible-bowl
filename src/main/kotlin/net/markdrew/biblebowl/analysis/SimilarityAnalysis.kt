@@ -2,6 +2,7 @@ package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.ReferencedVerse
+import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.levenshtein
@@ -11,7 +12,7 @@ import kotlin.math.min
 
 fun main() {
     // phrase frequencies
-    val studyData = StudyData.readData()
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT)
     val similaritiesIndex: Map<VerseRef, TopNMap<Double, VerseRef>> = buildSimilaritiesIndex(studyData)
     printSimilarities(similaritiesIndex)
 }
