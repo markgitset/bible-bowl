@@ -18,10 +18,10 @@ private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "ome
 
 @Language("RegExp")
 private val REGEX_NAMES = setOf(
-    """\p{Lu}\w+ Sea""",
-    """(?:Valley|Brook|Feast|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
-    """Mount (of )?\p{Lu}\w+""",
-    "John the Baptist",
+//    """\p{Lu}\w+ Sea""",
+//    """(?:Valley|Brook|Feast|Book|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
+//    """Mount (of )?\p{Lu}\w+""",
+//    "John the Baptist",
     """(?<=“)Legion(?=,”)""", // Luke 8:30
     """Lot(’s)?""", // Luke 17:28-31
     "The Skull", // Luke 23:33

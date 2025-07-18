@@ -1,3 +1,5 @@
+(?<!all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
+(?<!along by )Hezron
 Aaron
 Abdon
 Abimelech
@@ -12,6 +14,7 @@ Ahiman
 Alphaeus
 Amminadab
 Amos
+Anak
 Anath
 Andrew
 Annas
@@ -65,7 +68,6 @@ Hamor
 Heber
 Heli
 Herod
-(?<!along by )Hezron
 Hillel
 Hoham
 Horam
@@ -111,7 +113,6 @@ Maath
 Mahalaleel
 Mahalalel
 Mahlon
-(?<!all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
 Manoah
 Mattatha
 Mattathias
@@ -183,3 +184,4 @@ Zeeb
 Zerah
 Zerubbabel
 Zippor
+John the Baptist

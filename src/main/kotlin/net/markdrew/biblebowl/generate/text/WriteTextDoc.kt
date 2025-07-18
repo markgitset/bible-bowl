@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.generate.text
 import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.analysis.WordList
 import net.markdrew.biblebowl.latex.docxToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -105,6 +106,9 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path 
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex(it) }.toSet(), // bright yellow
+        "ff99ff" to WordList.WOMEN.regexSequence().toSet(), // pink
+        "99ccff" to WordList.MEN.regexSequence().toSet(), // blue
+        "99ff99" to WordList.PLACES.regexSequence().toSet(), // green
 //        "namesColor" to setOf("John the Baptist".toRegex()),
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
