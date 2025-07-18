@@ -1,11 +1,23 @@
+(?:Mount|Valley|Brook|Feast|Book|Sea)(?:(?: of(?: the)?)(?: \p{Lu}\w+){1,2}){1,2}
+(?<=all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
+(?<=along by )Hezron
+Achshaph
+Achzib
+Adadah
 Adam(?=, the city)
+Addar
+Adithaim
 Adullam
+Adummim
+Ai
 Aijalon
 Ain
 Akeldama
+Akrabbim
 Amam
 Anab
 Anathoth
+Anim
 Aphek
 Aphekah
 Arab
@@ -13,26 +25,34 @@ Arabah
 Arad
 Aroer
 Arumah
+Ashan
 Ashdod
 Ashkelon
 Ashnah
 Ashtaroth
 Ataroth
 Ataroth-addar
+Azekah
+Azmon
 Baal-gad
 Baal-hermon
+Baalah
 Baalath
 Baalath-beer
 Bamoth-baal
+Bashan
 Bealoth
+Beeroth
 Beersheba
 Bene-berak
 Beth-anath
+Beth-anoth
 Beth-arabah
 Beth-dagon
 Beth-emek
 Beth-haram
 Beth-hoglah
+Beth-horon
 Beth-horon (Lower)
 Beth-horon (Upper)
 Beth-jeshimoth
@@ -46,24 +66,31 @@ Beth-rehob
 Beth-shean
 Beth-shemesh
 Beth-tappuah
+Beth-zur
 Bethel
 Bethlehem
 Bethul
+Betonim
 Bezer
 Biziothiah
 Bochim
+Bozkath
 Cabbon
 Cabul
+Canaan
+Carmel
 Chephar-ammoni
 Chephirah
 Chesalon
 Chesil
 Chinnereth
+Chinneroth
 Chitlish
 City of Salt
 Dabbesheth
 Daberath
 Dan
+Dannah
 Debir(?! king of Eglon)
 Dibon
 Dilean
@@ -76,6 +103,7 @@ Eder
 Edom
 Edrei
 Eglon(?! (the )?king| was a very fat man)
+Egypt
 Ekron
 Elon(?! the Zebulunite)
 Elteke
@@ -97,6 +125,7 @@ Eshtemoh
 Eth-kazin
 Ether
 Ezem
+Galilee
 Gaza
 Geba
 Geder
@@ -109,12 +138,14 @@ Gibbethon
 Gibeah
 Gibeath-haaraloth
 Gibeon
+Gilead
 Gilgal
 Giloh
 Goiim
 Golan
 Goshen
 Great Sea
+Hadashah
 Halhul
 Hammath
 Hammon
@@ -134,7 +165,7 @@ Hepher
 Heres
 Hermon
 Heshbon
-(?<=along by )Hezron
+Heshmon
 Holon
 Horem
 Hormah
@@ -146,16 +177,20 @@ Iim
 Iphtah
 Ir-shemesh
 Irpeel
+Israel
 Issachar
 Ithlah
 Ithnan
 Jabneel
+Jagur
+Janim
 Japhia(?! king of)
 Jarmuth
 Jazer
 Jebus
 Jehuda
 Jericho
+Jerusalem
 Jezreel
 Jokdeam
 Jokneam
@@ -168,6 +203,7 @@ Kadesh
 Kadesh-barnea
 Kain
 Kanah
+Karka
 Kartah
 Kartan
 Kattath
@@ -175,17 +211,22 @@ Kedemoth
 Kedesh
 Keilah
 Kerioth-hezron
+Kinah
 Kiriath-arba
 Kiriath-baal
 Kiriath-jearim
 Kiriath-sannah
+Kiriath-sepher
 Kishion
 Kitron
 Lachish
+Lahmam
 Laish
 Lakkum
+Lasharon
 Lebanon
 Lebaoth
+Lebo-hamath
 Lebonah
 Lehi
 Leshem
@@ -199,10 +240,10 @@ Madon
 Mahalab
 Mahanaim
 Makkedah
-(?<=all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
 Maon
 Mareal
 Mareshah
+Mearah
 Megiddo
 Mephaath
 Merom
@@ -211,6 +252,7 @@ Michmethath
 Middin
 Migdal-el
 Migdal-gad
+Misrephoth-maim
 Mizpah
 Mizpeh
 Moab
@@ -230,9 +272,11 @@ Naamah
 Nahalal
 Naphath
 Naphath-dor
+Naphoth-dor
 Naphtali
 Negeb
 Neiel
+Nephtoah
 Nezib
 Nibshan
 Nobah
@@ -254,18 +298,25 @@ Ramath-mizpeh
 Rehob
 Rekem
 Rimmon
+Salecah
+Sansannah
+Secacah
 Seir
 Seirah
 Sela
+Shaaraim
 Shamir
 Sharuhen
 Sheba
+Shebarim
 Shechem
 Shema
+Shikkeron
 Shilhim
 Shiloh
 Shimron
 Shimron-meron
+Shinar
 Shion
 Shittim
 Shunem
@@ -273,21 +324,16 @@ Sidon
 Socoh
 Succoth
 Taanach
+Taanath-shiloh
 Tappuah
 Taralah
+Telem
 Thebez
 Timnah
 Timnath-heres
 Timnath-serah
 Tirzah
 Ummah
-Valley of Achor
-Valley of Aijalon
-Valley of Iphtahel
-Valley of Jezreel
-Valley of Lebanon
-Valley of Rephaim
-Valley of the Arnon
 Zaanannim
 Zanoah
 Zaphon
@@ -302,4 +348,6 @@ Ziddim
 Ziklag
 Zin
 Zior
+Ziph
 Zorah
+\p{Lu}\w+\s+Sea

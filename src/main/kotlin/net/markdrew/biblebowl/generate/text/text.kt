@@ -14,8 +14,8 @@ val smallCapsNames = mapOf(
 )
 
 @Language("RegExp")
-val divineNames = setOf(
-    "(Lord )?God", "(Lord )?Jesus( Christ)?", "Christ( of God| the Lord)?", "Holy Spirit", "Immanuel",
+val divineNames: Set<String> = setOf(
+    "(Lord (?:your )?)?God", "(Lord )?Jesus( Christ)?", "Christ( of God| the Lord)?", "Holy Spirit", "Immanuel",
     "(?<!(go to my father, and I will say to him|son said to him|said to his father), [‘“])Father(?! Abraham)",
     "Spirit of God", "Son of God", "Son of Man", "Son of David", "Lord of the harvest",
     "Spirit of your Father", "(?<![‘“])Son", "God Almighty", "angel of the LORD", "Spirit( of the Lord)?",
