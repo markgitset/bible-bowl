@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.latex
 import java.io.File
 import java.lang.ProcessBuilder.Redirect.DISCARD
 import java.nio.file.Path
+import kotlin.io.path.absolutePathString
 
 fun Path.latexToPdf(
     showStdIo: Boolean = false,
@@ -63,10 +64,10 @@ fun File.docxToPdf(
     }
 }
 
-fun showPdf(pdfFile: File): File = pdfFile.also {
-    ProcessBuilder("evince", pdfFile.absolutePath).inheritIO().start()
+fun showPdf(pdfFile: Path): Path = pdfFile.also {
+    ProcessBuilder("evince", pdfFile.absolutePathString()).inheritIO().start()
 }
 
 fun main() {
-    showPdf(File("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").latexToPdf())
+    showPdf(Path.of("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").latexToPdf())
 }

@@ -2,7 +2,7 @@ package net.markdrew.biblebowl.generate.text
 
 import mu.KLogger
 import mu.KotlinLogging
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.WordList
 import net.markdrew.biblebowl.latex.docxToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
@@ -102,7 +102,7 @@ fun main(args: Array<String>) {
     writeBibleDoc(studyData, LocalDate.of(2025, 4, 5))
 }
 
-fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path = Path.of(PRODUCTS_DIR)) {
+fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path = Path.of(PRODUCTS_DIR_NAME)) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex(it) }.toSet(), // bright yellow
@@ -466,7 +466,7 @@ class DocMaker(
                 r.rPr = (r.rPr ?: RPr()).apply {
                     shd = CTShd().apply {
                         `val` = STShd.CLEAR
-                        fill = "b4c7dc" // light blue
+                        fill = "cccccc" // light gray
                     }
                 }
             }

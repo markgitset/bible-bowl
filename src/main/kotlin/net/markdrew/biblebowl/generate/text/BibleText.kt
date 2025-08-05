@@ -1,7 +1,9 @@
 package net.markdrew.biblebowl.generate.text
 
+import mu.KLogger
+import mu.KotlinLogging
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.findNumbers
 import net.markdrew.biblebowl.analysis.oneTimeWords
@@ -23,14 +25,18 @@ import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
+import net.markdrew.chupacabra.core.length
 import java.io.File
 import java.nio.file.Path
+
+private val log: KLogger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
@@ -48,7 +54,7 @@ fun main(args: Array<String>) {
     )
 }
 
-fun writeBibleText(studyData: StudyData, productsPath: Path = Path.of(PRODUCTS_DIR), opts: TextOptions<String> = TextOptions()) {
+fun writeBibleText(studyData: StudyData, productsPath: Path = Path.of(PRODUCTS_DIR_NAME), opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val latexFile = productsPath.resolve(name, "text", "latex", "$name-bible-text-${opts.fileNameSuffix}.tex")
     BibleTextRenderer(opts).renderToFile(latexFile, studyData)
@@ -293,15 +299,40 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
     }
 
     companion object {
+
+        private fun <T : Any> highlightString(excerpt: Excerpt, color: T): String =
+            """"${excerpt.excerptText}" (${excerpt.excerptRange}:$color)"""
+
         fun <T : Any> annotatedDoc(studyData: StudyData, opts: TextOptions<T>): AnnotatedDoc<AnalysisUnit> {
             val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
                 BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
             ).apply {
                 val regexAnnotationsRangeMap: DisjointRangeMap<T> =
-                    opts.customHighlights.entries.fold(DisjointRangeMap()) { drm, (color, patterns) ->
-                        drm.apply {
-                            putAll(studyData.findAll(*patterns.toTypedArray()).associateWith { color })
+                    opts.customHighlights.entries.fold(DisjointRangeMap()) { allHighlights, (color, patterns) ->
+                        val highlights: DisjointRangeSet = studyData.findAll(*patterns.toTypedArray())
+                        highlights.forEach { range ->
+                            val maxExistingHighlight = allHighlights.intersectedBy(range).maxByOrNull { it.key.length() }
+                            if (maxExistingHighlight == null)
+                                allHighlights[range] = color
+                            else {
+                                val newExcerpt: Excerpt = studyData.excerpt(range)
+                                val verse = studyData.verseEnclosing(range)?.format() ?: "UNK_VERSE"
+                                if (maxExistingHighlight.key.length() > range.length()) {
+                                    val existingExcerpt: Excerpt = studyData.excerpt(maxExistingHighlight.key)
+                                    log.warn { "In ${verse}, skipping ${highlightString(newExcerpt, color)} because " +
+                                            "${highlightString(existingExcerpt, maxExistingHighlight.value)} is longer!" }
+                                } else {
+                                    val replaced: DisjointRangeMap<T> = allHighlights.putForcefully(range, color)
+                                    replaced.forEach { (replacedRange, replacedColor) ->
+                                        val existingExcerpt: Excerpt = studyData.excerpt(replacedRange)
+                                        log.warn { "In ${verse}, replacing " +
+                                                "${highlightString(existingExcerpt, replacedColor)} because " +
+                                                "${highlightString(newExcerpt, color)} is longer!" }
+                                    }
+                                }
+                            }
                         }
+                        allHighlights
                     }
                 setAnnotations(REGEX, regexAnnotationsRangeMap)
                 setAnnotations(SMALL_CAPS, DisjointRangeSet(

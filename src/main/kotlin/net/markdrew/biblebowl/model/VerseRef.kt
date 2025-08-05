@@ -33,7 +33,7 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
 
     override fun compareTo(other: VerseRef): Int = absoluteVerse.compareTo(other.absoluteVerse)
 
-    fun format(bookFormat: BookFormat): String = "${chapterRef.format(bookFormat)}:$verse"
+    fun format(bookFormat: BookFormat = BRIEF_BOOK_FORMAT): String = "${chapterRef.format(bookFormat)}:$verse"
 
     companion object {
         fun fromAbsoluteVerseNum(refNum: AbsoluteVerseNum): VerseRef =

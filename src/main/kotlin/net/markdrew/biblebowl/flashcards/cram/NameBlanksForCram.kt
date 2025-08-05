@@ -1,8 +1,8 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printNameFrequencies
 import net.markdrew.biblebowl.analysis.printExcerpts
@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
 
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
 
     val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
     printNameFrequencies(nameExcerpts)
@@ -45,7 +45,7 @@ fun writeCramNameBlanks(
 ) {
     val bookName = studyData.studySet.simpleName
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
-    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram")
+    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR_NAME/$bookName/cram")
         .resolve("$bookName-cram-name-blanks$scopeString.tsv")
     val validCharRange: IntRange = studyData.charRangeFromChapterRange(chapterRange)
     CardWriter(cramNameBlanksPath).use { cardWriter ->

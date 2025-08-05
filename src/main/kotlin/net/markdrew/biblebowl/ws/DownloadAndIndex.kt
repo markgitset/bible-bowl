@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.ws
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.RAW_DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -10,7 +10,7 @@ import java.nio.file.Paths
 
 fun main(vararg args: String) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    downloadAndIndex(studySet, Paths.get(DATA_DIR), Paths.get(RAW_DATA_DIR))
+    downloadAndIndex(studySet, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 
     // for Maria
 //    for (studySet in setOf(StudySet(Book.EXO, "exodus"), StudySet(Book.LEV, "lev"), StudySet(Book.NUM, "num"))) {

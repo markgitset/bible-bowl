@@ -2,9 +2,9 @@
 
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.RAW_DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.flashcards.cram.CardWriter
 import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
@@ -19,9 +19,9 @@ import java.nio.file.Paths
 @Language("RegExp") const val BASE_FRACTIONS =
     """(?:hal(?:f|ve)|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth)s?"""
 @Language("RegExp") const val ONE_AS_NUMBER =
-    """(?<=-|just )one|(?<!(the|no) )\bone(?= and|[\- ]$BASE_FRACTIONS| coin| sinner| mile| hour| staff| (drawn )?out of| of every| have chased| eye| or two| flesh| talent| for)"""
+    """(?:(?<=-|just |in )one|(?<!(the|no) )\bone(?= and|[\- ]$BASE_FRACTIONS| coin| sinner| mile| hour| staff| (drawn )?out of| of every| have chased| eye| or two| flesh| talent| for)|(?<=, )one(?=[;:]))"""
 @Language("RegExp") const val SPECIAL_NUMBERS_PATTERN =
-    """\b(?:zero|$ONE_AS_NUMBER|twos?|threes?|fives?|tens?|elevens?|twelves?|fort(y|ies)|hundreds?|thousands?|myriads?)"""
+    """\b(?:zero|$ONE_AS_NUMBER|a couple|twos?|threes?|fives?|tens?|elevens?|twelves?|fort(y|ies)|hundreds?|thousands?|myriads?)"""
 @Language("RegExp") const val NUMBER_PATTERN =
     """\b(?:(?:$SPECIAL_NUMBERS_PATTERN|(?:twen|thir|fours?|fif|six(es)?|sevens?|eigh(ts?)?|nines?)(?:teens?|ty|ties)?)(?:fold)?)\b"""
 @Language("RegExp") const val MULTI_NUMBER_PATTERN = """$NUMBER_PATTERN(?:(?:-| | of |)$NUMBER_PATTERN)*"""
@@ -29,7 +29,7 @@ import java.nio.file.Paths
 @Language("RegExp") const val TENS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)ty)"""
 @Language("RegExp") const val TENS_ORDINALS = """(?:(?:twen|thir|for|fif|six|seven|eigh|nine)tieth)"""
 @Language("RegExp") const val TEENS = """(?:(?:thir|four|fif|six|seven|eigh|nine)teen)"""
-@Language("RegExp") const val FIRST_AS_ORDINAL = """(?:first(?=\s+(day|month))|(?<=((?<!\bat )[Tt]he|who) )first\b)"""
+@Language("RegExp") const val FIRST_AS_ORDINAL = """(?:first(?=\s+(?:day|month))|(?<=(to them|go up|(?<!\bat )[Tt]he|who) )first\b)"""
 @Language("RegExp") const val ORDINALS =
     """(?:$FIRST_AS_ORDINAL|(?<!at the )(?:$MULTI_NUMBER_PATTERN and )?(?:$TENS_ORDINALS|(?:$TENS-first)\b|""" +
             """(?:$TENS-)?(?:(?<=and )first|second|third|(?:four|fif|six|seven|eigh|nin|ten|eleven|twelf|$TEENS)th))\b)"""
@@ -43,13 +43,13 @@ fun main(args: Array<String>) {
 
     println("Bible Bowl!")
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR), Paths.get(RAW_DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 
     val numberExcerpts: Sequence<Excerpt> = findNumbers(studyData.text)
     printExcerpts(numberExcerpts, studyData)
 
     val setName = studySet.simpleName
-    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
+    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR_NAME/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
     CardWriter(cramNumberBlanksPath).use {
         it.write(toCards(numberExcerpts, studyData))
     }
