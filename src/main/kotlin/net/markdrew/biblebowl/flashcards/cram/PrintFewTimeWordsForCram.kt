@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.cram
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.oneSectionWords
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -57,7 +57,7 @@ private fun <T : Any> oneSectionWordCards(
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
     writeCramFewTimeWords(studyData)
 }
 
@@ -75,7 +75,7 @@ fun writeCramFewTimeWords(studyData: StudyData) {
 
     // write 'em out
     val simpleName = studyData.studySet.simpleName
-    val outFile = File("$PRODUCTS_DIR/$simpleName/cram", "$simpleName-cram-local-words.tsv")
+    val outFile = File("$PRODUCTS_DIR_NAME/$simpleName/cram", "$simpleName-cram-local-words.tsv")
     CardWriter.writeCards(fewTimeWordCards, outFile)
     println("Wrote local words cards to $outFile")
 }

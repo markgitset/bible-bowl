@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -11,8 +11,8 @@ import net.markdrew.biblebowl.model.identifySingleQuotes
 import net.markdrew.biblebowl.model.trim
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
-import java.io.File
-import java.nio.file.Paths
+import java.nio.file.Files
+import java.nio.file.Path
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
@@ -36,8 +36,8 @@ fun main(args: Array<String>) {
 //    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 
-fun writeRound4Quotes(practiceTest: PracticeTest): File {
-    val studyData = StudyData.readData(practiceTest.studySet, Paths.get(DATA_DIR))
+fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path {
+    val studyData: StudyData = practiceTest.content.studyData
 
     val filteredCluePool: Map<IntRange, ChapterRef> = round4CluePool(practiceTest)
     println("Final clue pools size is ${filteredCluePool.size}")
@@ -52,8 +52,8 @@ fun writeRound4Quotes(practiceTest: PracticeTest): File {
             )
         }.map { multiChoice(it, practiceTest.content.coveredChapters, practiceTest.random) }
 
-    val latexFile = practiceTest.buildTexFileName()
-    latexFile.writer().use { writer ->
+    val latexFile = practiceTest.buildTexFileName(productsDir)
+    Files.newBufferedWriter(latexFile).use { writer ->
         toLatexInWhatChapter(writer, practiceTest, quotesToFind)
         println("Wrote $latexFile")
     }

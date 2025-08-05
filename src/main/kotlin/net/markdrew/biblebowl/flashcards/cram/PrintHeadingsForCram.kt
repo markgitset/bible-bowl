@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -50,7 +50,7 @@ private fun makePath(studyData: StudyData, fileType: String, chapterRange: Chapt
     val suffix =
         if (actualChapterRange == studyData.chapterRange) ""
         else rangeLabel("-chapter", with(actualChapterRange) { start.chapter..endInclusive.chapter })
-    val dir: Path = Paths.get("$PRODUCTS_DIR/$setName/cram").also { it.toFile().mkdirs() }
+    val dir: Path = Paths.get("$PRODUCTS_DIR_NAME/$setName/cram").also { it.toFile().mkdirs() }
     return dir.resolve("$setName-$fileType$suffix.tsv")
 }
 

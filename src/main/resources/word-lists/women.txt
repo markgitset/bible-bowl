@@ -20,3 +20,11 @@ Salome
 Simon's mother-in-law
 Susanna
 Tabitha
+Mahlah
+(?<=Mahlah, )Noah
+Hoglah
+Milcah
+(?<!king of )Tirzah
+Rachel
+Leah
+Tamar

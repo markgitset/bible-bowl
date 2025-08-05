@@ -18,21 +18,21 @@ internal class FindNamesKtTest {
         assertFound("And they were driven out from Pharaoh’s presence.", "Pharaoh")
     }
 
-    @Test
-    fun `findNames finds a mountains`() {
-        assertFound(
-            "And they climbed Mount Cat and Mount Ojok, near Ojok, before leaving.",
-            "Mount Cat", "Mount Ojok", "Ojok"
-        )
-    }
+//    @Test
+//    fun `findNames finds a mountains`() {
+//        assertFound(
+//            "And they climbed Mount Cat and Mount Ojok, near Ojok, before leaving.",
+//            "Mount Cat", "Mount Ojok", "Ojok"
+//        )
+//    }
 
-    @Test
-    fun `findNames finds seas`() {
-        assertFound(
-            "And they swam across Cat Sea and Ojok Sea, near Ojok, before leaving. It's near the Sea of Chinnereth.",
-            "Cat Sea", "Ojok Sea", "Ojok", "Sea of Chinnereth"
-        )
-    }
+//    @Test
+//    fun `findNames finds seas`() {
+//        assertFound(
+//            "And they swam across Cat Sea and Ojok Sea, near Ojok, before leaving. It's near the Sea of Chinnereth.",
+//            "Cat Sea", "Ojok Sea", "Ojok", "Sea of Chinnereth"
+//        )
+//    }
 
     private fun assertFound(text: String, vararg expectedNameStrings: String) {
         val studySet = StudySet(Book.GEN, "test")

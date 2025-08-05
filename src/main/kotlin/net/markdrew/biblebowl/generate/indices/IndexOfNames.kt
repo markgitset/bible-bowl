@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
@@ -13,12 +13,15 @@ import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.writer
 
 fun main() {
 //    val revStopWords = setOf("he", "from", "his", "is", "you", "was", "will", "for", "with", "on", "in", "who", "i",
 //                              "a", "to", "of", "and", "the")
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME))
     writeNamesList(studyData)
     writeNamesIndex(studyData)
 }
@@ -26,7 +29,7 @@ fun main() {
 private fun writeNamesList(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
     val names: Sequence<String> = findNames(studyData).map { it.excerptText }.sorted().distinct()
-    val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
+    val dir = File("$PRODUCTS_DIR_NAME/$studyName/lists").also { it.mkdirs() }
     val file = dir.resolve("$studyName-list-names.txt")
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
@@ -34,7 +37,7 @@ private fun writeNamesList(studyData: StudyData) {
     println("Wrote $file")
 }
 
-fun writeNamesIndex(studyData: StudyData) {
+fun writeNamesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val studyName = studyData.studySet.simpleName
     val exceptNames: Array<String> = arrayOf()
     val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData, *exceptNames)
@@ -44,7 +47,7 @@ fun writeNamesIndex(studyData: StudyData) {
                 wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) -> WithCount(verseRef, count) }
             )
         }
-    val dir = File("$PRODUCTS_DIR/$studyName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(studyName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-index-names.tex")
     val name = studyData.studySet.name
     val longName = studyData.studySet.longName

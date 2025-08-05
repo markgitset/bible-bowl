@@ -29,11 +29,12 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.Path
 
 const val INDENT_POETRY_LINES = 4
 
@@ -43,9 +44,15 @@ const val INDENT_POETRY_LINES = 4
 //val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR)
 //val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR)
 
-const val RAW_DATA_DIR = "raw-data"
-const val DATA_DIR = "data"
-const val PRODUCTS_DIR = "products"
+const val RAW_DATA_DIR_NAME = "raw-data"
+const val DATA_DIR_NAME = "data"
+const val PRODUCTS_DIR_NAME = "products"
+val userHomeDir = Path(System.getProperty("user.home"))
+val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
+val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
+val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR_NAME)
+val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR_NAME)
+
 const val BANNER = """
   ______                        ____  _ __    __        ____                __
  /_  __/__  _  ______ ______   / __ )(_) /_  / /__     / __ )____ _      __/ /
@@ -91,14 +98,14 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
 
     // load the indices (or download and create them, if not found)
-    val dataPath: Path = Paths.get(DATA_DIR)
+    val dataPath: Path = Paths.get(DATA_DIR_NAME)
     val studyData = try {
         StudyData.readData(studySet, dataPath)
     } catch (e: FileNotFoundException) {
         println("File not found: ${e.message}")
         println("Downloading and indexing the study set for ${studySet.name}...")
         val indexer = EsvIndexer(studySet)
-        val chapterPassages: Sequence<Passage> = EsvClient(Path.of(RAW_DATA_DIR)).bookByChapters(studySet, forceDownload = false)
+        val chapterPassages: Sequence<Passage> = EsvClient(Path.of(RAW_DATA_DIR_NAME)).bookByChapters(studySet, forceDownload = false)
         indexer.indexBook(chapterPassages).also {
             it.writeData(dataPath)
         }
@@ -138,9 +145,13 @@ fun main(args: Array<String>) {
     writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50))
 }
 
-fun fileForProduct(studyData: StudyData, productDirName: String, productName: String): File {
+fun fileForProduct(
+    studyData: StudyData,
+    productDirName: String,
+    productName: String,
+    productsDir: Path,
+): Path {
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/$productDirName").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
-    return file
+    val dir = productsDir.resolve(simpleName, productDirName).also { Files.createDirectories(it) }
+    return dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
 }

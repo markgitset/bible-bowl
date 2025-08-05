@@ -1,4 +1,3 @@
-(?<!all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
 (?<!along by )Hezron
 Aaron
 Abdon
@@ -59,7 +58,6 @@ Esau
 Esli
 Gaal
 Gabriel
-Gad
 Gamaliel
 Gera
 Gershom
@@ -95,10 +93,8 @@ Jonam
 Jonathan
 Jorim
 Josech
-Joseph
 Joshua
 Jotham
-Judah
 Judas
 Judas Iscariot
 Kenan
@@ -106,7 +102,6 @@ Kenaz
 Lamech
 Lappidoth
 Lazarus
-Levi
 Lot
 Luke
 Maath
@@ -132,7 +127,7 @@ Nathan
 Nathanael
 Neri
 Nicodemus
-Noah
+(?<!Mahlah,\s+)Noah
 Nun
 Obed
 Og
@@ -150,7 +145,6 @@ Purah
 Quirinius
 Ram
 Reu
-Reuben
 Rhesa
 Sala
 Salmon
@@ -164,7 +158,6 @@ Shelah
 Shem
 Sheshai
 Sihon
-Simeon
 Simon
 Sisera
 Talmai
@@ -185,3 +178,22 @@ Zerah
 Zerubbabel
 Zippor
 John the Baptist
+Evi
+Zur
+Hur
+Reba
+Zelophehad
+Machir
+(?<=(?:son|father) of )Gilead
+(?<=(?:son|father) of )Hepher
+Hepher(?=, and Shemida)
+(?<=Asriel, )Shechem
+(?<=Evi and )Rekem
+Abiezer
+Helek
+Asriel
+Shemida
+Hobab
+Jephthah
+(?<=(?:son|firstborn) of )(?:Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin)
+(?:Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin)(?= (?:the )?son of)

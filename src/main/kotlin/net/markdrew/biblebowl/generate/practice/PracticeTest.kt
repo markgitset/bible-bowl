@@ -1,9 +1,10 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudySet
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -29,11 +30,11 @@ data class PracticeTest(
         return "-%s%02dto%s%02d".format(firstBook, chapters.first().chapter, lastBook, chapters.last().chapter)
     }
 
-    fun buildTexFileName(directory: File? = null): File {
+    fun buildTexFileName(productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path {
         val setName = studySet.simpleName
-        val dir = directory ?: File("$PRODUCTS_DIR/$setName/practice/round${round.number}")
-        val fileName = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d".format(randomSeed)
-        dir.mkdirs()
-        return File(dir, "$fileName.tex")
+        val fileName: String = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d.tex"
+            .format(randomSeed)
+        return productsDir.resolve(setName, "practice", "round${round.number}", fileName)
+            .also { Files.createDirectories(it.parent) }
     }
 }

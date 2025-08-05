@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.model
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.RAW_DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.excerpt
@@ -371,8 +371,8 @@ class StudyData(
 
         fun readData(
             studySet: StudySet = StandardStudySet.DEFAULT,
-            dataDir: Path = Path.of(DATA_DIR),
-            rawDataDir: Path = Path.of(RAW_DATA_DIR),
+            dataDir: Path = Path.of(DATA_DIR_NAME),
+            rawDataDir: Path = Path.of(RAW_DATA_DIR_NAME),
             forceDownload: Boolean = false
         ): StudyData {
             val bookDir = dataDir.resolve(studySet.simpleName)
@@ -397,7 +397,7 @@ class StudyData(
 }
 
 fun main() {
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR), Paths.get(RAW_DATA_DIR))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 //    for (w in StudyData.words) {
 //        if (StudyData.chapterIndex[8]!!.encloses(w))
 //            println(StudyData.excerpt(w))

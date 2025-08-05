@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.mailmerge
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 
 private fun makePath(studyData: StudyData, fileType: String): Path {
     val setName = studyData.studySet.simpleName
-    val dir: Path = Paths.get("$PRODUCTS_DIR/$setName/mail-merge").also { it.toFile().mkdirs() }
+    val dir: Path = Paths.get("$PRODUCTS_DIR_NAME/$setName/mail-merge").also { it.toFile().mkdirs() }
     return dir.resolve("$setName-$fileType.csv")
 }
 

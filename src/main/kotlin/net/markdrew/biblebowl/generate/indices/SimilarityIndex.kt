@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
@@ -38,7 +38,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
             )
         }
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = File("$PRODUCTS_DIR_NAME/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-phrases.tex")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
@@ -70,7 +70,7 @@ private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: In
             )
         }
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = File("$PRODUCTS_DIR_NAME/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-nonlocal-phrases.tex")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->

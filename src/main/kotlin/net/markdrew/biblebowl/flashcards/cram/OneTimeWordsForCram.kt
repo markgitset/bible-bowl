@@ -1,8 +1,8 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.ChapterRange
@@ -20,7 +20,7 @@ fun highlightVerse(target: String, verse: String): String =
 fun main(args: Array<String>) {
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
 
     val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
     writeCramOneTimeWords(studyData, oneTimeWords)
@@ -40,7 +40,7 @@ fun writeCramOneTimeWords(
 ) {
     val simpleName = studyData.studySet.simpleName
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
-    val uniqueWordsFile = File("$PRODUCTS_DIR/$simpleName/cram", "$simpleName-cram-one-words$scopeString.tsv")
+    val uniqueWordsFile = File("$PRODUCTS_DIR_NAME/$simpleName/cram", "$simpleName-cram-one-words$scopeString.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
         writeCards(writer, oneTimeWords, studyData, chapterRange)
     }

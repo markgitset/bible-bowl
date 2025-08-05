@@ -1,5 +1,4 @@
-(?:Mount|Valley|Brook|Feast|Book|Sea)(?:(?: of(?: the)?)(?: \p{Lu}\w+){1,2}){1,2}
-(?<=all |boundary of |in |cities of |passed through Gilead and |midst of Ephraim and )Manasseh
+(?:[Mm]ount(?:ain)?|[Rr]ock|[Ww]inepress|Valley|Brook|Feast|Sea)(?:(?: of(?: the)?)?(?: \p{Lu}\w+){1,2}){1,2}
 (?<=along by )Hezron
 Achshaph
 Achzib
@@ -29,7 +28,7 @@ Ashan
 Ashdod
 Ashkelon
 Ashnah
-Ashtaroth
+(?<!the )Ashtaroth
 Ataroth
 Ataroth-addar
 Azekah
@@ -48,13 +47,12 @@ Bene-berak
 Beth-anath
 Beth-anoth
 Beth-arabah
+Beth-aven
 Beth-dagon
 Beth-emek
 Beth-haram
 Beth-hoglah
-Beth-horon
-Beth-horon (Lower)
-Beth-horon (Upper)
+(?:(?:Low|Upp)er\s+)?Beth-horon
 Beth-jeshimoth
 Beth-lebaoth
 Beth-marcaboth
@@ -68,7 +66,7 @@ Beth-shemesh
 Beth-tappuah
 Beth-zur
 Bethel
-Bethlehem
+Bethlehem( in Judah)?
 Bethul
 Betonim
 Bezer
@@ -89,7 +87,6 @@ Chitlish
 City of Salt
 Dabbesheth
 Daberath
-Dan
 Dannah
 Debir(?! king of Eglon)
 Dibon
@@ -138,7 +135,7 @@ Gibbethon
 Gibeah
 Gibeath-haaraloth
 Gibeon
-Gilead
+(?<!(?:son|father) of )Gilead
 Gilgal
 Giloh
 Goiim
@@ -161,7 +158,7 @@ Hazor-hadattah
 Hebron
 Helbah
 Helkath
-Hepher
+(?<!(?:son|father) of )Hepher(?!, and Shemida)
 Heres
 Hermon
 Heshbon
@@ -177,10 +174,9 @@ Iim
 Iphtah
 Ir-shemesh
 Irpeel
-Israel
-Issachar
 Ithlah
 Ithnan
+Jabbok
 Jabneel
 Jagur
 Janim
@@ -244,6 +240,7 @@ Maon
 Mareal
 Mareshah
 Mearah
+Medeba
 Megiddo
 Mephaath
 Merom
@@ -258,22 +255,12 @@ Mizpeh
 Moab
 Moladah
 Moreh
-Mount Baalah
-Mount Ebal
-Mount Ephron
-Mount Gerizim
-Mount Halak
-Mount Jearim
-Mount Seir
-Mount Tabor
-Mount Zalmon
 Mozah
 Naamah
 Nahalal
 Naphath
 Naphath-dor
 Naphoth-dor
-Naphtali
 Negeb
 Neiel
 Nephtoah
@@ -285,7 +272,6 @@ Ophni
 Ophrah
 Parah
 Penuel
-Perizzites
 Pirathon
 Pisgah
 Rabbah
@@ -296,7 +282,7 @@ Ramah
 Ramath-lehi
 Ramath-mizpeh
 Rehob
-Rekem
+(?<!Evi and )Rekem
 Rimmon
 Salecah
 Sansannah
@@ -309,8 +295,9 @@ Shamir
 Sharuhen
 Sheba
 Shebarim
-Shechem
+(?<!Asriel, )Shechem
 Shema
+Shihor
 Shikkeron
 Shilhim
 Shiloh
@@ -332,13 +319,12 @@ Thebez
 Timnah
 Timnath-heres
 Timnath-serah
-Tirzah
+(?<=king\s+of\s+)Tirzah
 Ummah
 Zaanannim
 Zanoah
 Zaphon
 Zarethan
-Zebulun
 Zela
 Zemaraim
 Zenan
@@ -351,3 +337,86 @@ Zior
 Ziph
 Zorah
 \p{Lu}\w+\s+Sea
+Beth-baal-meon
+Jahaz
+Kiriathaim
+Sibmah
+Zereth-shahar
+Geshur
+En-tappuah
+Jattir
+Geliloth
+Haeleph
+Balah
+Sarid
+Chisloth-tabor
+Gath-hepher
+Neah
+Chesulloth
+Anaharath
+Remeth
+Shahazumah
+Tabor
+Hali
+Beten
+Allammelech
+Amad
+Mishal
+Shihor-libnath
+Ebron
+Tyre
+Hosah
+Heleph
+Adami-nekeb
+Aznoth-tabor
+Adamah
+Yiron
+Shaalabbin
+Eltekeh
+Jehud
+Gath-rimmon
+Me-jarkon
+Ramoth
+Eshtemoa
+Almon
+Beeshterah
+Hammoth-dor
+Peor
+Bezek
+Zephath
+Nahalol
+Acco
+Ahlab
+Aphik
+Shaalbim
+Kedesh-naphtali
+Kishon
+Sinai
+Beth-shittah
+Abel-meholah
+Tabbath
+Beth-barah
+Karkor
+Jogbehah
+Beth-millo
+Beer
+Diviners’ Oak
+Havvoth-jair
+Kamon
+Syria
+Arnon
+Minnith
+Abel-keramim
+Mahaneh-dan
+En-hakkore
+the hill country of \p{Lu}\w+
+Mahaneh-dan
+Gidom
+Jabesh-gilead
+Ephrathah
+(?<=in |passed through Gilead and |north |south |east |west |(?:territory|cities|boundary) of )(?:Israel|Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin|Midian|Ammon)
+(?<=from )(?:Israel|Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin|Midian|Ammon)(?= to)
+the camp of (?:Israel|Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin|Midian|Ammon)
+(?<!of the )Avvim
+Janoah
+Naarah

@@ -1,6 +1,7 @@
-bat
 (?<!will |not |tree |and |to |should )bear(?! fruit)
-beast
+bat
+beasts?
+bees
 bird
 brood
 camel
@@ -8,6 +9,7 @@ cormorant
 crane
 dog
 donkey
+donkeys
 dove
 duck
 eagle
@@ -15,21 +17,23 @@ elephant
 fish
 flock
 fox
+foxes
 goat
 goose
 grasshopper
 hawk
+heifer
 hen
 herd
 heron
-horse
+horses?
 lamb
 leopard
 lion
+livestock
 locust
 ostrich
-ox
-oxen
+ox(?:en)?
 pig
 quail
 raven

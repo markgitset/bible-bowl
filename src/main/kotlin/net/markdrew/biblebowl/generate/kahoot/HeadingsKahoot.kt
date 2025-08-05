@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.kahoot
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.generate.practice.MultiChoiceQuestion
 import net.markdrew.biblebowl.generate.practice.PracticeTest
 import net.markdrew.biblebowl.generate.practice.Round
@@ -19,7 +19,7 @@ import kotlin.random.nextInt
 
 fun main() {
     val studySet: StudySet = StandardStudySet.DEFAULT
-    val studyData: StudyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData: StudyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
     // need to skip the first few chapters to ensure we're covering enough chapters for some possible wrong choices
     for (throughChapter in studyData.chapterRefs.drop(3)) {
         val content = studyData.practice(throughChapter)
@@ -45,7 +45,7 @@ private fun writeHeadingsKahoot(
     if (!content.allChapters) fileName += "-to-${content.coveredChapters.last().toString().lowercase()}"
 //    fileName += "-%04d".format(randomSeed)
 
-    val xlsxFile = File("$PRODUCTS_DIR/$setName/kahoot/headings/$fileName.xlsx")
+    val xlsxFile = File("$PRODUCTS_DIR_NAME/$setName/kahoot/headings/$fileName.xlsx")
     kahoot(xlsxFile) {
         for (multiChoice in headingsToFind) {
             question(

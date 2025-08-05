@@ -1,8 +1,8 @@
 package net.markdrew.biblebowl.flashcards.anki
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.FRACTIONS
 import net.markdrew.biblebowl.analysis.MULTI_NUMBER_PATTERN
 import net.markdrew.biblebowl.analysis.NUMBER_REGEX
@@ -29,7 +29,7 @@ import kotlin.text.RegexOption.IGNORE_CASE
 fun main(args: Array<String>) {
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.firstOrNull())
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
 
     val oneTimeWordRanges: List<IntRange> = oneTimeWords(studyData)
     val oneTimeWords: List<String> = oneTimeWordRanges.map { studyData.text.substring(it) }
@@ -91,7 +91,7 @@ fun writeAnkiOneTimeWords(
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
     val predicateString = if (predicateName.isNotEmpty()) "-$predicateName" else ""
     val uniqueWordsFile = File(
-        "$PRODUCTS_DIR/$simpleName/anki",
+        "$PRODUCTS_DIR_NAME/$simpleName/anki",
         "$simpleName-anki-one-words$scopeString$predicateString.tsv"
     ).also { it.parentFile.mkdirs() }
     uniqueWordsFile.printWriter().use { writer ->

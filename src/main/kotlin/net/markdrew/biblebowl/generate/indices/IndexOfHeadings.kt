@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
@@ -12,8 +12,9 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.format
 import org.apache.commons.csv.CSVFormat
-import java.io.File
 import java.io.Writer
+import java.nio.file.Files
+import java.nio.file.Path
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
@@ -23,11 +24,11 @@ fun main(args: Array<String>) {
     writeHeadingsPdf(studyData)
 }
 
-fun writeHeadingsText(studyData: StudyData) {
+fun writeHeadingsText(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val studyName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
+    val dir = productsDir.resolve(studyName, "lists").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.txt")
-    file.writer().use { writer ->
+    Files.newBufferedWriter(file).use { writer ->
         for (heading in studyData.headings) {
             writer.appendLine("%-18s %s".format(heading.verseRange.format(BRIEF_BOOK_FORMAT), heading.title))
         }
@@ -50,20 +51,20 @@ private fun Writer.writeCsv(headings: List<Heading>) {
     }
 }
 
-fun writeHeadingsCsv(studyData: StudyData) {
+fun writeHeadingsCsv(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val studyName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$studyName/csv").also { it.mkdirs() }
+    val dir = productsDir.resolve(studyName, "csv").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.csv")
-    file.writer().use { it.writeCsv(studyData.headings) }
+    Files.newBufferedWriter(file).use { it.writeCsv(studyData.headings) }
     println("Wrote $file")
 }
 
-fun writeHeadingsPdf(studyData: StudyData) {
+fun writeHeadingsPdf(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val studyName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$studyName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(studyName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.tex")
     val name = studyData.studySet.name
-    file.writer().use { writer ->
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(writer, "$name Chapter Headings") {
             writer.appendLine("""\begin{multicols}{2}""")
             writer.appendLine("""\begin{center}""")
