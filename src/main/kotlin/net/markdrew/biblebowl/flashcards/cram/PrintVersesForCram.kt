@@ -7,6 +7,7 @@ import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import java.nio.file.Path
 import java.nio.file.Paths
 
 
@@ -18,10 +19,10 @@ fun main(args: Array<String>) {
     writeCramVerses(studyData)
 }
 
-fun writeCramVerses(studyData: StudyData) {
+fun writeCramVerses(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val setName = studyData.studySet.simpleName
 
-    val cramFile = Paths.get("$PRODUCTS_DIR_NAME/$setName/cram").resolve("$setName-cram-verses.tsv")
+    val cramFile = productsDir.resolve(setName, "cram", "$setName-cram-verses.tsv")
     CardWriter(cramFile).use {
         studyData.verses.forEach { (range, verseRef) ->
             val verseText = studyData.text.substring(range).normalizeWS()

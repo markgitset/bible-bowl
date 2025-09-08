@@ -11,9 +11,14 @@ import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.analysis.WordList
+import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
+import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
+import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
 import net.markdrew.biblebowl.generate.indices.writeHeadingsText
@@ -22,13 +27,13 @@ import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.indices.writeWordListIndex
-import net.markdrew.biblebowl.generate.practice.PracticeTest
 import net.markdrew.biblebowl.generate.practice.Round
-import net.markdrew.biblebowl.generate.practice.writeFindTheVerse
+import net.markdrew.biblebowl.generate.practice.practiceTest
+import net.markdrew.biblebowl.generate.practice.writeFullSet
+import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
 import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.generate.text.writeBibleDoc
-import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -125,18 +130,19 @@ class BibleBowlCli : CliktCommand(
         writeHeadingsText(studyData, productsDir)
         writeHeadingsText(studyData, productsDir)
 
-//        writeCramVerses(studyData)
-//        writeCramHeadings(studyData)
-//        writeCramReverseHeadings(studyData)
-//        writeCramOneTimeWords(studyData, oneTimeWords(studyData))
+        writeCramVerses(studyData, productsDir)
+        writeCramHeadings(studyData, productsDir)
+        writeCramReverseHeadings(studyData, productsDir)
+        writeCramOneTimeWords(studyData, oneTimeWords(studyData), productsDir)
 //        val nameExcerpts = findNames(studyData, "god", "jesus", "christ")
 //        writeCramNameBlanks(studyData, nameExcerpts)
 //        writeCramFewTimeWords(studyData)
 
-        val content = PracticeContent(studyData)
-        writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50), productsDir)
-        writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = 50), productsDir)
-        writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50), productsDir)
+        writeFullSet(studyData, productsDir) { content, seed, productsDir ->
+            writeRound1VerseFind(practiceTest(Round.FIND_THE_VERSE, content, seed, numQuestions = 20), productsDir)
+            writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), productsDir)
+            writeRound5Events(practiceTest(Round.EVENTS, content, seed), productsDir)
+        }
         echo("Generation complete. Output in $productsDir")
     }
 }

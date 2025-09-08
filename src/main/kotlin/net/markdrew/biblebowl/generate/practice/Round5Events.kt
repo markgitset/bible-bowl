@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
     for (throughChapter in studyData.chapterRefs.drop(5)) {
         val practice: PracticeContent = studyData.practice(throughChapter)
         for (seed in seeds) {
-            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed)).latexToPdf()
+            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed))
         }
     }
 }
@@ -78,7 +78,10 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<Chapter
 fun writeRound5Events(
     practiceTest: PracticeTest,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
-): Path {
+): Path? {
+    // not enough chapters in practice content to build a reasonable practice test
+    if (practiceTest.content.coveredChapters.size < 3) return null
+
     val texFile: Path = practiceTest.buildTexFileName(productsDir)
 
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
@@ -86,8 +89,7 @@ fun writeRound5Events(
         toLatexInWhatChapter(writer, practiceTest, headingsToFind)
     }
 
-    println("Wrote $texFile")
-    return texFile
+    return texFile.latexToPdf()
 }
 
 fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion> {

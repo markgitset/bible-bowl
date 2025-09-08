@@ -1,7 +1,11 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.generate.practice.BibleUse.CLOSED
 import net.markdrew.biblebowl.generate.practice.BibleUse.OPEN
+import net.markdrew.biblebowl.model.PracticeContent
+import net.markdrew.biblebowl.model.StudyData
+import java.nio.file.Path
 
 enum class BibleUse { 
     CLOSED, OPEN;
@@ -33,4 +37,25 @@ enum class Round(
      * Compute how many minutes to allow for a test at the standard pace, but with a nonstandard number of [questions].
      */
     fun minutesAtPaceFor(questions: Int): Int = questions * minutes / this.questions
+
+//    fun practiceTest(): PracticeTest = PracticeTest(this)
+}
+
+fun practiceTest(round: Round, content: PracticeContent, seed: Int, numQuestions: Int = round.questions): PracticeTest =
+    PracticeTest(round, content, numQuestions = numQuestions, randomSeed = seed)
+
+// PRODUCE THE FULL SET
+fun writeFullSet(
+    studyData: StudyData,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    repsPerRange: Int = 5,
+    writer: (content: PracticeContent, seed: Int, productsDir: Path) -> Unit,
+) {
+    for (throughChapter in studyData.chapterRefs) {
+        //if (throughChapter < Book.EXO.chapterRef(20)) continue
+        val content = studyData.practice(throughChapter)
+        for (seed in 1..repsPerRange) {
+            writer(content, 10 * seed, productsDir)
+        }
+    }
 }

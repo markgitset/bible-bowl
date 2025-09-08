@@ -11,7 +11,7 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
-import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 
 fun highlightVerse(target: String, verse: String): String =
@@ -36,11 +36,12 @@ fun main(args: Array<String>) {
 fun writeCramOneTimeWords(
     studyData: StudyData,
     oneTimeWords: List<IntRange>,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
     chapterRange: ChapterRange = studyData.chapterRange,
 ) {
     val simpleName = studyData.studySet.simpleName
     val scopeString = studyData.chapterRangeOrEmpty("-chapters-", chapterRange)
-    val uniqueWordsFile = File("$PRODUCTS_DIR_NAME/$simpleName/cram", "$simpleName-cram-one-words$scopeString.tsv")
+    val uniqueWordsFile = productsDir.resolve(simpleName, "cram", "$simpleName-cram-one-words$scopeString.tsv")
     CardWriter(uniqueWordsFile).use { writer ->
         writeCards(writer, oneTimeWords, studyData, chapterRange)
     }

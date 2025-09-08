@@ -27,18 +27,15 @@ fun main(args: Array<String>) {
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
 //    ))
 
-    // PRODUCE THE FULL SET
-    val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in studyData.chapterRefs) {
-        //if (throughChapter < Book.EXO.chapterRef(20)) continue
-        val content = studyData.practice(throughChapter)
-        for (seed in seeds) {
-            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
-        }
+    writeFullSet(studyData) { content, seed, productsDir ->
+        writeRound1VerseFind(
+            PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 10 * seed),
+            productsDir
+        )
     }
 }
 
-fun writeFindTheVerse(
+fun writeRound1VerseFind(
     practiceTest: PracticeTest,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
     minCharLength: Int = 15,
