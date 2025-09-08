@@ -36,8 +36,11 @@ fun main(args: Array<String>) {
 //    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 
-fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path {
+fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path? {
     val studyData: StudyData = practiceTest.content.studyData
+
+    // not enough chapters in practice content to build a reasonable practice test
+    if (practiceTest.content.coveredChapters.size < 4) return null
 
     val filteredCluePool: Map<IntRange, ChapterRef> = round4CluePool(practiceTest)
     println("Final clue pools size is ${filteredCluePool.size}")
@@ -55,7 +58,6 @@ fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PR
     val latexFile = practiceTest.buildTexFileName(productsDir)
     Files.newBufferedWriter(latexFile).use { writer ->
         toLatexInWhatChapter(writer, practiceTest, quotesToFind)
-        println("Wrote $latexFile")
     }
     return latexFile.latexToPdf()
 }
