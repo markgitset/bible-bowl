@@ -1,13 +1,12 @@
 package net.markdrew.biblebowl.flashcards.mailmerge
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.format
 import java.nio.file.Path
-import java.nio.file.Paths
 
 
 fun main(args: Array<String>) {
@@ -18,15 +17,15 @@ fun main(args: Array<String>) {
     writeMailMergeHeadings(studyData)
 }
 
-private fun makePath(studyData: StudyData, fileType: String): Path {
+private fun makePath(productsDir: Path, studyData: StudyData, fileType: String): Path {
     val setName = studyData.studySet.simpleName
-    val dir: Path = Paths.get("$PRODUCTS_DIR_NAME/$setName/mail-merge").also { it.toFile().mkdirs() }
+    val dir: Path = productsDir.resolve(setName, "mail-merge").also { it.toFile().mkdirs() }
     return dir.resolve("$setName-$fileType.csv")
 }
 
-fun writeMailMergeHeadings(studyData: StudyData) {
+fun writeMailMergeHeadings(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
-    val mailMergeHeadingsPath = makePath(studyData, "mail-merge-headings")
+    val mailMergeHeadingsPath = makePath(productsDir, studyData, "mail-merge-headings")
     MailMergeCardWriter(10, 2, mailMergeHeadingsPath).use { writer ->
         studyData.headings.groupBy {
             it.title
