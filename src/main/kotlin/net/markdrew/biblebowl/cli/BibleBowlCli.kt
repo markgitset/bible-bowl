@@ -19,6 +19,7 @@ import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
 import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
+import net.markdrew.biblebowl.flashcards.mailmerge.writeMailMergeHeadings
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
 import net.markdrew.biblebowl.generate.indices.writeHeadingsText
@@ -143,6 +144,9 @@ class BibleBowlCli : CliktCommand(
             writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), productsDir)
             writeRound5Events(practiceTest(Round.EVENTS, content, seed), productsDir)
         }
+
+        writeMailMergeHeadings(studyData, productsDir)
+
         echo("Generation complete. Output in $productsDir")
     }
 }
