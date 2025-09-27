@@ -19,13 +19,13 @@ import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
 import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
-import net.markdrew.biblebowl.flashcards.mailmerge.writeMailMergeHeadings
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
 import net.markdrew.biblebowl.generate.indices.writeHeadingsText
 import net.markdrew.biblebowl.generate.indices.writeNamesIndex
 import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
 import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
+import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsHomework
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.indices.writeWordListIndex
 import net.markdrew.biblebowl.generate.practice.Round
@@ -38,6 +38,7 @@ import net.markdrew.biblebowl.generate.text.writeBibleDoc
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import net.markdrew.biblebowl.typst.writeTypstFlashCards
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
@@ -113,6 +114,7 @@ class BibleBowlCli : CliktCommand(
 
         // Generate files (rest unchanged from BiblebowlKt.main)
         writeOneTimeWordsIndex(studyData, productsDir)
+        writeOneTimeWordsHomework(studyData, productsDir)
         writeFullIndex(studyData, productsDir = productsDir)
         writeNumbersIndex(studyData, productsDir = productsDir)
         writeNamesIndex(studyData, productsDir)
@@ -145,7 +147,7 @@ class BibleBowlCli : CliktCommand(
             writeRound5Events(practiceTest(Round.EVENTS, content, seed), productsDir)
         }
 
-        writeMailMergeHeadings(studyData, productsDir)
+        writeTypstFlashCards(studyData, productsDir)
 
         echo("Generation complete. Output in $productsDir")
     }
