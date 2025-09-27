@@ -35,6 +35,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
 const val INDENT_POETRY_LINES = 4
 
@@ -154,4 +155,8 @@ fun fileForProduct(
     val simpleName = studyData.studySet.simpleName
     val dir = productsDir.resolve(simpleName, productDirName).also { Files.createDirectories(it) }
     return dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
+}
+
+fun Path.showPdf(): Path = this.also {
+    ProcessBuilder("evince", it.absolutePathString()).inheritIO().start()
 }

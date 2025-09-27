@@ -70,9 +70,10 @@ class StudyData(
     }
 
     val headings: List<Heading> by lazy {
-        headingCharRanges.map { (headingCharRange, headingTitle) ->
+        val maxIndex: Int = headingCharRanges.size
+        headingCharRanges.entries.mapIndexed { index, (headingCharRange, headingTitle) ->
             val verseRefs: List<VerseRef> = verses.valuesIntersectedBy(headingCharRange)
-            Heading(headingTitle, verseRefs.first()..verseRefs.last())
+            Heading(headingTitle, verseRefs.first()..verseRefs.last(), index + 1, maxIndex)
         }
     }
 

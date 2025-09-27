@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.analysis.ChapterIndexEntry
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
@@ -20,9 +21,9 @@ import java.nio.file.Paths
 
 fun main() {
     val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME))
-    writeOneTimeWordsIndex(studyData)
+//    writeOneTimeWordsIndex(studyData)
     writeOneTimeWordsHomework(studyData)
-    writeOneTimeWordsList(studyData)
+//    writeOneTimeWordsList(studyData)
 }
 
 private fun writeOneTimeWordsList(studyData: StudyData) {
@@ -62,13 +63,13 @@ fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRO
     file.latexToPdf(keepTexFiles = true)
 }
 
-fun writeOneTimeWordsHomework(studyData: StudyData) {
+fun writeOneTimeWordsHomework(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
     val indexEntriesByChapter: List<ChapterIndexEntry> = oneTimeWordsIndexByChapter(studyData)
-    val dir = File("$PRODUCTS_DIR_NAME/$simpleName/homework").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-homework-one-time-words.tex")
-    file.writer().use { writer ->
+    val dir = productsDir.resolve(simpleName, "homework").also { Files.createDirectories(it) }
+    val file: Path = dir.resolve("$simpleName-homework-one-time-words.tex")
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(
             writer, "${set.name} One-Time Words Homework",
             docPreface = "The following words only appear one time in ${set.longName}.",

@@ -4,7 +4,7 @@ import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.WordList
-import net.markdrew.biblebowl.latex.docxToPdf
+import net.markdrew.biblebowl.docx.docxToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE

@@ -1,9 +1,9 @@
 package net.markdrew.biblebowl.latex
 
+import net.markdrew.biblebowl.showPdf
 import java.io.File
 import java.lang.ProcessBuilder.Redirect.DISCARD
 import java.nio.file.Path
-import kotlin.io.path.absolutePathString
 
 fun Path.latexToPdf(
     showStdIo: Boolean = false,
@@ -41,33 +41,6 @@ fun File.latexToPdf(
     }
 }
 
-fun Path.docxToPdf(showStdIo: Boolean = false, keepDocxFiles: Boolean = true): Path =
-    toFile().docxToPdf(showStdIo, keepDocxFiles).toPath()
-
-fun File.docxToPdf(
-    showStdIo: Boolean = false,
-    keepDocxFiles: Boolean = true,
-): File {
-    val processBuilder = ProcessBuilder(
-        "libreoffice",
-        "--convert-to", "pdf",
-        absolutePath
-    ).inheritIO()
-    processBuilder.directory(parentFile)
-    // without this, it may hang when the output buffer fills up
-    if (!showStdIo) processBuilder.redirectOutput(DISCARD).redirectError(DISCARD)
-    val process = processBuilder.start()
-    process.waitFor()
-    if (!keepDocxFiles) resolveSibling("$nameWithoutExtension.docx").delete()
-    return resolveSibling("$nameWithoutExtension.pdf").also {
-        println("Wrote $it")
-    }
-}
-
-fun showPdf(pdfFile: Path): Path = pdfFile.also {
-    ProcessBuilder("evince", pdfFile.absolutePathString()).inheritIO().start()
-}
-
 fun main() {
-    showPdf(Path.of("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").latexToPdf())
+    Path.of("/home/mark/ws/bible-bowl/products/gen/indices/gen-index-numbers.tex").latexToPdf().showPdf()
 }

@@ -2,13 +2,12 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.parseTsv
-import java.io.File
+import net.markdrew.biblebowl.showPdf
 import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
@@ -18,7 +17,7 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
     val practice = PracticeContent(studyData)
-    showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792), defaultProductsPath))
+    writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792), defaultProductsPath).showPdf()
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
