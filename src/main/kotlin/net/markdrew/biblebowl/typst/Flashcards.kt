@@ -4,6 +4,7 @@ import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.flashcards.HeadingCard
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.Heading
+import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRange
@@ -40,8 +41,19 @@ private fun indexOfHeadingInChapter(verseRange: VerseRange, allHeadings: List<He
     return ('A' + inChapterOffset).toString()
 }
 
-private fun formatCardBack(card: HeadingCard): String = card.verseRanges.joinToString(" & \\n") {
-    "${it.format(FULL_BOOK_FORMAT)} (${indexOfHeadingInChapter(it, card.allHeadings)})"
+private fun formatCardBack(card: HeadingCard): String =
+    if (card.chapterRanges.size == 1 || card.chapterRanges.first().start.book != card.chapterRanges.last().start.book) {
+        card.chapterRanges.joinToString(""" & """) {
+            it.format(FULL_BOOK_FORMAT)
+        }
+    } else {
+        card.chapterRanges.first().start.book.fullName + " " + card.chapterRanges.joinToString(" & ") {
+            it.format(NO_BOOK_FORMAT)
+        }
+    }
+
+private fun formatCardVerseRanges(card: HeadingCard): String = card.verseRanges.joinToString("""\n""") {
+    "(${indexOfHeadingInChapter(it, card.allHeadings)}) ${it.format(NO_BOOK_FORMAT)} "
 }
 
 private fun formatCardFooter(card: HeadingCard): String =
@@ -62,7 +74,10 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
     // Write each card
     HeadingCard.fromStudyData(studyData).forEach { card: HeadingCard ->
         writer.appendLine(
-            """(question: "${card.heading}", answer: "${formatCardBack(card)}", footer: "${formatCardFooter(card)}"),"""
+            """(question: "${card.heading}", 
+                |answer: "${formatCardBack(card)}", 
+                |verse_ranges: "${formatCardVerseRanges(card)}", 
+                |footer: "${formatCardFooter(card)}"),""".trimMargin()
         )
     }
 
@@ -139,7 +154,12 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
                     if i < flashcards.len() {
                       let x = (columns - col - 1) * card_width
                       let y = row * card_height
-                      let content = text(size: 24pt, weight: "bold", flashcards.at(i).answer)
+                      let content = stack(
+                        dir: ttb, // Top-to-bottom
+                        spacing: 0.25in, // Exactly 0.1in
+                        text(size: 24pt, weight: "bold", flashcards.at(i).answer),
+                        text(size: 18pt, flashcards.at(i).verse_ranges)
+                      )
                       flashcard(x, y, content, footer: flashcards.at(i).footer)
                     }
                   }
