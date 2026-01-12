@@ -4,6 +4,8 @@ import net.markdrew.biblebowl.DATA_DIR_NAME
 import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultDataPath
+import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.excerpt
 import net.markdrew.biblebowl.generate.indices.noBreak
 import net.markdrew.biblebowl.generate.indices.withCount
@@ -372,8 +374,8 @@ class StudyData(
 
         fun readData(
             studySet: StudySet = StandardStudySet.DEFAULT,
-            dataDir: Path = Path.of(DATA_DIR_NAME),
-            rawDataDir: Path = Path.of(RAW_DATA_DIR_NAME),
+            dataDir: Path = defaultDataPath,
+            rawDataDir: Path = defaultRawDataPath,
             forceDownload: Boolean = false
         ): StudyData {
             val bookDir = dataDir.resolve(studySet.simpleName)

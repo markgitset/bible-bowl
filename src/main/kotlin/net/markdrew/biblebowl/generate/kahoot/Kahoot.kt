@@ -4,6 +4,7 @@ import net.markdrew.biblebowl.generate.kahoot.KahootTimeLimit.SEC_20
 import org.apache.poi.xssf.streaming.SXSSFSheet
 import org.apache.poi.xssf.streaming.SXSSFWorkbook
 import java.io.File
+import java.nio.file.Path
 
 enum class KahootTimeLimit {
     SEC_5, SEC_10, SEC_20, SEC_30, SEC_60, SEC_90, SEC_120, SEC_240
@@ -74,6 +75,10 @@ class KahootContext(private val sheet: SXSSFSheet) {
         }
         rowNum++
     }
+}
+
+fun kahoot(path: Path, sheetFun: KahootContext.() -> Unit) {
+    kahoot(path.toFile(), sheetFun)
 }
 
 fun kahoot(file: File, sheetFun: KahootContext.() -> Unit) {

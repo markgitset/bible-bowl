@@ -16,6 +16,18 @@ fun VerseRange.format(bookFormat: BookFormat, separator: String = "-", compact: 
     }
     return "${start.format(bookFormat)}$separator${endString}"
 }
+fun parseVerseRange(verseRangeString: String): VerseRange {
+    val start: VerseRef
+    val end: VerseRef = try {
+        val split: List<String> = verseRangeString.split("-")
+        require(split.size <= 2) { "Too many range indicators (hyphens)!" }
+        start = VerseRef.parse(split.first())
+        if (split.size == 1) start else VerseRef.parse(split[1], start.chapterRef)
+    } catch (e: Exception) {
+        throw IllegalArgumentException("Unable to parse '$verseRangeString' as a verse range!", e)
+    }
+    return start..end
+}
 
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
@@ -38,6 +50,18 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
     companion object {
         fun fromAbsoluteVerseNum(refNum: AbsoluteVerseNum): VerseRef =
             VerseRef(ChapterRef.fromAbsoluteChapterNum(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
+
+        fun parse(verseRefString: String, defaultChapterRef: ChapterRef? = null): VerseRef {
+            val parts: List<String> = verseRefString.split(":")
+            return when (parts.size) {
+                1 -> VerseRef(
+                    requireNotNull(defaultChapterRef) { "Unable to parse '$verseRefString' as a verse ref" },
+                    parts.single().dropLastWhile { !it.isDigit() }.toInt()
+                )
+                2 -> parse(parts.last(), ChapterRef.parse(parts.first()))
+                else -> throw IllegalArgumentException("Unable to parse '$verseRefString' as a verse ref")
+            }
+        }
     }
 
 }
