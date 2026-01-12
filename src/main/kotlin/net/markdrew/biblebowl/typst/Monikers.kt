@@ -4,9 +4,11 @@ import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.flashcards.HeadingCard
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.Heading
+import net.markdrew.biblebowl.model.MonikersCard
+import net.markdrew.biblebowl.model.MonikersParser
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
-import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRange
 import net.markdrew.biblebowl.model.format
 import net.markdrew.biblebowl.showPdf
@@ -15,17 +17,21 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 fun main() {
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT)
-//    val studyData = StudyData.readData(StandardStudySet.LUKE.set)
-    writeTypstFlashCards(studyData).showPdf()
+    val studySet: StudySet = StandardStudySet.DEFAULT
+    val monikersCards: List<MonikersCard> = MonikersParser.loadCards(studySet)
+    writeTypstMonikers(studySet, monikersCards).showPdf()
 }
 
-fun writeTypstFlashCards(studyData: StudyData, productsDir: Path = defaultProductsPath): Path {
-    val studyName = studyData.studySet.simpleName
-    val dir = productsDir.resolve(studyName, "flashcards").also { Files.createDirectories(it) }
-    val file = dir.resolve("$studyName-headings-avery5870-cards.typ")
+fun writeTypstMonikers(
+    studySet: StudySet,
+    monikersData: List<MonikersCard>,
+    productsDir: Path = defaultProductsPath
+): Path {
+    val studyName = studySet.simpleName
+    val dir = productsDir.resolve(studyName, "monikers").also { Files.createDirectories(it) }
+    val file = dir.resolve("$studyName-monikers-avery5870-cards.typ")
     Files.newBufferedWriter(file).use { writer ->
-        writeFlashcards(writer, studyData)
+        writeMonikers(writer, monikersData)
     }
     return file.typstToPdf(keepTypFiles = true)
 }
@@ -59,25 +65,25 @@ private fun formatCardVerseRanges(card: HeadingCard): String = card.verseRanges.
 private fun formatCardFooter(card: HeadingCard): String =
     card.indices.joinToString(" & ") + " of " + card.allHeadings.size
 
-fun writeFlashcards(writer: Writer, studyData: StudyData) {
+fun writeMonikers(writer: Writer, monikersCards: List<MonikersCard>) {
     // Write front matter
     writer.appendLine("""
-        #let card_width = 3.5in
-        #let card_height = 2in
-        #let columns = 2
-        #let rows = 5
+        #let card_width = 2in
+        #let card_height = 3.5in
+        #let columns = 5
+        #let rows = 2
         #let cards_per_page = columns * rows
         
         #let flashcards = (
     """.trimIndent())
 
     // Write each card
-    HeadingCard.fromStudyData(studyData).forEach { card: HeadingCard ->
+    monikersCards.forEach { card: MonikersCard ->
         writer.appendLine(
-            """(question: "${card.heading}", 
-                |answer: "${formatCardBack(card)}", 
-                |verse_ranges: "${formatCardVerseRanges(card)}", 
-                |footer: "${formatCardFooter(card)}"),""".trimMargin()
+            """(clue: "${card.clue}",
+                |description: "${card.description}",
+                |ref: "${card.verseRef}",
+                |points: "${card.points}"),""".trimMargin()
         )
     }
 
@@ -120,7 +126,7 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
         
         #for page_num in range(0, total_pages) {
           // Generate card fronts
-          page(width: 8.5in, height: 11in, margin: (x: 0.75in, y: 0.5in))[
+          page(height: 8.5in, width: 11in, margin: (y: 0.75in, x: 0.5in))[
             #align(center + horizon)[
               #block(
                 width: columns * card_width,
@@ -132,7 +138,14 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
                     if i < flashcards.len() {
                       let x = col * card_width
                       let y = row * card_height
-                      let content = text(size: 24pt, weight: "bold", flashcards.at(i).question)
+                      let content = stack(
+                        dir: ttb, // Top-to-bottom
+                        spacing: 0.25in, // Exactly 0.1in
+                        text(size: 14pt, weight: "bold", flashcards.at(i).clue),
+                        text(size: 12pt, flashcards.at(i).description),
+                        text(size: 10pt, "(" + flashcards.at(i).ref + ")"),
+                        text(size: 12pt, weight: "bold", flashcards.at(i).points + " POINTS"),
+                      )
                       flashcard(x, y, content)
                     }
                   }
@@ -141,32 +154,6 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
             ]
           ]
         
-          // Generate card backs
-          page(width: 8.5in, height: 11in, margin: (x: 0.75in, y: 0.5in))[
-            #align(center + horizon)[
-              #block(
-                width: columns * card_width,
-                height: rows * card_height,
-              )[
-                #for row in range(0, rows) {
-                  for col in range(0, columns) {
-                    let i = page_num * cards_per_page + row * columns + col
-                    if i < flashcards.len() {
-                      let x = (columns - col - 1) * card_width
-                      let y = row * card_height
-                      let content = stack(
-                        dir: ttb, // Top-to-bottom
-                        spacing: 0.25in, // Exactly 0.1in
-                        text(size: 24pt, weight: "bold", flashcards.at(i).answer),
-                        text(size: 18pt, flashcards.at(i).verse_ranges)
-                      )
-                      flashcard(x, y, content, footer: flashcards.at(i).footer)
-                    }
-                  }
-                }
-              ]
-            ]
-          ]
         }
     """.trimIndent())
 }
