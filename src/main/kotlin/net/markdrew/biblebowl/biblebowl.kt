@@ -30,7 +30,9 @@ import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
+import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -76,17 +78,22 @@ val FANCY_QUOTE_START = '‘'
 val FANCY_QUOTE_END = '’'
 val FANCY_APOSTROPHE = FANCY_QUOTE_END
 
-fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
-    stream.bufferedReader().useLines { linesSeq ->
+fun <T> InputStream.useTsvLines(headerLines: Int = 1, parseFun: (Sequence<List<String>>) -> T): T =
+    this.bufferedReader().useLines { linesSeq ->
         val headerOffset = headerLines.coerceAtLeast(0)
         val lineOffset = headerOffset + 1
-        linesSeq.drop(headerOffset).mapIndexed { index, line ->
+        parseFun(linesSeq.drop(headerOffset).mapIndexed { index, line ->
             try {
-                parseFun(line.split('\t'))
+                line.split('\t')
             } catch (e: Exception) {
                 throw Exception("Parse error on line ${index + lineOffset}: ${e.message}", e)
             }
-        }.toList()
+        })
+    }
+
+fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
+    stream.useTsvLines(headerLines) { tsvLinesSeq ->
+        tsvLinesSeq.map(parseFun).toList()
     }
 
 /**
@@ -160,3 +167,6 @@ fun fileForProduct(
 fun Path.showPdf(): Path = this.also {
     ProcessBuilder("evince", it.absolutePathString()).inheritIO().start()
 }
+
+fun getResource(resourceName: String): URL = (object {}.javaClass.getResource(resourceName)
+    ?: throw IOException("Could not find resource '$resourceName'!"))
