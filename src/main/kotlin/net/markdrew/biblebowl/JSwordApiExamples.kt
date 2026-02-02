@@ -37,7 +37,7 @@ import javax.xml.transform.TransformerException
  *
  * @author Joe Walker
  */
-class ApiExamples {
+class JSwordApiExamples {
 
     /**
      * Get a particular installed book by initials.
@@ -427,7 +427,7 @@ class ApiExamples {
         @JvmStatic
         @Throws(BookException::class, NoSuchKeyException::class, TransformerException::class, SAXException::class)
         fun main(args: Array<String>) {
-            val examples = ApiExamples()
+            val examples = JSwordApiExamples()
 
             examples.installBook()
             println("The plain text of Gen 1:1 is " + examples.getPlainText(BIBLE_NAME, "Gen 1:1"))
