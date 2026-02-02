@@ -3,7 +3,6 @@ package net.markdrew.biblebowl.flashcards
 import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRange
-import net.markdrew.biblebowl.model.toChapterRange
 
 /**
  * For normal, forward-direction headings flashcards

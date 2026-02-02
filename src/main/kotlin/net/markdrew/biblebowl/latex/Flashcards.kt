@@ -10,7 +10,6 @@ import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRange
-import net.markdrew.biblebowl.model.format
 import java.io.Writer
 import java.nio.file.Files
 import java.nio.file.Path

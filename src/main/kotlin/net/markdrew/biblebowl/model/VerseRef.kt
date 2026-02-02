@@ -3,32 +3,6 @@ package net.markdrew.biblebowl.model
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.generate.indices.formatWithCount
 
-typealias AbsoluteVerseNum = Int
-fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this)
-
-typealias VerseRange = ClosedRange<VerseRef>
-fun VerseRange.toChapterRange(): ChapterRange = start.chapterRef..endInclusive.chapterRef
-fun VerseRange.format(bookFormat: BookFormat, separator: String = "-", compact: Boolean = true): String {
-    val endString: String = when {
-        compact && endInclusive.chapterRef == start.chapterRef -> endInclusive.verse.toString()
-        compact && endInclusive.book == start.book -> endInclusive.format(NO_BOOK_FORMAT)
-        else -> endInclusive.format(bookFormat)
-    }
-    return "${start.format(bookFormat)}$separator${endString}"
-}
-fun parseVerseRange(verseRangeString: String): VerseRange {
-    val start: VerseRef
-    val end: VerseRef = try {
-        val split: List<String> = verseRangeString.split("-")
-        require(split.size <= 2) { "Too many range indicators (hyphens)!" }
-        start = VerseRef.parse(split.first())
-        if (split.size == 1) start else VerseRef.parse(split[1], start.chapterRef)
-    } catch (e: Exception) {
-        throw IllegalArgumentException("Unable to parse '$verseRangeString' as a verse range!", e)
-    }
-    return start..end
-}
-
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
     init {
@@ -47,6 +21,10 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
 
     fun format(bookFormat: BookFormat = BRIEF_BOOK_FORMAT): String = "${chapterRef.format(bookFormat)}:$verse"
 
+    override fun toString(): String = format()
+
+    operator fun rangeTo(endInclusive: VerseRef) = VerseRange(this, endInclusive)
+
     companion object {
         fun fromAbsoluteVerseNum(refNum: AbsoluteVerseNum): VerseRef =
             VerseRef(ChapterRef.fromAbsoluteChapterNum(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
@@ -58,7 +36,7 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
                     requireNotNull(defaultChapterRef) { "Unable to parse '$verseRefString' as a verse ref" },
                     parts.single().dropLastWhile { !it.isDigit() }.toInt()
                 )
-                2 -> parse(parts.last(), ChapterRef.parse(parts.first()))
+                2 -> parse(parts.last(), ChapterRef.parse(parts.first(), defaultChapterRef?.book))
                 else -> throw IllegalArgumentException("Unable to parse '$verseRefString' as a verse ref")
             }
         }
@@ -106,10 +84,4 @@ fun Iterable<WithCount<VerseRef>>.formatWithCounts(bookFormat: BookFormat): Stri
             .values
             .joinToString("; ", prefix = bookFormat(book) + "~")
         }.trim() // trim() removes leading space in the NO_BOOK_FORMAT case
-}
-
-fun main() {
-    val bcv = VerseRef.fromAbsoluteVerseNum(66013001)
-    println(bcv)
-    println(bcv.absoluteVerse)
 }

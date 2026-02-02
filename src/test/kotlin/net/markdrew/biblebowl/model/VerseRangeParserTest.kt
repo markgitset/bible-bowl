@@ -14,6 +14,8 @@ class VerseRangeParseTest {
         parseValidRange("  Matthew 5:3 - Matthew 5:9  ", Book.MAT, 5, 3, 5, 9)
         parseValidRange("Genesis 1:1-Matthew 1:1", Book.GEN, 1, 1, Book.MAT, 1, 1)
         parseValidRange("Joshua 2:18-21", Book.JOS, 2, 18, Book.JOS, 2, 21)
+        parseValidRange("Joshua 1:1-9", Book.JOS, 1, 1, Book.JOS, 1, 9)
+        parseValidRange("Joshua 16:1-17:13", Book.JOS, 16, 1, Book.JOS, 17, 13)
     }
 
     @Test
@@ -41,11 +43,11 @@ class VerseRangeParseTest {
     ) {
         assertEquals(
             VerseRef(expStartBook, expStartCh, expStartVerse)..VerseRef(expEndBook, expEndCh, expEndVerse),
-            parseVerseRange(input)
+            VerseRange.parse(input)
         )
     }
 
     fun parseInvalidRange(input: String) {
-        assertThrows(IllegalArgumentException::class.java) { parseVerseRange(input) }
+        assertThrows(IllegalArgumentException::class.java) { VerseRange.parse(input) }
     }
 }
