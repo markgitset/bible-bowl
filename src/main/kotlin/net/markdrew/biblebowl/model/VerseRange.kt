@@ -6,6 +6,7 @@ data class VerseRange(
 ) : ClosedRange<VerseRef> {
     fun toChapterRange(): ChapterRange = start.chapterRef..endInclusive.chapterRef
     fun format(bookFormat: BookFormat, separator: String = "-", compact: Boolean = true): String {
+        if (endInclusive == start) return start.format(bookFormat)
         val endString: String = when {
             compact && endInclusive.chapterRef == start.chapterRef -> endInclusive.verse.toString()
             compact && endInclusive.book == start.book -> endInclusive.format(NO_BOOK_FORMAT)

@@ -3,8 +3,8 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.flashcards.cram.CardWriter
 import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
     printExcerpts(numberExcerpts, studyData)
 
     val setName = studySet.simpleName
-    val cramNumberBlanksPath = Paths.get("$PRODUCTS_DIR_NAME/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
+    val cramNumberBlanksPath = Paths.get("$defaultProductsPath/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
     CardWriter(cramNumberBlanksPath).use {
         it.write(toCards(numberExcerpts, studyData))
     }
