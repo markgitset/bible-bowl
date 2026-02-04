@@ -3,6 +3,9 @@ package net.markdrew.biblebowl.model
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.generate.indices.formatWithCount
 
+typealias AbsoluteVerseNum = Int
+fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this)
+
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
     init {
@@ -84,4 +87,11 @@ fun Iterable<WithCount<VerseRef>>.formatWithCounts(bookFormat: BookFormat): Stri
             .values
             .joinToString("; ", prefix = bookFormat(book) + "~")
         }.trim() // trim() removes leading space in the NO_BOOK_FORMAT case
+}
+
+fun main() {
+    val bcv = VerseRef.fromAbsoluteVerseNum(66013001)
+    println(bcv)
+    println(bcv.absoluteVerse)
+    println(66160101.toVerseRef())
 }

@@ -278,11 +278,29 @@ class StudyData(
     fun headingEnclosing(verseRef: VerseRef): String? = headingCharRanges.valueEnclosing(verseIndex.getValue(verseRef))
 
     /**
+     * Returns the heading that fully includes the given verse range.  Note that some verse ranges may span more than
+     * one heading, and in such cases, this function returns null.
+     */
+    fun headingEnclosing(verseRange: VerseRange): String? =
+        headingCharRanges.valueEnclosing(
+            verseIndex.getValue(verseRange.start).first .. verseIndex.getValue(verseRange.endInclusive).last
+        )
+
+    /**
      * Returns the headings that intersect the given verse.  Usually, this is only one heading, but there are some
      * verses that span more than one heading.
      */
     fun headingsIntersecting(verseRef: VerseRef): List<String> =
         headingCharRanges.valuesIntersectedBy(verseIndex.getValue(verseRef))
+
+    /**
+     * Returns the headings that intersect the given verse range.  Usually, this is only one heading, but there are some
+     * verse ranges that span more than one heading.
+     */
+    fun headingsIntersecting(verseRange: VerseRange): List<String> =
+        headingCharRanges.valuesIntersectedBy(
+            verseIndex.getValue(verseRange.start).first .. verseIndex.getValue(verseRange.endInclusive).last
+        )
 
     fun chapterEnclosing(charRange: CharOffsetRange): ChapterRef? = chapters.valueEnclosing(charRange)
     fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)

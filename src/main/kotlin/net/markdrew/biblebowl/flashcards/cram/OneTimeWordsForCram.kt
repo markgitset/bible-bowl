@@ -2,8 +2,8 @@ package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
 fun writeCramOneTimeWords(
     studyData: StudyData,
     oneTimeWords: List<IntRange>,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     chapterRange: ChapterRange = studyData.chapterRange,
 ) {
     val simpleName = studyData.studySet.simpleName

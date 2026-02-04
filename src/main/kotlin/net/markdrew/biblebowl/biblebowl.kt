@@ -8,6 +8,7 @@ import net.markdrew.biblebowl.flashcards.cram.writeCramNameBlanks
 import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
 import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
+import net.markdrew.biblebowl.flashcards.writeEventCards
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsCsv
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
@@ -49,7 +50,7 @@ const val INDENT_POETRY_LINES = 4
 
 const val RAW_DATA_DIR_NAME = "raw-data"
 const val DATA_DIR_NAME = "data"
-const val PRODUCTS_DIR_NAME = "products"
+@Deprecated("Use defaultProductsPath instead") const val PRODUCTS_DIR_NAME = "products"
 val userHomeDir = Path(System.getProperty("user.home"))
 val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
 val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
@@ -140,6 +141,7 @@ fun main(args: Array<String>) {
     // Write Cram resources
     writeCramVerses(studyData)
     writeCramHeadings(studyData)
+    writeEventCards(studyData)
     writeCramReverseHeadings(studyData)
     writeCramOneTimeWords(studyData, oneTimeWords(studyData))
     val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
