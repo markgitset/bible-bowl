@@ -42,7 +42,7 @@ dependencies {
     implementation("org.apache.commons:commons-csv:1.10.0") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
 //    implementation("org.docx4j:docx4j-bundle:11.4.9")
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("com.github.ajalt.clikt:clikt:4.3.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
