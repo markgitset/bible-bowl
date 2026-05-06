@@ -86,7 +86,7 @@ class EsvIndexer(val studySet: StudySet) {
                 nextLineIsHeader = false
                 continue
             }
-            if (line.trim().matches("""_+""".toRegex())) {
+            if (line.trim().matches(HEADER_SEPARATOR_REGEX)) {
                 potentialPoetryStart = -1
                 nextLineIsHeader = true
                 if (buffer.isNotEmpty()) endHeading()
@@ -103,7 +103,7 @@ class EsvIndexer(val studySet: StudySet) {
 
 // TODO            TRYING TO FIGURE OUT HOW TO INCLUDE LAST SPACE OF A VERSE WITHIN THE VERSE'S RANGE
 
-            """\[(\d+)] ([^\[]+)""".toRegex().findAll(line).forEach { match ->
+            VERSE_START_REGEX.findAll(line).forEach { match ->
                 val (verseNum, verseText) = match.destructured
                 startVerse(currentChapter, verseNum.toInt(), verseText, noteOffsetsByNoteNumber)
             }
@@ -133,7 +133,7 @@ class EsvIndexer(val studySet: StudySet) {
 
     private fun appendTextContainingFootnoteRefs(text: String, noteOffsetsByNoteNumber: MutableMap<Int, Int>) {
         var lastStart = 0
-        """\((\d+)\)""".toRegex().findAll(text).forEach {
+        FOOTNOTE_REF_REGEX.findAll(text).forEach {
             buffer.append(text.substring(lastStart, it.range.first))
             val noteNumber = it.groupValues[1].toInt()
             // footnotes that occur *before* text are normally preceded by a space; when this happens we want to skip
@@ -154,11 +154,16 @@ class EsvIndexer(val studySet: StudySet) {
     }
 
     companion object {
+        private val HEADER_SEPARATOR_REGEX = """_+""".toRegex()
+        private val VERSE_START_REGEX = """\[(\d+)] ([^\[]+)""".toRegex()
+        private val FOOTNOTE_REF_REGEX = """\((\d+)\)""".toRegex()
+
         private data class Footnote(val noteNum: Int, val verseRef: String, val noteText: String) {
             companion object {
+                private val FOOTNOTE_PARSE_REGEX = """\s*\((\d+)\)\s+(\d+:\d+)\s+(.*?)\s*""".toRegex()
                 fun parse(line: String): Footnote {
                     val (noteNum, verseRef, noteText) =
-                        """\s*\((\d+)\)\s+(\d+:\d+)\s+(.*?)\s*""".toRegex().matchEntire(line)?.destructured
+                        FOOTNOTE_PARSE_REGEX.matchEntire(line)?.destructured
                             ?: throw Exception("Unable to parse footnote: $line")
                     return Footnote(noteNum.toInt(), verseRef, noteText)
                 }
