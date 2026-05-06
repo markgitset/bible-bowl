@@ -5,14 +5,17 @@ package net.markdrew.biblebowl.analysis
 import net.markdrew.biblebowl.DATA_DIR_NAME
 import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.flashcards.Card
-import net.markdrew.biblebowl.flashcards.cram.CardWriter
+import net.markdrew.biblebowl.flashcards.DelimitedExporter
+import net.markdrew.biblebowl.flashcards.FillInTheBlankFlashcard
+import net.markdrew.biblebowl.flashcards.FlashcardGenerator
+import net.markdrew.biblebowl.flashcards.HtmlStrategy
 import net.markdrew.biblebowl.flashcards.cram.FillInTheBlank
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import org.intellij.lang.annotations.Language
+import java.nio.file.Files
 import java.nio.file.Paths
 
 @Language("RegExp") const val NUMERAL_PATTERN = """\d{1,3}(?:,\d\d\d)*"""
@@ -50,10 +53,12 @@ fun main(args: Array<String>) {
 
     val setName = studySet.simpleName
     val cramNumberBlanksPath = Paths.get("$defaultProductsPath/$setName/cram").resolve("$setName-cram-number-blanks.tsv")
-    CardWriter(cramNumberBlanksPath).use {
-        it.write(toCards(numberExcerpts, studyData))
-    }
-
+    
+    val flashcards = toFlashcards(numberExcerpts, studyData)
+    val generator = FlashcardGenerator(HtmlStrategy(), DelimitedExporter("\t"))
+    val deck = generator.generateDeck(flashcards)
+    Files.createDirectories(cramNumberBlanksPath.parent)
+    Files.writeString(cramNumberBlanksPath, deck)
 }
 
 fun findNumbers(text: String): Sequence<Excerpt> =
@@ -66,7 +71,7 @@ fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
 
-private fun toCards(numberExcerpts: Sequence<Excerpt>, studyData: StudyData): List<Card> {
+private fun toFlashcards(numberExcerpts: Sequence<Excerpt>, studyData: StudyData): List<FillInTheBlankFlashcard> {
     return numberExcerpts.groupBy { excerpt -> Pair(
         studyData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception(),
         excerpt.excerptText.lowercase()
@@ -75,6 +80,6 @@ private fun toCards(numberExcerpts: Sequence<Excerpt>, studyData: StudyData): Li
             sentTextPair.first,
             numExcerpts,
             studyData.verseEnclosing(sentTextPair.first.excerptRange) ?: throw Exception()
-        ).toCramCard()
+        ).toFlashcard()
     }
 }

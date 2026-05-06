@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.typst
 
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.flashcards.HeadingCard
+import net.markdrew.biblebowl.flashcards.HeadingFlashcard
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.Heading
 import net.markdrew.biblebowl.model.MonikersCard
@@ -47,7 +47,7 @@ private fun indexOfHeadingInChapter(verseRange: VerseRange, allHeadings: List<He
     return ('A' + inChapterOffset).toString()
 }
 
-private fun formatCardBack(card: HeadingCard): String =
+private fun formatCardBack(card: HeadingFlashcard): String =
     if (card.chapterRanges.size == 1 || card.chapterRanges.first().start.book != card.chapterRanges.last().start.book) {
         card.chapterRanges.joinToString(""" & """) {
             it.format(FULL_BOOK_FORMAT)
@@ -58,11 +58,11 @@ private fun formatCardBack(card: HeadingCard): String =
         }
     }
 
-private fun formatCardVerseRanges(card: HeadingCard): String = card.verseRanges.joinToString("""\n""") {
+private fun formatCardVerseRanges(card: HeadingFlashcard): String = card.verseRanges.joinToString("""\n""") {
     "(${indexOfHeadingInChapter(it, card.allHeadings)}) ${it.format(NO_BOOK_FORMAT)} "
 }
 
-private fun formatCardFooter(card: HeadingCard): String =
+private fun formatCardFooter(card: HeadingFlashcard): String =
     card.indices.joinToString(" & ") + " of " + card.allHeadings.size
 
 fun writeMonikers(writer: Writer, monikersCards: List<MonikersCard>) {

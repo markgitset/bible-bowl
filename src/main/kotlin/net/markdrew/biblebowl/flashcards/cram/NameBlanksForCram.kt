@@ -6,17 +6,19 @@ import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.printExcerpts
 import net.markdrew.biblebowl.analysis.printNameFrequencies
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.flashcards.Card
+import net.markdrew.biblebowl.flashcards.DelimitedExporter
+import net.markdrew.biblebowl.flashcards.FlashcardGenerator
+import net.markdrew.biblebowl.flashcards.HtmlStrategy
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
+import java.nio.file.Files
 import java.nio.file.Paths
 
 fun main(args: Array<String>) {
-
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
@@ -30,12 +32,6 @@ fun main(args: Array<String>) {
     for (chapterRange in chapterChunks) {
         writeCramNameBlanks(studyData, nameExcerpts, chapterRange)
     }
-//
-//    val cramNameBlanksPath = Paths.get("$PRODUCTS_DIR/$bookName/cram").resolve("$bookName-cram-name-blanks.tsv")
-//    CardWriter(cramNameBlanksPath).use {
-//        it.write(toCards(nameExcerpts, studyData))
-//    }
-
 }
 
 fun writeCramNameBlanks(
@@ -48,19 +44,22 @@ fun writeCramNameBlanks(
     val cramNameBlanksPath = Paths.get("$defaultProductsPath/$bookName/cram")
         .resolve("$bookName-cram-name-blanks$scopeString.tsv")
     val validCharRange: IntRange = studyData.charRangeFromChapterRange(chapterRange)
-    CardWriter(cramNameBlanksPath).use { cardWriter ->
-        cardWriter.write(toCards(nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }, studyData))
-    }
+
+    val flashcards = nameExcerpts.filter { validCharRange.encloses(it.excerptRange) }
+        .groupBy { excerpt ->
+            studyData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception()
+        }.map { (sentRange, nameExcerpts) ->
+            FillInTheBlank(
+                sentRange,
+                nameExcerpts,
+                studyData.verseEnclosing(sentRange.excerptRange) ?: throw Exception()
+            ).toFlashcard()
+        }
+
+    val generator = FlashcardGenerator(HtmlStrategy(), DelimitedExporter("\t"))
+    val deck = generator.generateDeck(flashcards)
+    Files.createDirectories(cramNameBlanksPath.parent)
+    Files.writeString(cramNameBlanksPath, deck)
+
     println("Wrote $cramNameBlanksPath")
 }
-
-private fun toCards(nameExcerpts: Sequence<Excerpt>, studyData: StudyData): List<Card> =
-    nameExcerpts.groupBy { excerpt ->
-        studyData.singleVerseSentenceContext(excerpt.excerptRange) ?: throw Exception()
-    }.map { (sentRange, nameExcerpts) ->
-        FillInTheBlank(
-            sentRange,
-            nameExcerpts,
-            studyData.verseEnclosing(sentRange.excerptRange) ?: throw Exception()
-        ).toCramCard()
-    }

@@ -10,6 +10,10 @@ import net.markdrew.biblebowl.analysis.ORDINALS
 import net.markdrew.biblebowl.analysis.findNames
 import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.defaultProductsPath
+import net.markdrew.biblebowl.flashcards.AnkiExporter
+import net.markdrew.biblebowl.flashcards.FlashcardGenerator
+import net.markdrew.biblebowl.flashcards.HtmlStrategy
+import net.markdrew.biblebowl.flashcards.WordFlashcard
 import net.markdrew.biblebowl.flashcards.cram.highlightVerse
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.ChapterRange
@@ -19,12 +23,9 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.encloses
 import java.io.File
-import java.io.PrintWriter
+import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.text.RegexOption.IGNORE_CASE
-
-//fun highlightVerse(target: String, verse: String): String =
-//    verse.replace(Regex("""\b$target\b"""), "<b><u>$0</u></b>")
 
 fun main(args: Array<String>) {
     println(BANNER)
@@ -32,7 +33,6 @@ fun main(args: Array<String>) {
     val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
 
     val oneTimeWordRanges: List<IntRange> = oneTimeWords(studyData)
-    val oneTimeWords: List<String> = oneTimeWordRanges.map { studyData.text.substring(it) }
     writeAnkiOneTimeWords(studyData, oneTimeWordRanges)
     writeAnkiOneTimeWords(studyData, oneTimeWordRanges, predicateName = "possessives") { it.any { c -> c in "'’" } }
     writeAnkiOneTimeWords(studyData, oneTimeWordRanges, predicateName = "fractions") {
@@ -58,26 +58,7 @@ fun main(args: Array<String>) {
     writeAnkiOneTimeWords(studyData, oneTimeWordRanges, predicateName = "other") {
         !it.matches(NUMBER_REGEX) && it !in names && it.none { c -> c in "'’" }
     }
-//    removeAndDescribe("Everything else", words) { true }
-    println("%,6d Total one time words".format(oneTimeWords.size))
-
-//    val stepByNChapters = 10
-//    val oneTimeWords: List<IntRange> = oneTimeWords(studyData)
-//    val chapterChunks: List<ChapterRange> = studyData.chapters.values.chunked(stepByNChapters) { it.first()..it.last() }
-//    for (chapterRange in chapterChunks) {
-//        writeCramOneTimeWords(studyData, oneTimeWords, chapterRange)
-//    }
-}
-
-fun removeAndDescribe(label: String, words: List<String>, samples: Int = 20, predicate: (String) -> Boolean): List<String> {
-    val (removed, kept) = words.partition(predicate)
-    println("%,6d $label".format(removed.size))
-
-    removed.chunked(10).forEach {
-        print("          ")
-        println(it.joinToString("") { word -> "%-15s".format(word) })
-    }
-    return kept
+    println("%,6d Total one time words".format(oneTimeWordRanges.size))
 }
 
 fun writeAnkiOneTimeWords(
@@ -94,31 +75,24 @@ fun writeAnkiOneTimeWords(
         "$defaultProductsPath/$simpleName/anki",
         "$simpleName-anki-one-words$scopeString$predicateString.tsv"
     ).also { it.parentFile.mkdirs() }
-    uniqueWordsFile.printWriter().use { writer ->
-        writeCards(writer, oneTimeWords, studyData, chapterRange, predicate)
-    }
-    println("Wrote $uniqueWordsFile")
-}
 
-private fun writeCards(
-    writer: PrintWriter,
-    oneTimeWords: List<IntRange>,
-    studyData: StudyData,
-    chapterRange: ChapterRange?,
-    predicate: (String) -> Boolean = { true }
-) {
-    val words: List<IntRange> =
-        if (chapterRange == null) oneTimeWords
-        else oneTimeWords.filter { studyData.charRangeFromChapterRange(chapterRange).encloses(it) }
-    words.forEach { wordRange ->
-        val word: String = studyData.text.substring(wordRange)
-        if (predicate(word)) {
-            val (verseRange, verseRef) = studyData.verses.entryEnclosing(wordRange) ?: throw Exception()
-            val verseText: String = studyData.text.substring(verseRange)
-            val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
-            val heading = studyData.headingCharRanges.valueEnclosing(wordRange)
-            val verseRefString = verseRef.format(FULL_BOOK_FORMAT)
-            writer.println(listOf(word, highlightedVerse, heading, verseRefString).joinToString("\t"))
-        }
+    val words: List<IntRange> = oneTimeWords.filter { 
+        studyData.charRangeFromChapterRange(chapterRange).encloses(it) && predicate(studyData.text.substring(it))
     }
+
+    val flashcards = words.map { wordRange ->
+        val (verseRange, verseRef) = studyData.verses.entryEnclosing(wordRange) ?: throw Exception()
+        val verseText: String = studyData.text.substring(verseRange)
+        val word = studyData.text.substring(wordRange)
+        val highlightedVerse = highlightVerse(word, verseText.normalizeWS())
+        val heading = studyData.headingCharRanges.valueEnclosing(wordRange)
+        val verseRefString = verseRef.format(FULL_BOOK_FORMAT)
+        WordFlashcard(word, highlightedVerse, verseRefString, heading)
+    }
+
+    val generator = FlashcardGenerator(HtmlStrategy(), AnkiExporter())
+    val deck = generator.generateDeck(flashcards)
+    Files.writeString(uniqueWordsFile.toPath(), deck)
+
+    println("Wrote $uniqueWordsFile")
 }

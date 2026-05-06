@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.latex
 
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.flashcards.HeadingCard
+import net.markdrew.biblebowl.flashcards.HeadingFlashcard
 import net.markdrew.biblebowl.latex.Flashcards.CARDS_PER_PAGE
 import net.markdrew.biblebowl.latex.Flashcards.CARDS_PER_ROW
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -92,21 +92,21 @@ fun writeFlashcards(writer: Writer, studyData: StudyData) {
 
     """.trimIndent())
 
-    HeadingCard.fromStudyData(studyData)
+    HeadingFlashcard.fromStudyData(studyData)
         .chunked(CARDS_PER_PAGE) {
             // to line up the last card, we need full rows on each page
             val padCount = (CARDS_PER_ROW - (it.size % CARDS_PER_ROW)) % CARDS_PER_ROW
             // WARNING: internal buffer is reused, so it.toList() is necessary to create a new list
-            if (padCount > 0) it + List(padCount) { HeadingCard.EMPTY } else it.toList()
+            if (padCount > 0) it + List(padCount) { HeadingFlashcard.EMPTY } else it.toList()
         }
         .take(1)
-        .forEachIndexed { page, pageOfCards: List<HeadingCard> -> writePageOfCards(writer, page, pageOfCards) }
+        .forEachIndexed { page, pageOfCards: List<HeadingFlashcard> -> writePageOfCards(writer, page, pageOfCards) }
 
     // Write the end matter
     writer.appendLine("""\end{document}""")
 }
 
-private fun writePageOfCards(writer: Writer, page: Int, pageOfCards: List<HeadingCard>) {
+private fun writePageOfCards(writer: Writer, page: Int, pageOfCards: List<HeadingFlashcard>) {
 
     // Front of cards
     if (page > 0) writer.appendLine("\n\\newpage\n")
@@ -137,7 +137,7 @@ private fun writePageOfCards(writer: Writer, page: Int, pageOfCards: List<Headin
     )
 }
 
-private fun formatCardFront(card: HeadingCard): String =
+private fun formatCardFront(card: HeadingFlashcard): String =
     """\LARGE ${card.heading.takeIf { card.heading.isNotEmpty() } ?: "\\nobreakspace" }"""
 
 private fun indexOfHeadingInChapter(verseRange: VerseRange, allHeadings: List<Heading>): String {
@@ -159,8 +159,8 @@ private fun indexOfHeadingInChapter(verseRange: VerseRange, allHeadings: List<He
 //    return ('a' + inChapter).toString()
 }
 
-private fun formatCardBack(card: HeadingCard): String {
-    if (card == HeadingCard.EMPTY) return """\cardback{\nobreakspace}"""
+private fun formatCardBack(card: HeadingFlashcard): String {
+    if (card == HeadingFlashcard.EMPTY) return """\cardback{\nobreakspace}"""
     val answer = card.verseRanges.joinToString(" \\& \\\\\n") {
         "${it.format(FULL_BOOK_FORMAT)} (${indexOfHeadingInChapter(it, card.allHeadings)})"
     }
@@ -179,7 +179,7 @@ private fun formatCardBack(card: HeadingCard): String {
 //        \vspace{2em}
 }
 
-private fun formatContextHeadings(card: HeadingCard): String {
+private fun formatContextHeadings(card: HeadingFlashcard): String {
     return card.verseRanges.map { verseRange ->
         """
             \vspace{1em}
