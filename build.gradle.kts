@@ -6,25 +6,6 @@ plugins {
     application
 }
 
-repositories {
-    mavenCentral()
-
-    maven("https://maven.pkg.github.com/markgitset/chupacabra") {
-        content {
-            includeGroup("net.markdrew")
-            credentials {
-                username = providers.gradleProperty("gpr.user").getOrNull()
-                password = providers.gradleProperty("gpr.key").getOrNull()
-            }
-        }
-    }
-    maven("https://jitpack.io") {
-        content {
-            excludeGroup("net.markdrew")
-        }
-    }
-}
-
 // set the project version from tags and commits in Git repository
 val gitVersion: groovy.lang.Closure<String> by extra
 version = gitVersion()
@@ -46,7 +27,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
     implementation("org.apache.lucene:lucene-analyzers-common:8.11.3")
-    implementation("net.markdrew:chupacabra-core:v0.1.0")
+    implementation("com.github.markgitset:chupacabra:v0.1.0")
     implementation("org.apache.opennlp:opennlp-tools:1.9.4")
     implementation("org.apache.lucene:lucene-core:9.10.0")
 //    implementation("com.robrua.nlp:easy-bert:1.0.3")
