@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.BookFormat
@@ -11,7 +12,8 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -26,7 +28,7 @@ fun main(args: Array<String>) {
     for (throughChapter in studyData.chapterRefs.drop(5)) {
         val practice: PracticeContent = studyData.practice(throughChapter)
         for (seed in seeds) {
-            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed)).latexToPdf()
+            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed))
         }
     }
 }
@@ -73,16 +75,21 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<Chapter
     val correctChoice: Int = choices.indexOf(question.answers.first()).let { if (it < 0) noneIndex else it }
 }
 
-fun writeRound5Events(practiceTest: PracticeTest, directory: File? = null): File {
-    val texFile: File = practiceTest.buildTexFileName(directory)
+fun writeRound5Events(
+    practiceTest: PracticeTest,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+): Path? {
+    // not enough chapters in practice content to build a reasonable practice test
+    if (practiceTest.content.coveredChapters.size < 3) return null
+
+    val texFile: Path = practiceTest.buildTexFileName(productsDir)
 
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
-    texFile.writer().use { writer ->
+    Files.newBufferedWriter(texFile).use { writer ->
         toLatexInWhatChapter(writer, practiceTest, headingsToFind)
     }
 
-    println("Wrote $texFile")
-    return texFile
+    return texFile.latexToPdf()
 }
 
 fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion> {

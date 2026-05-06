@@ -8,6 +8,7 @@ import net.markdrew.biblebowl.flashcards.cram.writeCramNameBlanks
 import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
 import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
 import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
+import net.markdrew.biblebowl.flashcards.writeEventCards
 import net.markdrew.biblebowl.generate.indices.writeFullIndex
 import net.markdrew.biblebowl.generate.indices.writeHeadingsCsv
 import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
@@ -18,7 +19,7 @@ import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
 import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
 import net.markdrew.biblebowl.generate.practice.PracticeTest
 import net.markdrew.biblebowl.generate.practice.Round
-import net.markdrew.biblebowl.generate.practice.writeFindTheVerse
+import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
 import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.model.Excerpt
@@ -29,17 +30,33 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
-import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
+import java.net.URL
+import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.Path
+import kotlin.io.path.absolutePathString
 
 const val INDENT_POETRY_LINES = 4
 
-const val RAW_DATA_DIR = "raw-data"
-const val DATA_DIR = "data"
-const val PRODUCTS_DIR = "products"
+//val userHomeDir = Path(System.getProperty("user.home"))
+//val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
+//val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR)
+//val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR)
+//val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR)
+
+const val RAW_DATA_DIR_NAME = "raw-data"
+const val DATA_DIR_NAME = "data"
+@Deprecated("Use defaultProductsPath instead") const val PRODUCTS_DIR_NAME = "products"
+val userHomeDir = Path(System.getProperty("user.home"))
+val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
+val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
+val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR_NAME)
+val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR_NAME)
+
 const val BANNER = """
   ______                        ____  _ __    __        ____                __
  /_  __/__  _  ______ ______   / __ )(_) /_  / /__     / __ )____ _      __/ /
@@ -62,17 +79,22 @@ val FANCY_QUOTE_START = '‘'
 val FANCY_QUOTE_END = '’'
 val FANCY_APOSTROPHE = FANCY_QUOTE_END
 
-fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
-    stream.bufferedReader().useLines { linesSeq ->
+fun <T> InputStream.useTsvLines(headerLines: Int = 1, parseFun: (Sequence<List<String>>) -> T): T =
+    this.bufferedReader().useLines { linesSeq ->
         val headerOffset = headerLines.coerceAtLeast(0)
         val lineOffset = headerOffset + 1
-        linesSeq.drop(headerOffset).mapIndexed { index, line ->
+        parseFun(linesSeq.drop(headerOffset).mapIndexed { index, line ->
             try {
-                parseFun(line.split('\t'))
+                line.split('\t')
             } catch (e: Exception) {
                 throw Exception("Parse error on line ${index + lineOffset}: ${e.message}", e)
             }
-        }.toList()
+        })
+    }
+
+fun <T> parseTsv(stream: InputStream, headerLines: Int = 1, parseFun: (List<String>) -> T): List<T> =
+    stream.useTsvLines(headerLines) { tsvLinesSeq ->
+        tsvLinesSeq.map(parseFun).toList()
     }
 
 /**
@@ -85,14 +107,14 @@ fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
 
     // load the indices (or download and create them, if not found)
-    val dataPath: Path = Paths.get(DATA_DIR)
+    val dataPath: Path = Paths.get(DATA_DIR_NAME)
     val studyData = try {
         StudyData.readData(studySet, dataPath)
     } catch (e: FileNotFoundException) {
         println("File not found: ${e.message}")
         println("Downloading and indexing the study set for ${studySet.name}...")
         val indexer = EsvIndexer(studySet)
-        val chapterPassages: Sequence<Passage> = EsvClient().bookByChapters(studySet, forceDownload = false)
+        val chapterPassages: Sequence<Passage> = EsvClient(Path.of(RAW_DATA_DIR_NAME)).bookByChapters(studySet, forceDownload = false)
         indexer.indexBook(chapterPassages).also {
             it.writeData(dataPath)
         }
@@ -119,6 +141,7 @@ fun main(args: Array<String>) {
     // Write Cram resources
     writeCramVerses(studyData)
     writeCramHeadings(studyData)
+    writeEventCards(studyData)
     writeCramReverseHeadings(studyData)
     writeCramOneTimeWords(studyData, oneTimeWords(studyData))
     val nameExcerpts: Sequence<Excerpt> = findNames(studyData, "god", "jesus", "christ")
@@ -127,14 +150,25 @@ fun main(args: Array<String>) {
 
     // Write practice tests
     val content = PracticeContent(studyData)
-    writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50))
+    writeRound1VerseFind(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50))
     writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = 50))
     writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50))
 }
 
-fun fileForProduct(studyData: StudyData, productDirName: String, productName: String): File {
+fun fileForProduct(
+    studyData: StudyData,
+    productDirName: String,
+    productName: String,
+    productsDir: Path,
+): Path {
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/$productDirName").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
-    return file
+    val dir = productsDir.resolve(simpleName, productDirName).also { Files.createDirectories(it) }
+    return dir.resolve("$simpleName-${productName.lowercase().replace(' ', '-')}")
 }
+
+fun Path.showPdf(): Path = this.also {
+    ProcessBuilder("evince", it.absolutePathString()).inheritIO().start()
+}
+
+fun getResource(resourceName: String): URL = (object {}.javaClass.getResource(resourceName)
+    ?: throw IOException("Could not find resource '$resourceName'!"))

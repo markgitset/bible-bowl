@@ -1,0 +1,14 @@
+This data was generated using Grok.  Asked for a prompt for future use, Grok responded with something similar to this:
+
+Provide a comprehensive list of every significant event in the Bible Book of [BOOK NAME], with the following strict requirements:
+
+• Do not combine separate narrative moments into a single entry; break events into the smallest logical, distinct units that still represent meaningful actions, speeches, divine interventions, or transitions in the text.
+• Describe each event using exactly one complete, grammatically correct sentence written in the present tense or simple past tense as appropriate to the narrative style.
+• Output a table with two columns: Verse Range, and Event Description.
+• In the Verse Range column, include the book name followed by the precise chapter and verse range (e.g., [BOOK NAME] 1:1–5).
+• Ensure the list covers the entire book from beginning to end without omission of any major or minor narrative development.
+• Strictly maintain the order of the events as they occur in the text.
+• Do not include introductory or concluding commentary outside the table; present only the table.
+• The final sentence of your response should read exactly: “This list contains [total number] distinct events, fully covering the entire narrative of the Book of [BOOK NAME].”
+
+Book to process: [BOOK NAME]

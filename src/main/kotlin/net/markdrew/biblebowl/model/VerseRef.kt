@@ -6,17 +6,6 @@ import net.markdrew.biblebowl.generate.indices.formatWithCount
 typealias AbsoluteVerseNum = Int
 fun AbsoluteVerseNum.toVerseRef(): VerseRef = VerseRef.fromAbsoluteVerseNum(this)
 
-typealias VerseRange = ClosedRange<VerseRef>
-fun VerseRange.toChapterRange(): ChapterRange = start.chapterRef..endInclusive.chapterRef
-fun VerseRange.format(bookFormat: BookFormat, separator: String = "-", compact: Boolean = true): String {
-    val endString: String = when {
-        compact && endInclusive.chapterRef == start.chapterRef -> endInclusive.verse.toString()
-        compact && endInclusive.book == start.book -> endInclusive.format(NO_BOOK_FORMAT)
-        else -> endInclusive.format(bookFormat)
-    }
-    return "${start.format(bookFormat)}$separator${endString}"
-}
-
 data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<VerseRef> {
 
     init {
@@ -33,11 +22,27 @@ data class VerseRef(val chapterRef: ChapterRef, val verse: Int) : Comparable<Ver
 
     override fun compareTo(other: VerseRef): Int = absoluteVerse.compareTo(other.absoluteVerse)
 
-    fun format(bookFormat: BookFormat): String = "${chapterRef.format(bookFormat)}:$verse"
+    fun format(bookFormat: BookFormat = BRIEF_BOOK_FORMAT): String = "${chapterRef.format(bookFormat)}:$verse"
+
+    override fun toString(): String = format()
+
+    operator fun rangeTo(endInclusive: VerseRef) = VerseRange(this, endInclusive)
 
     companion object {
         fun fromAbsoluteVerseNum(refNum: AbsoluteVerseNum): VerseRef =
             VerseRef(ChapterRef.fromAbsoluteChapterNum(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
+
+        fun parse(verseRefString: String, defaultChapterRef: ChapterRef? = null): VerseRef {
+            val parts: List<String> = verseRefString.split(":")
+            return when (parts.size) {
+                1 -> VerseRef(
+                    requireNotNull(defaultChapterRef) { "Unable to parse '$verseRefString' as a verse ref" },
+                    parts.single().dropLastWhile { !it.isDigit() }.toInt()
+                )
+                2 -> parse(parts.last(), ChapterRef.parse(parts.first(), defaultChapterRef?.book))
+                else -> throw IllegalArgumentException("Unable to parse '$verseRefString' as a verse ref")
+            }
+        }
     }
 
 }
@@ -88,4 +93,5 @@ fun main() {
     val bcv = VerseRef.fromAbsoluteVerseNum(66013001)
     println(bcv)
     println(bcv.absoluteVerse)
+    println(66160101.toVerseRef())
 }

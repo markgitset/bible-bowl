@@ -1,17 +1,17 @@
 package ws
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.toVerseRef
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
 import net.markdrew.biblebowl.ws.PassageMeta
 import net.markdrew.chupacabra.core.DisjointRangeMap
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 
-internal class EsvIndexerTest {
+internal class EsvIndexerTest : FunSpec({
 
-    private val testMeta = PassageMeta(
+    val testMeta = PassageMeta(
         canonical = "Genesis 1:1–10",
         chapterStart = listOf(1001001, 1001031),
         chapterEnd = listOf(1001001, 1001031),
@@ -20,7 +20,7 @@ internal class EsvIndexerTest {
         prevChapter = null,
         nextChapter = listOf(1002001, 1002025)
     )
-    private val testPassage = Passage(
+    val testPassage = Passage(
         canonical = "Genesis 1:1–10",
         range = 1001001..1001010,
         meta = testMeta,
@@ -63,13 +63,12 @@ internal class EsvIndexerTest {
             (8) 1:26 The Hebrew word for *man* (*adam*) is the generic term for mankind and becomes the proper name *Adam*
         """.trimIndent())
 
-    @Test
-    fun indexChapter() {
+    test("indexChapter") {
         val indexer = EsvIndexer(StandardStudySet.GENESIS.set)
         with(indexer.indexBook(sequenceOf(testPassage))) {
 
             //println(text)
-            assertEquals("""
+            text shouldBe """
                   In the beginning, God created the heavens and the earth. The earth was without form and void, and darkness was over the face of the deep. And the Spirit of God was hovering over the face of the waters.
                   And God said, “Let there be light,” and there was light. And God saw that the light was good. And God separated the light from the darkness. God called the light Day, and the darkness he called Night. And there was evening and there was morning, the first day.
                   And God said, “Let there be an expanse in the midst of the waters, and let it separate the waters from the waters.” And God made the expanse and separated the waters that were under the expanse from the waters that were above the expanse. And it was so. And God called the expanse Heaven. And there was evening and there was morning, the second day.
@@ -81,11 +80,10 @@ internal class EsvIndexerTest {
                         in the image of God he created him;
                         male and female he created them.
                       And God blessed them. And God said to them, “Be fruitful and multiply and fill the earth and subdue it, and have dominion over the fish of the sea and over the birds of the heavens and over every living thing that moves on the earth.”
-            """.trimIndent() + "\n", text)
+            """.trimIndent() + "\n"
 
             //println(verses)
-            assertEquals(
-                DisjointRangeMap(
+            verses shouldBe DisjointRangeMap(
                     0..55 to 1001001,
                     57..200 to 1001002,
                     202..257 to 1001003,
@@ -100,13 +98,10 @@ internal class EsvIndexerTest {
                     1118..1371 to 1001026,
                     1375..1491 to 1001027,
                     1497..1730 to 1001028
-                ).mapValues { (_, verseNum) -> verseNum.toVerseRef() },
-                verses
-            )
+                ).mapValues { (_, verseNum) -> verseNum.toVerseRef() }
 
             //println(footnotes)
-            assertEquals(
-                mapOf(
+            footnotes shouldBe mapOf(
                     501 to "Or *a canopy*; also verses 7, 8, 14, 15, 17, 20",
                     591 to "Or *fashioned*; also verse 16",
                     751 to "Or *Sky*; also verses 9, 14, 15, 17, 20, 26, 28, 30; 2:1",
@@ -115,9 +110,7 @@ internal class EsvIndexerTest {
                     1092 to "test note 2",
                     1098 to "test note 3",
                     1149 to "The Hebrew word for *man* (*adam*) is the generic term for mankind and becomes the proper name *Adam*"
-                ),
-                footnotes
-            )
+                )
         }
     }
-}
+})

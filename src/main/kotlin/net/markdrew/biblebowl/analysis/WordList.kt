@@ -7,6 +7,7 @@ enum class WordList(private val areNames: Boolean = false) {
     FOODS,
     MEN(areNames = true),
     WOMEN(areNames = true),
+    PLACES(areNames = true),
     ANGELS_DEMONS(areNames = true),
     ;
 

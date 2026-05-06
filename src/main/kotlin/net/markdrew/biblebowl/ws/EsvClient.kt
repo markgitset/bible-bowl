@@ -1,7 +1,6 @@
 package net.markdrew.biblebowl.ws
 
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
-import net.markdrew.biblebowl.RAW_DATA_DIR
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
@@ -13,7 +12,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.file.Path
-import java.nio.file.Paths
 import kotlin.io.path.createDirectories
 import kotlin.io.path.isReadable
 import kotlin.io.path.readText
@@ -56,6 +54,7 @@ import kotlin.time.Duration.Companion.seconds
  * Must be an integer. Default 0.
  */
 class EsvClient(
+    private val rawDataDir: Path,
     private val includePassageReferences: Boolean = false,
     private val includeFirstVerseNumbers: Boolean = true,
     private val includeVerseNumbers: Boolean = true,
@@ -75,7 +74,8 @@ class EsvClient(
     private val indentDeclares: Int = 40,
     private val indentPsalmDoxology: Int = 30,
     private val lineLength: Int = 0,
-    private val esvService: EsvService = EsvService.create()) {
+    private val esvService: EsvService = EsvService.create(),
+) {
 
     fun query(query: String): Call<PassageText> = esvService.text(query,
         includePassageReferences,
@@ -166,7 +166,7 @@ class EsvClient(
 
     private fun cachePathFor(chapterRef: ChapterRef): Path {
         val bookDirName: String = "%02d-${chapterRef.bookName}".format(chapterRef.book.number)
-        return Paths.get(RAW_DATA_DIR).resolve(bookDirName).resolve(chapterRef.chapter.toString())
+        return rawDataDir.resolve(bookDirName).resolve(chapterRef.chapter.toString())
     }
 
     private fun rangeByChapters(

@@ -1,41 +1,69 @@
 package net.markdrew.biblebowl.analysis
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.shouldBe
 import net.markdrew.biblebowl.model.Excerpt
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 
-internal class FindNumbersKtTest {
+internal class FindNumbersKtTest : FunSpec({
 
-    private val twoToNine =
+    val twoToNine =
         listOf("two", "three", "four", "five", "six", "seven", "eight", "nine")
-    private val oneToNine = listOf("one") + twoToNine
-    private val twoToTwelve =
+    val oneToNine = listOf("one") + twoToNine
+    val twoToTwelve =
         twoToNine + listOf("ten", "eleven", "twelve")
-    private val teens =
+    val teens =
         listOf("thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
-    private val tens =
+    val tens =
         listOf("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
 
-    @Test
-    fun `findNumbers finds simple numbers`() {
+    fun assertRegexMatch(regex: String, shouldMatch: List<String>) {
+        val exp = regex.toRegex()
+        for (s in shouldMatch) {
+            exp.matches(s).shouldBeTrue()
+        }
+    }
+
+    fun assertNoRegexMatch(regex: String, shouldNotMatch: List<String>) {
+        val exp = regex.toRegex()
+        for (s in shouldNotMatch) {
+            exp.matches(s).shouldBeFalse()
+        }
+    }
+
+    fun assertFound(numbers: List<String>, prefix: String = "There were ", suffix: String = " dogs.") {
+        for (number in numbers) {
+            findNumbers("$prefix$number$suffix").toList() shouldBe listOf(Excerpt(number, prefix.length until prefix.length + number.length))
+        }
+    }
+
+    /** Doesn't check found ranges, but does check that the expected number strings were found */
+    fun assertFound(text: String, vararg expectedNumberStrings: String) {
+        findNumbers(text).map { it.excerptText }.toList() shouldBe expectedNumberStrings.toList()
+    }
+
+    fun assertNotFound(vararg noNumbers: String) {
+        for (s in noNumbers) {
+            val foundNumbers = findNumbers(s).toList()
+            foundNumbers.isEmpty().shouldBeTrue()
+        }
+    }
+
+    test("findNumbers finds simple numbers") {
         assertFound(twoToTwelve)
     }
 
-    @Test
-    fun `findNumbers finds teen numbers`() {
+    test("findNumbers finds teen numbers") {
         assertRegexMatch(TEENS, teens)
         assertFound(teens)
     }
 
-    @Test
-    fun `findNumbers finds hyphenated numbers`() {
+    test("findNumbers finds hyphenated numbers") {
         assertFound(tens.flatMap { ten -> oneToNine.map { "$ten-$it" } })
     }
 
-    @Test
-    fun `findNumbers finds hyphenated fractions`() {
+    test("findNumbers finds hyphenated fractions") {
         val fractions = listOf(
             "half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"
         ).map { "one-$it" }
@@ -45,8 +73,7 @@ internal class FindNumbersKtTest {
         assertFound(fractions)
     }
 
-    @Test
-    fun `findNumbers finds non-hyphenated fractions`() {
+    test("findNumbers finds non-hyphenated fractions") {
         val fractions = listOf(
             "half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"
         ).map { "four ${it}s" }
@@ -56,14 +83,12 @@ internal class FindNumbersKtTest {
         assertFound(fractions)
     }
 
-    @Test
-    fun `findNumbers finds multiple of 10 numbers`() {
+    test("findNumbers finds multiple of 10 numbers") {
         assertRegexMatch(TENS, tens)
         assertFound(tens)
     }
 
-    @Test
-    fun `findNumbers finds simple ordinals`() {
+    test("findNumbers finds simple ordinals") {
         val simpleOrdinals = listOf(
             "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
             "tenth", "eleventh", "twelfth"
@@ -73,31 +98,27 @@ internal class FindNumbersKtTest {
         assertNotFound("first")
     }
 
-    @Test
-    fun `findNumbers finds teen ordinals`() {
+    test("findNumbers finds teen ordinals") {
         val teenOrdinals = teens.map { "${it}th" }
 //        assertRegexMatch(TEEN_ORDINALS, teenOrdinals)
         assertRegexMatch(ORDINALS, teenOrdinals)
         assertFound(teenOrdinals)
     }
 
-    @Test
-    fun `findNumbers finds hyphenated ordinals`() {
+    test("findNumbers finds hyphenated ordinals") {
         val ones = listOf("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth")
         val hyphenatedOrdinals = tens.flatMap { t -> ones.map { "$t-$it" } }
         assertRegexMatch(ORDINALS, hyphenatedOrdinals)
         assertFound(hyphenatedOrdinals)
     }
 
-    @Test
-    fun `findNumbers finds multiple of 10 ordinals`() {
+    test("findNumbers finds multiple of 10 ordinals") {
         assertFound(listOf(
             "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth", "eightieth", "ninetieth"
         ))
     }
 
-    @Test
-    fun `findNumbers finds plural numbers`() {
+    test("findNumbers finds plural numbers") {
         assertFound(
             listOf(
                 "hundreds", "thousands", "ten thousands", "twenties", "thirties", "forties", "fifties",
@@ -107,13 +128,11 @@ internal class FindNumbersKtTest {
         )
     }
 
-    @Test
-    fun `findNumbers finds two word numbers`() {
+    test("findNumbers finds two word numbers") {
         assertFound(listOf("six hundred", "five thousand", "ten thousands", "sixty-seven thousand"))
     }
 
-    @Test
-    fun `findNumbers finds weird combos`() {
+    test("findNumbers finds weird combos") {
         assertFound(listOf(
             "thousands of ten thousands",
             "six hundred and second",
@@ -121,19 +140,16 @@ internal class FindNumbersKtTest {
         ))
     }
 
-    @Test
-    fun `findNumbers finds one as a number`() {
+    test("findNumbers finds one as a number") {
         assertFound("You shall not eat just one day, or two days, or five days", "one", "two", "five")
     }
 
-    @Test
-    fun `findNumbers finds first as an ordinal`() {
+    test("findNumbers finds first as an ordinal") {
         assertFound("the first month of the year", "first")
         assertFound("he said to the first, ‘How much do you owe my master?’", "first")
     }
 
-    @Test
-    fun `findNumbers finds folds`() {
+    test("findNumbers finds folds") {
         assertFound(listOf(
             "sevenfold",
             "hundredfold",
@@ -141,8 +157,7 @@ internal class FindNumbersKtTest {
         ))
     }
 
-    @Test
-    fun `findNumbers does not find non-numeric ones`() {
+    test("findNumbers does not find non-numeric ones") {
         assertNotFound(
             "gathered together into one place,",
             "brought of the firstborn of his flock",
@@ -165,39 +180,4 @@ internal class FindNumbersKtTest {
         )
     }
 
-    private fun assertRegexMatch(regex: String, shouldMatch: List<String>) {
-        val exp = regex.toRegex()
-        for (s in shouldMatch) {
-            assertTrue(exp.matches(s)) { "Expected '$s' to match regex: $regex"}
-        }
-    }
-
-    private fun assertNoRegexMatch(regex: String, shouldNotMatch: List<String>) {
-        val exp = regex.toRegex()
-        for (s in shouldNotMatch) {
-            assertFalse(exp.matches(s)) { "Expected '$s' to NOT match regex: $regex"}
-        }
-    }
-
-    private fun assertFound(numbers: List<String>, prefix: String = "There were ", suffix: String = " dogs.") {
-        for (number in numbers) {
-            assertEquals(
-                listOf(Excerpt(number, prefix.length until prefix.length + number.length)),
-                findNumbers("$prefix$number$suffix").toList()
-            )
-        }
-    }
-
-    /** Doesn't check found ranges, but does check that the expected number strings were found */
-    private fun assertFound(text: String, vararg expectedNumberStrings: String) {
-        assertEquals(expectedNumberStrings.toList(), findNumbers(text).map { it.excerptText }.toList())
-    }
-
-    private fun assertNotFound(vararg noNumbers: String) {
-        for (s in noNumbers) {
-            val foundNumbers = findNumbers(s).toList()
-            assertTrue(foundNumbers.isEmpty()) { "Found number(s) $foundNumbers in '$s'"}
-        }
-    }
-
-}
+})

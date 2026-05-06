@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
@@ -19,7 +19,7 @@ val STOP_WORDS: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "
 
 fun main() {
     // word frequencies
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME))
     val wordIndex: List<WordIndexEntry> = buildWordIndex(studyData, STOP_WORDS, frequencyRange = 2..Int.MAX_VALUE)
     printWordFrequencies(wordIndex)
     printWordIndex(wordIndex)

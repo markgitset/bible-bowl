@@ -1,15 +1,14 @@
 package net.markdrew.biblebowl.analysis
 
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
 import net.markdrew.biblebowl.model.Book.REV
 import net.markdrew.biblebowl.model.VerseRef
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 
-class PhraseAnalysisKtTest {
+class PhraseAnalysisKtTest : FunSpec({
 
-    @Test
-    fun subsumes() {
+    test("subsumes") {
         val pie1 = PhraseIndexEntry(
             listOf("before", "the", "throne"),
             listOf(VerseRef(REV, 1, 1), VerseRef(REV, 1, 12), VerseRef(REV, 12, 1))
@@ -22,10 +21,10 @@ class PhraseAnalysisKtTest {
             listOf("the", "throne", "and"),
             listOf(VerseRef(REV, 1, 1), VerseRef(REV, 12, 1))
         )
-        assertTrue(pie1.subsumes(pie2))
-        assertFalse(pie2.subsumes(pie1))
-        assertFalse(pie3.subsumes(pie2))
-        assertTrue(pie2.subsumes(pie3))
+        pie1.subsumes(pie2).shouldBeTrue()
+        pie2.subsumes(pie1).shouldBeFalse()
+        pie3.subsumes(pie2).shouldBeFalse()
+        pie2.subsumes(pie3).shouldBeTrue()
     }
 
-}
+})

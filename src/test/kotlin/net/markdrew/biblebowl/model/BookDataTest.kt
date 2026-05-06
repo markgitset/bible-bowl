@@ -1,15 +1,12 @@
 package net.markdrew.biblebowl.model
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 
-internal class BookDataTest {
+internal class BookDataTest : FunSpec({
 
-    @Test
-    fun `hyphenated words parse as one word`() {
-        assertEquals(
-            listOf("There", "were", "twenty-seven", "dogs"),
-            StudyData.wordsPattern.findAll("There were twenty-seven dogs.").map { it.value }.toList()
-        )
+    test("hyphenated words parse as one word") {
+        StudyData.wordsPattern.findAll("There were twenty-seven dogs.").map { it.value }.toList() shouldBe
+            listOf("There", "were", "twenty-seven", "dogs")
     }
-}
+})

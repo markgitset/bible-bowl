@@ -1,11 +1,12 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.ChapterIndexEntry
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
@@ -14,33 +15,35 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main() {
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
-    writeOneTimeWordsIndex(studyData)
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME))
+//    writeOneTimeWordsIndex(studyData)
     writeOneTimeWordsHomework(studyData)
-    writeOneTimeWordsList(studyData)
+//    writeOneTimeWordsList(studyData)
 }
 
 private fun writeOneTimeWordsList(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
     val names: List<String> = oneTimeWords(studyData).map { studyData.excerpt(it).excerptText }.sorted()
-    val dir = File("$PRODUCTS_DIR/$studyName/lists").also { it.mkdirs() }
+    val dir = File("$PRODUCTS_DIR_NAME/$studyName/lists").also { it.mkdirs() }
     val file = dir.resolve("$studyName-list-unique-words.txt")
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
     }
 }
 
-fun writeOneTimeWordsIndex(studyData: StudyData) {
+fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
     val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData)
     val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(studyData)
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(simpleName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$simpleName-index-one-time-words.tex")
-    file.writer().use { writer ->
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(
             writer, "${set.name} One-Time Words",
             docPreface = "The following words only appear one time in ${set.longName}.",
@@ -60,13 +63,13 @@ fun writeOneTimeWordsIndex(studyData: StudyData) {
     file.latexToPdf(keepTexFiles = true)
 }
 
-fun writeOneTimeWordsHomework(studyData: StudyData) {
+fun writeOneTimeWordsHomework(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
     val indexEntriesByChapter: List<ChapterIndexEntry> = oneTimeWordsIndexByChapter(studyData)
-    val dir = File("$PRODUCTS_DIR/$simpleName/homework").also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-homework-one-time-words.tex")
-    file.writer().use { writer ->
+    val dir = productsDir.resolve(simpleName, "homework").also { Files.createDirectories(it) }
+    val file: Path = dir.resolve("$simpleName-homework-one-time-words.tex")
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(
             writer, "${set.name} One-Time Words Homework",
             docPreface = "The following words only appear one time in ${set.longName}.",

@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
@@ -14,10 +14,13 @@ import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.writer
 
 fun main() {
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME))
     writePhrasesIndex(studyData, maxPhraseLength = 23)
     writeNonLocalPhrasesIndex(studyData, maxPhraseLength = 23)
 }
@@ -40,7 +43,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
             )
         }
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = File("$PRODUCTS_DIR_NAME/$simpleName/indices").also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-phrases.tex")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
@@ -69,7 +72,8 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
     file.latexToPdf()
 }
 
-public fun writeNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
+fun writeNonLocalPhrasesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+                              maxPhraseLength: Int = 50) {
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(studyData, maxPhraseLength)
         .map { phraseIndexEntry ->
             WordIndexEntryC(
@@ -78,7 +82,7 @@ public fun writeNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int 
             )
         }
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(simpleName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$simpleName-index-nonlocal-phrases.tex")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
@@ -100,4 +104,3 @@ public fun writeNonLocalPhrasesIndex(studyData: StudyData, maxPhraseLength: Int 
     }
     file.latexToPdf(keepTexFiles = true)
 }
-

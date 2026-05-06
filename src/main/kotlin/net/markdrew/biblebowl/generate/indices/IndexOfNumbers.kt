@@ -1,6 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
@@ -13,13 +14,15 @@ import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main() {
-    writeNumbersIndex(StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR)))
+    writeNumbersIndex(StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME)))
 }
 
-fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
+fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS,
+                      productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(studyData).map { wordIndexEntry ->
         WordIndexEntryC(
             wordIndexEntry.key,
@@ -28,7 +31,7 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS)
             }
         )
     }.filterNot { it.key in stopWords }
-    writeLatexIndex(studyData, indexEntries, "Number")
+    writeLatexIndex(studyData, indexEntries, "Number", productsDir = productsDir)
 }
 
 fun writeLatexIndex(
@@ -36,9 +39,20 @@ fun writeLatexIndex(
     indexEntries: List<WordIndexEntryC>,
     singularIndexType: String,
     pluralIndexType: String = "${singularIndexType}s",
+    productsDir: Path,
 ) {
-    val file = fileForProduct(studyData, "indices", "index-$pluralIndexType")
+    val file = fileForProduct(studyData, "indices", "index-$pluralIndexType.tex", productsDir)
     writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, file)
+}
+
+fun writeLatexIndex(
+    studyData: StudyData,
+    pluralIndexType: String,
+    indexEntries: List<WordIndexEntryC>,
+    singularIndexType: String,
+    file: Path
+) {
+    writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, file.toFile())
 }
 
 fun writeLatexIndex(

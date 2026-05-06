@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.kahoot
 
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -15,7 +15,7 @@ import java.nio.file.Paths
 
 fun main() {
     val studySet: StudySet = StandardStudySet.DEFAULT
-    val studyData: StudyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData: StudyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
     val studyGuideQuestions: List<StudyGuideQuestion> = StudyGuideParser.loadStudyGuide(studySet)
 //    for (chapter in studyData.chapterRefs) {
 //        writeStudyGuideKahoot(studyGuideQuestions, PracticeContent(studyData, chapter))
@@ -61,7 +61,7 @@ private fun writeStudyGuideKahoot(
     val chapterString = chapterRef.format(BRIEF_BOOK_FORMAT).lowercase().replace(' ', '-')
     val fileName = "study-guide-kahoot-$chapterString"
 
-    val xlsxFile = File("$PRODUCTS_DIR/$setName/kahoot/study-guide/$fileName.xlsx")
+    val xlsxFile = File("$PRODUCTS_DIR_NAME/$setName/kahoot/study-guide/$fileName.xlsx")
     kahoot(xlsxFile) {
         for (sgQuestion in studyGuideQuestions.filter { it.chapterRef == chapterRef }) {
             question(
