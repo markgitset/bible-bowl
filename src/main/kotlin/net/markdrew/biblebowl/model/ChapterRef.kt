@@ -37,6 +37,18 @@ data class ChapterRef(val book: Book, val chapter: Int) : Comparable<ChapterRef>
 
         fun fromAbsoluteChapterNum(refNum: AbsoluteChapterNum): ChapterRef =
             ChapterRef(Book.fromNumber(refNum / BCV_FACTOR), refNum % BCV_FACTOR)
+
+        fun parse(chapterRefString: String, defaultBook: Book? = null): ChapterRef {
+            val parts: List<String> = chapterRefString.trim().split(" ")
+            return when (parts.size) {
+                1 -> ChapterRef(
+                    requireNotNull(defaultBook) { "Unable to parse '$chapterRefString'" },
+                    parts.single().toInt()
+                )
+                2 -> parse(parts.last(), Book.parse(parts.first()))
+                else -> throw IllegalArgumentException("Unable to parse '$chapterRefString'")
+            }
+        }
     }
 
 }

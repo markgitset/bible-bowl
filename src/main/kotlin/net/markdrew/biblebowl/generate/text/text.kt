@@ -6,6 +6,7 @@ import java.net.URI
 import kotlin.io.path.toPath
 
 val smallCapsNames = mapOf(
+    "GOD" to "God",
     "LORD" to "Lord",
     "I AM" to "I am",
     "I AM WHO I AM" to "I am who I am",
@@ -14,12 +15,13 @@ val smallCapsNames = mapOf(
 )
 
 @Language("RegExp")
-val divineNames = setOf(
-    "(Lord )?God", "(Lord )?Jesus( Christ)?", "Christ( of God| the Lord)?", "Holy Spirit", "Immanuel",
+val divineNames: Set<String> = setOf(
+    "(?:L(?:ORD|ord),? (?:your |the )?)?God(?: of Israel)?", "(Lord )?Jesus( Christ)?", "Christ( of God| the Lord)?",
+    "Holy Spirit", "Immanuel",
     "(?<!(go to my father, and I will say to him|son said to him|said to his father), [‘“])Father(?! Abraham)",
     "Spirit of God", "Son of God", "Son of Man", "Son of David", "Lord of the harvest",
     "Spirit of your Father", "(?<![‘“])Son", "God Almighty", "angel of the LORD", "Spirit( of the Lord)?",
-    "(?<=[Tt]he )Lord(’s Christ| your God)?", "(Son of the )?Most High( God)?", "(Holy|Chosen) One( of God)?",
+    "(?<=[Tt]he |O )Lord(’s Christ| your God)?", "(Son of the )?Most High( God)?", "(Holy|Chosen) One( of God)?",
     *smallCapsNames.keys.toTypedArray()
 )
 

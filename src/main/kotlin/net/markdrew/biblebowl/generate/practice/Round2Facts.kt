@@ -1,21 +1,23 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.showPdf
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.parseTsv
-import java.io.File
+import net.markdrew.biblebowl.showPdf
 import java.net.URL
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.random.Random
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
     val practice = PracticeContent(studyData)
-    showPdf(writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792)))
+    writeRound2Facts(PracticeTest(Round.FACT_FINDER, practice, randomSeed = 2792), defaultProductsPath).showPdf()
 
 //    val seeds = setOf(10, 20, 30, 40, 50)
 //    val directory = File("matthew-round5-set")
@@ -47,11 +49,11 @@ private data class MultiChoiceQuestion2(val question: Question2, val choices: Li
     val correctChoice: Int = choices.indexOf(question.answers.first())//.let { if (it < 0) noneIndex else it }
 }
 
-private fun writeRound2Facts(practiceTest: PracticeTest, directory: File? = null): File {
-    val texFile: File = practiceTest.buildTexFileName(directory)
+private fun writeRound2Facts(practiceTest: PracticeTest, productsDir: Path): Path {
+    val texFile: Path = practiceTest.buildTexFileName(productsDir)
 
     val factsToFind: List<MultiChoiceQuestion2> = factsCluePool(practiceTest, nChoices = 3)
-    texFile.writer().use { writer ->
+    Files.newBufferedWriter(texFile).use { writer ->
         toLatexFactFinder(writer, practiceTest, factsToFind)
     }
 

@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -11,7 +12,8 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.length
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 private const val VERSES_PER_PAGE = 20
 
@@ -25,22 +27,19 @@ fun main(args: Array<String>) {
 //        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
 //    ))
 
-    // PRODUCE THE FULL SET
-    val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in studyData.chapterRefs) {
-        //if (throughChapter < Book.EXO.chapterRef(20)) continue
-        val content = studyData.practice(throughChapter)
-        for (seed in seeds) {
-            writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = seed))
-        }
+    writeFullSet(studyData) { content, seed, productsDir ->
+        writeRound1VerseFind(
+            PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20, randomSeed = 10 * seed),
+            productsDir
+        )
     }
 }
 
-fun writeFindTheVerse(
+fun writeRound1VerseFind(
     practiceTest: PracticeTest,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
     minCharLength: Int = 15,
-    directory: File? = null,
-): File {
+): Path {
     val content: PracticeContent = practiceTest.content
     val studyData: StudyData = content.studyData
     var cluePool: DisjointRangeMap<VerseRef> = studyData.oneVerseSentParts
@@ -64,11 +63,11 @@ fun writeFindTheVerse(
         .take(practiceTest.numQuestions)
         .map { (range, verseRef) -> ReferencedVerse(verseRef, studyData.text.substring(range)) }
 
-    val outputFile = practiceTest.buildTexFileName(directory)
-    outputFile.writer().use { writer ->
+    val outputPath = practiceTest.buildTexFileName(productsDir)
+    Files.newBufferedWriter(outputPath).use { writer ->
         versesToFind.toLatexInWhatChapter(writer, practiceTest)
     }
-    return outputFile.latexToPdf(keepTexFiles = false)
+    return outputPath.latexToPdf(keepTexFiles = false)
 }
 
 /** Strings containing pairs of characters that normally occur as pairs */

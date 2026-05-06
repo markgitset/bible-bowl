@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
@@ -12,7 +12,8 @@ import net.markdrew.biblebowl.latex.writeIndex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
@@ -27,7 +28,7 @@ fun main(args: Array<String>) {
 //    }
 }
 
-fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
+fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(studyData)
         .map { wordIndexEntry ->
             WordIndexEntryC(
@@ -38,9 +39,9 @@ fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS) {
     val simpleName = studyData.studySet.simpleName
     val setName = studyData.studySet.name
     val longName = studyData.studySet.longName
-    val dir = File("$PRODUCTS_DIR/$simpleName/indices").also { it.mkdirs() }
+    val dir = productsDir.resolve(simpleName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$simpleName-index-full.tex")
-    file.writer().use { writer ->
+    Files.newBufferedWriter(file).use { writer ->
         writeDoc(writer, "$setName Word Index",
             docPreface = "The following is a complete index of all words in $longName, " +
                     """except for these:\\\\${stopWords.sorted().joinToString()}.""") {

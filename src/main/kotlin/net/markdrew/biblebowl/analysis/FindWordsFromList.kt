@@ -2,7 +2,8 @@
 
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.generate.blankOut
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.Excerpt
@@ -15,7 +16,7 @@ import java.nio.file.Paths
 fun main(args: Array<String>) {
 
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 
     val excerpts: Sequence<Excerpt> = findListWords(studyData.text, WordList.FOODS)
     printExcerpts(excerpts, studyData)

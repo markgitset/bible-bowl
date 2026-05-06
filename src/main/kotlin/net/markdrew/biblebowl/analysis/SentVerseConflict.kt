@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.analysis
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -9,7 +9,7 @@ import java.nio.file.Paths
 
 fun main(vararg args: String) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME))
     fun verseOfPosition(position: Int): String =
         studyData.verses.valueContaining(position)?.format(NO_BOOK_FORMAT).orEmpty()
     studyData.sentences.filter { studyData.verseEnclosing(it) == null }

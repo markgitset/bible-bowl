@@ -1,7 +1,8 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -17,10 +18,16 @@ private val STOP_NAMES = setOf("o", "i", "amen", "surely", "lord", "alpha", "ome
 
 @Language("RegExp")
 private val REGEX_NAMES = setOf(
-    """\p{Lu}\w+ Sea""",
-    """(?:Valley|Brook|Feast|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
-    """Mount (of )?\p{Lu}\w+""",
-    "John the Baptist",
+//    """\p{Lu}\w+ Sea""",
+//    """(?:Valley|Brook|Feast|Book|Sea) of(?: the)?(?: \p{Lu}\w+){1,2}""",
+//    """Mount (of )?\p{Lu}\w+""",
+    """Book (of )?\p{Lu}\w+""",
+//    """(?:tribes?|clans|families|congregation|people|assembly) of \p{Lu}\w+""",
+//    """(?<=(?:men|elders) of )\p{Lu}\w+""",
+//    (?<!all |(?:tribes?|clans|families|leaders|congregation|people|assembly|camp|officers|men|elders) of )(?:Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin)
+//    (?<!passed through Gilead and |midst of Ephraim and |in |all |(?:tribes?|clans|leaders|families|congregation|people|assembly|camp|officers|men|elders|boundary|cities) of )(?:Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Zebulun|Joseph|Ephraim|Manasseh|Benjamin)
+
+//    "John the Baptist",
     """(?<=“)Legion(?=,”)""", // Luke 8:30
     """Lot(’s)?""", // Luke 17:28-31
     "The Skull", // Luke 23:33
@@ -119,7 +126,7 @@ fun main(args: Array<String>) {
 
     println(BANNER)
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(studySet, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 
 //    val dict = DictionaryParser.parse("words_alpha.txt")
     val dict = DictionaryParser.parse("english.txt")

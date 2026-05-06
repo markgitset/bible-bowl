@@ -1,8 +1,11 @@
 package net.markdrew.biblebowl.model
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultDataPath
+import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.excerpt
 import net.markdrew.biblebowl.generate.indices.noBreak
 import net.markdrew.biblebowl.generate.indices.withCount
@@ -69,9 +72,10 @@ class StudyData(
     }
 
     val headings: List<Heading> by lazy {
-        headingCharRanges.map { (headingCharRange, headingTitle) ->
+        val maxIndex: Int = headingCharRanges.size
+        headingCharRanges.entries.mapIndexed { index, (headingCharRange, headingTitle) ->
             val verseRefs: List<VerseRef> = verses.valuesIntersectedBy(headingCharRange)
-            Heading(headingTitle, verseRefs.first()..verseRefs.last())
+            Heading(headingTitle, verseRefs.first()..verseRefs.last(), index + 1, maxIndex)
         }
     }
 
@@ -274,11 +278,28 @@ class StudyData(
     fun headingEnclosing(verseRef: VerseRef): String? = headingCharRanges.valueEnclosing(verseIndex.getValue(verseRef))
 
     /**
+     * Returns the heading that fully includes the given verse range.  Note that some verse ranges may span more than
+     * one heading, and in such cases, this function returns null.
+     */
+    fun headingEnclosing(verseRange: VerseRange): String? =
+        headingCharRanges.valueEnclosing(verseRangeToCharRange(verseRange))
+
+    /**
      * Returns the headings that intersect the given verse.  Usually, this is only one heading, but there are some
      * verses that span more than one heading.
      */
     fun headingsIntersecting(verseRef: VerseRef): List<String> =
         headingCharRanges.valuesIntersectedBy(verseIndex.getValue(verseRef))
+
+    /**
+     * Returns the headings that intersect the given verse range.  Usually, this is only one heading, but there are some
+     * verse ranges that span more than one heading.
+     */
+    fun headingsIntersecting(verseRange: VerseRange): List<String> =
+        headingCharRanges.valuesIntersectedBy(verseRangeToCharRange(verseRange))
+
+    private fun verseRangeToCharRange(verseRange: VerseRange): IntRange =
+        verseIndex.getValue(verseRange.start).first..verseIndex.getValue(verseRange.endInclusive).last
 
     fun chapterEnclosing(charRange: CharOffsetRange): ChapterRef? = chapters.valueEnclosing(charRange)
     fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)
@@ -370,12 +391,13 @@ class StudyData(
 
         fun readData(
             studySet: StudySet = StandardStudySet.DEFAULT,
-            inPath: Path = Paths.get(DATA_DIR),
+            dataDir: Path = defaultDataPath,
+            rawDataDir: Path = defaultRawDataPath,
             forceDownload: Boolean = false
         ): StudyData {
-            val bookDir = inPath.resolve(studySet.simpleName)
+            val bookDir = dataDir.resolve(studySet.simpleName)
             if (bookDir.notExists()) {
-                downloadAndIndex(studySet, forceDownload)
+                downloadAndIndex(studySet, dataDir, rawDataDir, forceDownload)
             }
             val text = bookDir.resolve(studySet.simpleName + ".txt").useLines { lines ->
                 // Ignore leading comments (that start with '#')
@@ -395,7 +417,7 @@ class StudyData(
 }
 
 fun main() {
-    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR))
+    val studyData = StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 //    for (w in StudyData.words) {
 //        if (StudyData.chapterIndex[8]!!.encloses(w))
 //            println(StudyData.excerpt(w))

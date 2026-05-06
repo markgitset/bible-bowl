@@ -10,28 +10,51 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.option
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.DATA_DIR
-import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.RAW_DATA_DIR
+import net.markdrew.biblebowl.analysis.WordList
+import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.defaultDataPath
+import net.markdrew.biblebowl.defaultProductsPath
+import net.markdrew.biblebowl.defaultRawDataPath
+import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
+import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
+import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
+import net.markdrew.biblebowl.generate.indices.writeFullIndex
+import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
+import net.markdrew.biblebowl.generate.indices.writeHeadingsText
+import net.markdrew.biblebowl.generate.indices.writeNamesIndex
+import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
+import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
+import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsHomework
+import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
+import net.markdrew.biblebowl.generate.indices.writeWordListIndex
+import net.markdrew.biblebowl.generate.practice.Round
+import net.markdrew.biblebowl.generate.practice.practiceTest
+import net.markdrew.biblebowl.generate.practice.writeFullSet
+import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
+import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
+import net.markdrew.biblebowl.generate.practice.writeRound5Events
+import net.markdrew.biblebowl.generate.text.writeBibleDoc
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import net.markdrew.biblebowl.typst.writeTypstFlashCards
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
-import java.io.FileNotFoundException
 import java.nio.file.Path
+import java.time.LocalDate
 import kotlin.io.path.Path
 
 class BibleBowlCli : CliktCommand(
     name = "biblebowl",
     help = "Generate Bible Bowl resources and indices."
 ) {
-    private val userHomeDir = Path(System.getProperty("user.home"))
-    private val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
-    private val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR)
-    private val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR)
-    private val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR)
+//    private val userHomeDir = Path(System.getProperty("user.home"))
+//    private val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
+//    private val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
+//    private val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR_NAME)
+//    private val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR_NAME)
 
     private val studySetName: String? by argument("STUDY_SET")
         .optional()
@@ -40,6 +63,10 @@ class BibleBowlCli : CliktCommand(
     private val forceDownload: Boolean by option("--force-download", "-f")
         .flag(default = false)
         .help("Force download and re-index the study set, even if data exists (default: false)")
+
+    private val skipText: Boolean by option("--no-text")
+        .flag(default = false)
+        .help("Skip generating the texts (default: false)")
 
     private val dataDir: Path by option("--data-dir", "-d")
         .convert { Path(it) }
@@ -54,7 +81,7 @@ class BibleBowlCli : CliktCommand(
     private val productsDir: Path by option("--products-dir", "-p")
         .convert { Path(it) }
         .default(defaultProductsPath)
-        .help("Directory for output products (default: ${defaultTbbPath.resolve(PRODUCTS_DIR)})")
+        .help("Directory for output products (default: $defaultProductsPath)")
 
     override fun run() {
         print(BANNER)
@@ -63,41 +90,65 @@ class BibleBowlCli : CliktCommand(
 
 //        val dataPath = Paths.get(dataDir)
         val studyData = try {
-            StudyData.readData(studySet, dataDir, forceDownload)
-        } catch (e: FileNotFoundException) {
+            StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
+        } catch (e: NoSuchFileException) {
             echo("Data missing: ${e.message}")
             echo("Downloading and indexing the study set for ${studySet.name} (forceDownload=$forceDownload)...")
             val indexer = EsvIndexer(studySet)
-            val chapterPassages: Sequence<Passage> =
-                EsvClient().bookByChapters(studySet, forceDownload)
+            val chapterPassages: Sequence<Passage> = EsvClient(rawDataDir).bookByChapters(studySet, forceDownload)
             indexer.indexBook(chapterPassages).also {
                 it.writeData(dataDir)
             }
         }
 
-//        // Generate files (rest unchanged from BiblebowlKt.main)
-//        writeOneTimeWordsIndex(studyData)
-//        writeFullIndex(studyData)
-//        writeNumbersIndex(studyData)
-//        writeNamesIndex(studyData)
-//        writeNonLocalPhrasesIndex(studyData)
-//        writeHeadingsPdf(studyData)
-//
-//        writeHeadingsText(studyData)
-//        writeHeadingsCsv(studyData)
-//
-//        writeCramVerses(studyData)
-//        writeCramHeadings(studyData)
-//        writeCramReverseHeadings(studyData)
-//        writeCramOneTimeWords(studyData, oneTimeWords(studyData))
+        // Write LaTEX-set PDFs of the text
+//        writeBibleText(studyData, productsDir)
+//        writeBibleText(studyData, productsDir,
+//            TextOptions(highlightNames = true, highlightNumbers = true, underlineUniqueWords = true)
+//        )
+
+        // write a bunch of variations of the Bible text
+        if (!skipText) {
+            writeBibleDoc(studyData, LocalDate.of(2026, 3, 28), productsDir)
+        }
+
+        // Generate files (rest unchanged from BiblebowlKt.main)
+        writeOneTimeWordsIndex(studyData, productsDir)
+        writeOneTimeWordsHomework(studyData, productsDir)
+        writeFullIndex(studyData, productsDir = productsDir)
+        writeNumbersIndex(studyData, productsDir = productsDir)
+        writeNamesIndex(studyData, productsDir)
+        writeNonLocalPhrasesIndex(studyData, productsDir)
+
+        writeWordListIndex(productsDir, studyData, WordList.ANGELS_DEMONS, "Angel or Demon", "Angels or Demons")
+        writeWordListIndex(productsDir, studyData, WordList.ANIMALS, "Animal")
+        writeWordListIndex(productsDir, studyData, WordList.BODY_PARTS, "Body Part")
+        writeWordListIndex(productsDir, studyData, WordList.COLORS, "Color")
+        writeWordListIndex(productsDir, studyData, WordList.FOODS, "Food")
+        writeWordListIndex(productsDir, studyData, WordList.MEN, "Man", "Men")
+        writeWordListIndex(productsDir, studyData, WordList.WOMEN, "Woman", "Women")
+        writeWordListIndex(productsDir, studyData, WordList.PLACES, "Place")
+
+        writeHeadingsPdf(studyData, productsDir)
+        writeHeadingsText(studyData, productsDir)
+        writeHeadingsText(studyData, productsDir)
+
+        writeCramVerses(studyData, productsDir)
+        writeCramHeadings(studyData, productsDir)
+        writeCramReverseHeadings(studyData, productsDir)
+        writeCramOneTimeWords(studyData, oneTimeWords(studyData), productsDir)
 //        val nameExcerpts = findNames(studyData, "god", "jesus", "christ")
 //        writeCramNameBlanks(studyData, nameExcerpts)
 //        writeCramFewTimeWords(studyData)
-//
-//        val content = PracticeContent(studyData)
-//        writeFindTheVerse(PracticeTest(Round.FIND_THE_VERSE, content, randomSeed = 50))
-//        writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = 50))
-//        writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = 50))
+
+        writeFullSet(studyData, productsDir) { content, seed, productsDir ->
+            writeRound1VerseFind(practiceTest(Round.FIND_THE_VERSE, content, seed, numQuestions = 20), productsDir)
+            writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), productsDir)
+            writeRound5Events(practiceTest(Round.EVENTS, content, seed), productsDir)
+        }
+
+        writeTypstFlashCards(studyData, productsDir)
+
         echo("Generation complete. Output in $productsDir")
     }
 }

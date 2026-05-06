@@ -1,14 +1,21 @@
 package net.markdrew.biblebowl.model
 
+/**
+ * Represents a book of the Bible, along with its standard abbreviations and order.
+ *
+ * @property fullName The full name of the book (e.g., "Genesis").
+ * @property briefName A standard abbreviation for the book (e.g., "Gen").
+ * @property twoLetterCode An optional two-letter code for the book.
+ */
 enum class Book(val fullName: String, val briefName: String = fullName, private val twoLetterCode: String? = null) {
     GEN("Genesis", "Gen"),
     EXO("Exodus", "Exo"),
     LEV("Leviticus", "Lev"),
     NUM("Numbers", "Num"),
     DEU("Deuteronomy", "Deut", "DT"),
-    JOS("Joshua"),
-    JDG("Judges", twoLetterCode = "JG"),
-    RUT("Ruth"),
+    JOS("Joshua", "Jos"),
+    JDG("Judges", "Jdg", twoLetterCode = "JG"),
+    RUT("Ruth", "Ru"),
     SA1("1 Samuel", "1 Sam"),
     SA2("2 Samuel", "2 Sam"),
     KI1("1 Kings"),
@@ -68,21 +75,77 @@ enum class Book(val fullName: String, val briefName: String = fullName, private 
     JUD("Jude"),
     REV("Revelation", "Rev");
 
+    /**
+     * The 1-based order of the book in the standard biblical canon.
+     */
     val number = ordinal + 1
+
+    /**
+     * The last theoretical chapter reference for this book, bounded by the system's maximum factor.
+     */
     val lastChapterRef = ChapterRef(this, BCV_FACTOR - 1)
+
+    /**
+     * A two-letter representation of the book.
+     */
     val twoLetter = (twoLetterCode ?: name.take(2)).uppercase()
 
+    /**
+     * Creates a reference to a specific verse within this book.
+     *
+     * @param chapter The chapter number.
+     * @param verse The verse number.
+     * @return A [VerseRef] representing the specified verse.
+     */
     fun verseRef(chapter: Int, verse: Int): VerseRef = chapterRef(chapter).verse(verse)
+
+    /**
+     * Creates a reference to a specific chapter within this book.
+     *
+     * @param chapter The chapter number.
+     * @return A [ChapterRef] representing the specified chapter.
+     */
     fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)
+
+    /**
+     * Creates a range of chapters within this book.
+     *
+     * @param first The starting chapter number.
+     * @param last The ending chapter number.
+     * @return A [ChapterRange] covering the given chapters.
+     */
     fun chapterRange(first: Int, last: Int): ChapterRange = chapterRef(first)..chapterRef(last)
+
+    /**
+     * Returns a range covering all chapters in the book (up to [lastChapterRef]).
+     *
+     * @return A [ChapterRange] from chapter 1 to the last theoretical chapter.
+     */
     fun allChapters(): ChapterRange = chapterRef(1)..lastChapterRef
 
     companion object {
+        /**
+         * The default book used when parsing fails or no input is provided.
+         */
         val DEFAULT = MAT
 
+        /**
+         * Retrieves a book based on its 1-based index in the canon.
+         *
+         * @param n The 1-based index.
+         * @return The corresponding [Book].
+         */
         fun fromNumber(n: Int): Book = entries[n-1]
 
-        // lenient parsing for user input, e.g.
+        /**
+         * Parses a string into a [Book], using lenient matching rules.
+         *
+         * Attempt to find an exact match by enum name, and falls back to prefix matching on [fullName].
+         *
+         * @param s The string to parse.
+         * @param default The default book to return if parsing fails.
+         * @return The matched [Book] or the default value.
+         */
         fun parse(s: String?, default: Book? = DEFAULT): Book? = if (s == null) default else try {
             valueOf(s.uppercase())
         } catch (e: IllegalArgumentException) {

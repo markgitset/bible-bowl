@@ -1,14 +1,16 @@
 package net.markdrew.biblebowl.ws
 
-import net.markdrew.biblebowl.DATA_DIR
+import net.markdrew.biblebowl.DATA_DIR_NAME
+import net.markdrew.biblebowl.RAW_DATA_DIR_NAME
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
+import java.nio.file.Path
 import java.nio.file.Paths
 
 fun main(vararg args: String) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
-    downloadAndIndex(studySet)
+    downloadAndIndex(studySet, Paths.get(DATA_DIR_NAME), Paths.get(RAW_DATA_DIR_NAME))
 
     // for Maria
 //    for (studySet in setOf(StudySet(Book.EXO, "exodus"), StudySet(Book.LEV, "lev"), StudySet(Book.NUM, "num"))) {
@@ -16,10 +18,10 @@ fun main(vararg args: String) {
 //    }
 }
 
-fun downloadAndIndex(studySet: StudySet, forceDownload: Boolean = false) {
+fun downloadAndIndex(studySet: StudySet, dataDir: Path, rawDataDir: Path, forceDownload: Boolean = false) {
     val indexer = EsvIndexer(studySet)
-    val studyData: StudyData = indexer.indexBook(EsvClient().bookByChapters(studySet, forceDownload))
-    studyData.writeData(Paths.get(DATA_DIR))
+    val studyData: StudyData = indexer.indexBook(EsvClient(rawDataDir).bookByChapters(studySet, forceDownload))
+    studyData.writeData(dataDir)
 }
 //fun main(vararg args: String) {
 //    val bookName: String? = args.getOrNull(0)

@@ -1,14 +1,30 @@
+Achsah
 Anna
+Deborah
+Delilah
 Dorcas
 Elizabeth
 Herodias
+Jael
 Joanna
 Lot's wife
 Martha
 Mary
 Mary Magdalene
-Simon's mother-in-law
+Naomi
+Orpah
+Rahab
 Rhoda
+Ruth
 Salome
+Simon's mother-in-law
 Susanna
 Tabitha
+Mahlah
+(?<=Mahlah, )Noah
+Hoglah
+Milcah
+(?<!king of )Tirzah
+Rachel
+Leah
+Tamar

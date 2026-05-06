@@ -2,8 +2,9 @@ package net.markdrew.biblebowl.generate.text
 
 import mu.KLogger
 import mu.KotlinLogging
-import net.markdrew.biblebowl.PRODUCTS_DIR
-import net.markdrew.biblebowl.latex.docxToPdf
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.analysis.WordList
+import net.markdrew.biblebowl.docx.docxToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
@@ -74,6 +75,8 @@ import java.io.FileNotFoundException
 import java.io.Reader
 import java.math.BigInteger
 import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -99,10 +102,13 @@ fun main(args: Array<String>) {
     writeBibleDoc(studyData, LocalDate.of(2025, 4, 5))
 }
 
-fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
+fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path = Path.of(PRODUCTS_DIR_NAME)) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
         "ffff00" to divineNames.map { Regex(it) }.toSet(), // bright yellow
+        "ff99ff" to WordList.WOMEN.regexSequence().toSet(), // pink
+        "99ccff" to WordList.MEN.regexSequence().toSet(), // blue
+        "99ff99" to WordList.PLACES.regexSequence().toSet(), // green
 //        "namesColor" to setOf("John the Baptist".toRegex()),
 //        rStyler to setOf(Regex.fromLiteral("LORD")),
     )
@@ -126,16 +132,16 @@ fun writeBibleDoc(studyData: StudyData, testDate: LocalDate) {
     )
 
     // plain
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbPlainOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksPlainOpts, productsPath)
 
     // unique words underlined
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbUniqueWordsOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksUniqueWordsOpts, productsPath)
 
     // all highlighting
-    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts)
-    writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts)
+    writeOneText("tbb-doc-format", defaultStyle, studyData, tbbFullOpts, productsPath)
+    writeOneText("marks-doc-format", marksStyle, studyData, marksFullOpts, productsPath)
 }
 
 private fun writeOneText(
@@ -143,16 +149,17 @@ private fun writeOneText(
     styleParams: Map<String, String>,
     studyData: StudyData,
     opts: TextOptions<String>,
-): File {
+    productsPath: Path,
+): Path {
     val name = studyData.studySet.simpleName
     // FIXME this is an ugly hack
     val modifiedOpts: TextOptions<String> =
         styleParams["mainFontSize"]?.let {
             opts.copy(fontSize = it.toInt() / 2)
         } ?: opts
-    val outputFile = File("$PRODUCTS_DIR/$name/text/docx/$name-bible-text-${opts.fileNameSuffix}.docx")
-    outputFile.parentFile.mkdirs()
-    DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile, studyData)
+    val outputFile = productsPath.resolve(name, "text", "docx", "$name-bible-text-${opts.fileNameSuffix}.docx")
+    Files.createDirectories(outputFile.parent)
+    DocMaker(resourcePath, styleParams, modifiedOpts).renderText(outputFile.toFile(), studyData)
 
     return outputFile.docxToPdf()
 }
@@ -459,7 +466,7 @@ class DocMaker(
                 r.rPr = (r.rPr ?: RPr()).apply {
                     shd = CTShd().apply {
                         `val` = STShd.CLEAR
-                        fill = "b4c7dc" // light blue
+                        fill = "cccccc" // light gray
                     }
                 }
             }

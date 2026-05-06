@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.PRODUCTS_DIR
+import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -10,8 +10,8 @@ import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.format
 import net.markdrew.biblebowl.rangeLabel
 import net.markdrew.chupacabra.core.intersect
+import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 
 fun main(args: Array<String>) {
@@ -44,19 +44,28 @@ fun main(args: Array<String>) {
     writeCramHeadings(studyData)//, studyData.chapterRange(1, 9))
 }
 
-private fun makePath(studyData: StudyData, fileType: String, chapterRange: ChapterRange): Path {
+private fun makePath(
+    studyData: StudyData,
+    fileType: String,
+    chapterRange: ChapterRange,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME)
+): Path {
     val setName = studyData.studySet.simpleName
     val actualChapterRange = chapterRange.intersect(studyData.chapterRange)
     val suffix =
         if (actualChapterRange == studyData.chapterRange) ""
         else rangeLabel("-chapter", with(actualChapterRange) { start.chapter..endInclusive.chapter })
-    val dir: Path = Paths.get("$PRODUCTS_DIR/$setName/cram").also { it.toFile().mkdirs() }
+    val dir: Path = productsDir.resolve(setName, "cram").also { Files.createDirectories(it) }
     return dir.resolve("$setName-$fileType$suffix.tsv")
 }
 
-fun writeCramHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
+fun writeCramHeadings(
+    studyData: StudyData,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    chapterRange: ChapterRange = studyData.chapterRange
+) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
-    val cramHeadingsPath = makePath(studyData, "cram-headings", chapterRange)
+    val cramHeadingsPath = makePath(studyData, "cram-headings", chapterRange, productsDir)
     CardWriter(cramHeadingsPath).use { writer ->
         studyData.headings(chapterRange).groupBy {
             it.title
@@ -71,8 +80,12 @@ fun writeCramHeadings(studyData: StudyData, chapterRange: ChapterRange = studyDa
     println("Wrote data to: $cramHeadingsPath")
 }
 
-fun writeCramReverseHeadings(studyData: StudyData, chapterRange: ChapterRange = studyData.chapterRange) {
-    val cramHeadingsPath = makePath(studyData, "cram-reverse-headings", chapterRange)
+fun writeCramReverseHeadings(
+    studyData: StudyData,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    chapterRange: ChapterRange = studyData.chapterRange,
+) {
+    val cramHeadingsPath = makePath(studyData, "cram-reverse-headings", chapterRange, productsDir)
     CardWriter(cramHeadingsPath).use { writer ->
         studyData.chapters
             .filterValues { it in chapterRange }
