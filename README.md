@@ -10,7 +10,7 @@ It provides tools to download Bible passages (using the ESV API), process the te
 
 ## Prerequisites
 
-- **Java Development Kit (JDK):** Version 17 or higher is recommended.
+- **Java Development Kit (JDK):** Version 23 or higher is recommended.
 - **Gradle:** The project uses the Gradle wrapper (`gradlew`), so a local Gradle installation is not strictly necessary.
 
 ## Building and Running
