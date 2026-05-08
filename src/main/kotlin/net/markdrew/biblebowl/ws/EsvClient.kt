@@ -1,6 +1,7 @@
 package net.markdrew.biblebowl.ws
 
 import net.markdrew.biblebowl.INDENT_POETRY_LINES
+import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.ChapterRef
@@ -9,8 +10,6 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.biblebowl.model.toVerseRef
 import retrofit2.Call
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.isReadable
@@ -54,7 +53,7 @@ import kotlin.time.Duration.Companion.seconds
  * Must be an integer. Default 0.
  */
 class EsvClient(
-    private val rawDataDir: Path,
+    private val rawDataDir: Path = defaultRawDataPath,
     private val includePassageReferences: Boolean = false,
     private val includeFirstVerseNumbers: Boolean = true,
     private val includeVerseNumbers: Boolean = true,
@@ -74,7 +73,8 @@ class EsvClient(
     private val indentDeclares: Int = 40,
     private val indentPsalmDoxology: Int = 30,
     private val lineLength: Int = 0,
-    private val esvService: EsvService = EsvService.create(),
+    token: String? = System.getenv("ESV_API_TOKEN"),
+    private val esvService: EsvService = EsvService.create(token),
 ) {
 
     fun query(query: String): Call<PassageText> = esvService.text(query,
@@ -194,10 +194,7 @@ class EsvClient(
             "${start.absoluteVerse}-${endInclusive.absoluteVerse}"
         }
 
-        fun create(): EsvClient = Retrofit.Builder()
-            .baseUrl("https://api.esv.org/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build().create(EsvClient::class.java)
+        fun create(token: String? = System.getenv("ESV_API_TOKEN")): EsvClient = EsvClient(token = token)
 
     }
 
