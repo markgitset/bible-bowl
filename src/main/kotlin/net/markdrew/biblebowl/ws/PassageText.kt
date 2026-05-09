@@ -7,11 +7,15 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.serializersModuleOf
 
-/*
- * Builds an IntRange from the first two values of a List<Int>
- */
+/** Builds an [IntRange] from the smallest and largest of the first two values in this list. */
 fun List<Int>.toIntRange(): IntRange = with (take(2)) { min()..max() }
 
+/**
+ * The `passage_meta` block returned by the ESV API for a single passage
+ *
+ * Each `chapter_*` field is a two-element list containing the first and last absolute verse numbers of that
+ * chapter; [toIntRange] collapses those pairs into [IntRange]s.
+ */
 @Serializable
 data class PassageMeta(val canonical: String,
                        @SerializedName("chapter_start") val chapterStart: List<Int>,
@@ -21,14 +25,23 @@ data class PassageMeta(val canonical: String,
                        @SerializedName("prev_chapter") val prevChapter: List<Int>?,
                        @SerializedName("next_chapter") val nextChapter: List<Int>?) {
 
+    /** Verse range of the chapter the passage starts in. */
     fun startsInChapterRange(): IntRange = chapterStart.toIntRange()
+
+    /** Verse range of the chapter the passage ends in. */
     fun endsInChapterRange(): IntRange = chapterEnd.toIntRange()
+
+    /** Verse range of the chapter immediately before this passage, or null if there is none. */
     fun prevChapterRange(): IntRange? = prevChapter?.toIntRange()
+
+    /** Verse range of the chapter immediately after this passage, or null if there is none. */
     fun nextChapterRange(): IntRange? = nextChapter?.toIntRange()
 }
 
+/** A single verse from a parsed passage */
 data class Verse(val number: Int, val text: String)
 
+/** A chunk of an ESV response: one heading and the paragraphs that follow it */
 data class Section(val heading: String, val paragraphs: List<String>) {
 //    fun verses(prevVerse: Int): List<List<Verse>> = paragraphs.map { para ->
 //        val find: MatchResult? = """\[\d+\] """.toRegex().find(para)
@@ -43,35 +56,64 @@ data class Section(val heading: String, val paragraphs: List<String>) {
 
 }
 
+/** Pretty-printing JSON instance configured to round-trip [IntRange] via [IntRangeSerializer]. */
 val json = Json {
     serializersModule = serializersModuleOf(IntRangeSerializer)
     prettyPrint = true
 }
 
+/**
+ * One passage in the form returned by the ESV API, plus convenience accessors
+ *
+ * @param canonical canonical reference string (e.g. "Genesis 1:1–3")
+ * @param range absolute verse-number range of the passage
+ * @param meta the API's `passage_meta` block for this passage
+ * @param text the rendered passage text
+ */
 @Serializable
 data class Passage(val canonical: String, @Contextual val range: IntRange, val meta: PassageMeta, val text: String) {
+
+    /** Splits [text] at heading-separator lines and returns one [Section] per resulting chunk. */
     fun sections(): List<Section> = text.split("""^_+$""".toRegex(RegexOption.MULTILINE)).map { textChunk ->
         val paragraphs = textChunk.split("\n\n", "\n\n\n")
         Section(heading = paragraphs.first(), paragraphs = paragraphs.drop(1))
     }
+
+    /** Returns this passage as a JSON string suitable for caching to disk. */
     fun serialize(): String = json.encodeToString(this)
+
     companion object {
+        /** Inverse of [serialize]; reads JSON produced by [serialize] back into a [Passage]. */
         fun deserialize(s: String): Passage = json.decodeFromString(s)
     }
 }
 
+/**
+ * Top-level response shape of the ESV `v3/passage/text` endpoint
+ *
+ * A single API call may return multiple passages when the query references several non-contiguous ranges.
+ *
+ * @param query the original query string
+ * @param canonical canonical reference for the whole response (passages joined by "; ")
+ * @param parsed for each passage, the absolute verse-number bounds as a two-element list
+ * @param passageMeta the per-passage `passage_meta` blocks
+ * @param passages the rendered passage texts, one per `parsed` entry
+ */
 data class PassageText(val query: String,
                        val canonical: String,
                        val parsed: List<List<Int>>,
                        @SerializedName("passage_meta") val passageMeta: List<PassageMeta>,
                        val passages: List<String>) {
 
+    /** [parsed] decoded into [IntRange]s. */
     fun parsedRanges(): List<IntRange> = parsed.map { it.toIntRange() }
 
+    /** Splits this response into per-passage [Passage]s. */
     fun toList(): List<Passage> = if (parsed.isEmpty()) emptyList() else canonical.split("; ").mapIndexed { i, canon ->
         Passage(canon, parsedRanges()[i], passageMeta[i], passages[i])
     }
 
+    /** Asserts there's exactly one passage in this response and returns it. */
     fun single(): Passage = toList().single()
 
 }

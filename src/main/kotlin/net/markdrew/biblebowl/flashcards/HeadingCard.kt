@@ -5,10 +5,14 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRange
 
 /**
- * For normal, forward-direction headings flashcards
+ * A normal forward-direction heading flashcard (heading title -> verse range(s))
  *
- * @param verseRanges The verse ranges that the heading applies to
- * @param indices The 1-based indices of this heading in the study set
+ * Headings that share a title across chapters collapse into one card with multiple [verseRanges].
+ *
+ * @param heading the heading text shown on the front of the card
+ * @param verseRanges the verse ranges this heading applies to
+ * @param indices 1-based indices of this heading in the study set
+ * @param allHeadings every heading in the study set; used for back-of-card "N of M" labelling
  */
 data class HeadingCard(
     val heading: String,
@@ -16,12 +20,15 @@ data class HeadingCard(
     val indices: List<Int>,
     val allHeadings: List<Heading>,
 ) {
+    /** Chapter ranges derived from [verseRanges] */
     val chapterRanges = verseRanges.map { it.toChapterRange() }
 
     companion object {
+        /** Sentinel used by the LaTeX renderer to pad short final pages; not needed under Typst. */
         @Deprecated("Shouldn't need this with Typst")
         val EMPTY: HeadingCard = HeadingCard("", emptyList(), emptyList(), emptyList())
 
+        /** Builds one card per distinct heading title in [studyData], merging duplicate titles. */
         fun fromStudyData(studyData: StudyData): List<HeadingCard> =
             studyData.headings.groupBy { it.title }.map { (headingTitle, headingList) ->
                 HeadingCard(

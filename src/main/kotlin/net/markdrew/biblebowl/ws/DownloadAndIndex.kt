@@ -18,6 +18,12 @@ fun main(vararg args: String) {
 //    }
 }
 
+/**
+ * Downloads [studySet] from the ESV API (using [rawDataDir] as the chapter cache), runs it through
+ * [EsvIndexer], and writes the resulting [StudyData] under [dataDir]
+ *
+ * @param forceDownload if true, bypasses the chapter cache and re-fetches every chapter
+ */
 fun downloadAndIndex(studySet: StudySet, dataDir: Path, rawDataDir: Path, forceDownload: Boolean = false) {
     val indexer = EsvIndexer(studySet)
     val studyData: StudyData = indexer.indexBook(EsvClient(rawDataDir).bookByChapters(studySet, forceDownload))

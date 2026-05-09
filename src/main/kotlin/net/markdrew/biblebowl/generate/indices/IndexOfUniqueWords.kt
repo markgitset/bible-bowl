@@ -36,6 +36,7 @@ private fun writeOneTimeWordsList(studyData: StudyData) {
     }
 }
 
+/** Writes the one-time-words index (alphabetical + by appearance) for [studyData] as a LaTeX PDF. */
 fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
@@ -63,6 +64,7 @@ fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRO
     file.latexToPdf(keepTexFiles = true)
 }
 
+/** Writes the per-chapter one-time-words homework sheet as a LaTeX PDF. */
 fun writeOneTimeWordsHomework(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet

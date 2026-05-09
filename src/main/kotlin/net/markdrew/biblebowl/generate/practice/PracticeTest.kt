@@ -8,6 +8,15 @@ import java.nio.file.Path
 import kotlin.random.Random
 import kotlin.random.nextInt
 
+/**
+ * One practice test instance: a [round], its source [content], and a fixed [randomSeed] for reproducibility
+ *
+ * Defaulting [numQuestions] from the round and using a deterministic [randomSeed] means generating the same
+ * test twice (same seed, same content) yields identical questions.
+ *
+ * @param numQuestions overrides [Round.questions] when fewer questions are wanted
+ * @param randomSeed seed used to drive question selection and shuffling
+ */
 data class PracticeTest(
     val round: Round,
     val content: PracticeContent,
@@ -15,7 +24,10 @@ data class PracticeTest(
     val randomSeed: Int = Random.nextInt(1..9_999),
 ) {
 
+    /** [Random] instance keyed by [randomSeed]; reusable for any sampling needed by the generator. */
     val random = Random(randomSeed)
+
+    /** Convenience accessor for `content.studyData.studySet`. */
     val studySet: StudySet = content.studyData.studySet
 
     private fun coveredChaptersForFileName(): String {
@@ -30,6 +42,10 @@ data class PracticeTest(
         return "-%s%02dto%s%02d".format(firstBook, chapters.first().chapter, lastBook, chapters.last().chapter)
     }
 
+    /**
+     * Builds the standard `.tex` output path for this test under [productsDir], encoding the round, covered
+     * chapter range, and seed. Creates parent directories as a side effect.
+     */
     fun buildTexFileName(productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path {
         val setName = studySet.simpleName
         val fileName: String = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d.tex"

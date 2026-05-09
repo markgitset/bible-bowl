@@ -26,6 +26,7 @@ fun main() {
     writeNonLocalPhrasesIndex(studyData, maxPhraseLength = 23)
 }
 
+/** Duplicate of [formatVerseRefWithCount] kept here while this file is a work-in-progress copy. */
 fun formatVerseRefWithCount2(ref: WithCount<VerseRef>): String =
     ref.item.format(NO_BOOK_FORMAT) + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
 

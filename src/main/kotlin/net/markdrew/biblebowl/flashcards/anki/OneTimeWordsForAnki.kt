@@ -69,6 +69,10 @@ fun main(args: Array<String>) {
 //    }
 }
 
+/**
+ * Partitions [words] by [predicate], prints the matched count and a sample of matches under [label], and
+ * returns the unmatched remainder.
+ */
 fun removeAndDescribe(label: String, words: List<String>, samples: Int = 20, predicate: (String) -> Boolean): List<String> {
     val (removed, kept) = words.partition(predicate)
     println("%,6d $label".format(removed.size))
@@ -80,6 +84,12 @@ fun removeAndDescribe(label: String, words: List<String>, samples: Int = 20, pre
     return kept
 }
 
+/**
+ * Writes an Anki-style TSV of one-time-word flashcards for [studyData], optionally narrowed by
+ * [chapterRange] and [predicate]
+ *
+ * The output filename includes [predicateName] so multiple predicate-filtered runs don't collide.
+ */
 fun writeAnkiOneTimeWords(
     studyData: StudyData,
     oneTimeWords: List<IntRange>,

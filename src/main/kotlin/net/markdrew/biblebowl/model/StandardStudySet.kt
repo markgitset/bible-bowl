@@ -1,5 +1,10 @@
 package net.markdrew.biblebowl.model
 
+/**
+ * Predefined Bible Bowl study sets, exposed as an enum so the CLI can resolve them by name
+ *
+ * The [DEFAULT] member determines what's used when the user invokes the pipeline without specifying a set.
+ */
 enum class StandardStudySet(val set: StudySet) {
     GENESIS(StudySet(Book.GEN, "gen")),
     MATTHEW(StudySet(Book.MAT, "matt")),
@@ -45,9 +50,16 @@ enum class StandardStudySet(val set: StudySet) {
     REVELATION(StudySet(Book.REV, "rev")),;
 
     companion object {
+        /** Default study set used when the CLI is invoked without a study-set argument */
         val DEFAULT: StudySet = JOSHUA_JUDGES_RUTH.set
 
-        // lenient parsing for user input, e.g.
+        /**
+         * Resolves a user-supplied name to a [StudySet], falling back to [default] when nothing matches.
+         *
+         * Match order: exact enum name (case-insensitive), then a prefix match against the enum name, the
+         * [StudySet.simpleName], or the [StudySet.name]. If none match, the input is parsed as a single [Book]
+         * via [Book.parse].
+         */
         fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =
             if (queryName == null) {
                 default

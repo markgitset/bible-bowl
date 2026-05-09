@@ -26,6 +26,7 @@ fun main() {
     writeWordListIndex(productsDir, studyData, WordList.WOMEN, "Woman", "Women")
 }
 
+/** Writes a plain-text list of [words] (one per line) to [file]. */
 fun writeWordListList(words: Sequence<String>, file: Path) {
     Files.newBufferedWriter(file).use { writer ->
         for (w in words) writer.appendLine(w)
@@ -33,6 +34,16 @@ fun writeWordListList(words: Sequence<String>, file: Path) {
     println("Wrote $file")
 }
 
+/**
+ * Writes both the per-category index PDF and the simple word list for [wordList] in [studyData]
+ *
+ * The index PDF goes to `<simpleName>/indices/`; the word list (one word per line) goes to
+ * `<simpleName>/lists/`.
+ *
+ * @param singularIndexType label for one entry (e.g. "Animal")
+ * @param pluralIndexType label for many (defaults to [singularIndexType] + "s"; supply manually for
+ *   irregular plurals like "Men", "Women")
+ */
 fun writeWordListIndex(
     productsDir: Path,
     studyData: StudyData,

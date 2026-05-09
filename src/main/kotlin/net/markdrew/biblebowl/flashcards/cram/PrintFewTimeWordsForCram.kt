@@ -15,8 +15,13 @@ import java.io.File
 import java.nio.file.Paths
 
 /**
- * Combines two [Card] lists such that no front values are duplicated--if duplicates are found, the one with the smaller
- * section range is preferred.
+ * Merges several maps of [Card] -> section [IntRange] into a single deduplicated card list
+ *
+ * When two maps contain cards with the same `front`, the one whose section range is enclosed by the other
+ * wins (i.e. the more specific section is preferred). If neither encloses the other, both backs are
+ * concatenated with "AND".
+ *
+ * @throws Exception if a `front` appears in more than two of [cardMaps]
  */
 fun mergeCards(vararg cardMaps: Map<Card, IntRange>): Collection<Card> =
     cardMaps.asSequence()
@@ -61,6 +66,13 @@ fun main(args: Array<String>) {
     writeCramFewTimeWords(studyData)
 }
 
+/**
+ * Writes a Cram-style TSV of "few-time word" flashcards for [studyData]: words occurring multiple times but
+ * confined to a single chapter or single heading
+ *
+ * One-chapter and one-heading cards are merged so any word appearing in both lists collapses to the
+ * narrower (heading) scope.
+ */
 fun writeCramFewTimeWords(studyData: StudyData) {
     // build one-chapter words
     val oneChapterWordCards: Map<Card, IntRange> =

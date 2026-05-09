@@ -35,6 +35,12 @@ fun main(args: Array<String>) {
     }
 }
 
+/**
+ * Generates a Round 1 ("Find the Verse") test PDF
+ *
+ * Picks [PracticeTest.numQuestions] single-verse sentence fragments at least [minCharLength] characters long
+ * from the [practiceTest]'s covered chapters and emits them along with an answer key.
+ */
 fun writeRound1VerseFind(
     practiceTest: PracticeTest,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
@@ -73,9 +79,20 @@ fun writeRound1VerseFind(
 /** Strings containing pairs of characters that normally occur as pairs */
 private val charPairs = listOf("()", "“”", "\"\"", "‘’", "''")
 
+/**
+ * Removes leading or trailing unmatched halves of common paired characters from [str]
+ *
+ * Used to clean up sentence-fragment clues that start or end mid-quote/parenthesis.
+ */
 fun removeUnmatchedCharPairs(str: String): String =
     charPairs.fold(str) { s, pair -> removeUnmatchedCharPair(s, pair) }
 
+/**
+ * Removes one leading [charPair][0] (if there are more opens than closes) or one trailing [charPair][1]
+ * (if there are more closes than opens) from [s]
+ *
+ * @throws IllegalArgumentException if [charPair] is not exactly two characters
+ */
 fun removeUnmatchedCharPair(s: String, charPair: String): String {
     if (s.isBlank()) return s
     require(charPair.length == 2)
@@ -88,6 +105,7 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
     return s
 }
 
+/** Writes a Round 1 LaTeX test sheet (questions + answer key) for these reference/verse pairs. */
 fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
                                                practiceTest: PracticeTest) {
     val seedString = "%04d".format(practiceTest.randomSeed)

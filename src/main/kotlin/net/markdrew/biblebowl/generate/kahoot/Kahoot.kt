@@ -6,10 +6,22 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook
 import java.io.File
 import java.nio.file.Path
 
+/** Allowed per-question time limits for a Kahoot quiz, in seconds */
 enum class KahootTimeLimit {
     SEC_5, SEC_10, SEC_20, SEC_30, SEC_60, SEC_90, SEC_120, SEC_240
 }
 
+/**
+ * One Kahoot quiz question with up to four answer choices
+ *
+ * @param prompt question text (Kahoot caps this at 120 characters)
+ * @param answer1 first answer choice (cap: 75 characters)
+ * @param answer2 second answer choice
+ * @param answer3 third answer choice
+ * @param answer4 fourth answer choice
+ * @param timeLimit per-question time limit
+ * @param correctAnswers 1-based indices of the correct answer(s) within `[answer1..answer4]`
+ */
 data class KahootQuestion(
     val prompt: String,
     val answer1: Any,
@@ -20,6 +32,11 @@ data class KahootQuestion(
     val correctAnswers: List<Int>
 )
 
+/**
+ * Receiver type for the [kahoot] DSL block; writes question rows to the underlying Excel [sheet]
+ *
+ * The first row is filled in with Kahoot's required column headers when the context is created.
+ */
 class KahootContext(private val sheet: SXSSFSheet) {
 
     init {
@@ -36,6 +53,7 @@ class KahootContext(private val sheet: SXSSFSheet) {
 
     private var rowNum = 1
 
+    /** Appends a question row to the sheet from a [KahootQuestion]. */
     fun question(kahootQuestion: KahootQuestion) {
         sheet.apply {
             createRow(rowNum).apply {
@@ -52,6 +70,7 @@ class KahootContext(private val sheet: SXSSFSheet) {
         rowNum++
     }
 
+    /** Convenience overload that builds a [KahootQuestion] inline from positional arguments. */
     fun question(
         prompt: String,
         answer1: Any,
@@ -77,10 +96,17 @@ class KahootContext(private val sheet: SXSSFSheet) {
     }
 }
 
+/** [kahoot] overload taking a [Path]; delegates to the [File] form. */
 fun kahoot(path: Path, sheetFun: KahootContext.() -> Unit) {
     kahoot(path.toFile(), sheetFun)
 }
 
+/**
+ * Builds a Kahoot-format `.xlsx` quiz at [file] using a builder block
+ *
+ * Calls [sheetFun] with a [KahootContext] receiver so questions can be added with the [KahootContext.question]
+ * methods. The workbook is streamed to disk so very long quizzes don't keep all rows in memory.
+ */
 fun kahoot(file: File, sheetFun: KahootContext.() -> Unit) {
     SXSSFWorkbook().use { wb ->  // keep 100 rows in memory, exceeding rows will be flushed to disk
         KahootContext(wb.createSheet()).sheetFun()

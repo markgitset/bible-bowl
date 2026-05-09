@@ -37,6 +37,7 @@ private fun writeNamesList(studyData: StudyData) {
     println("Wrote $file")
 }
 
+/** Writes the names index (alphabetical + frequency) for [studyData] as a LaTeX PDF. */
 fun writeNamesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val studyName = studyData.studySet.simpleName
     val exceptNames: Array<String> = arrayOf()

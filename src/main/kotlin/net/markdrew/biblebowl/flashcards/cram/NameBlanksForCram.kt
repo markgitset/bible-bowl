@@ -38,6 +38,13 @@ fun main(args: Array<String>) {
 
 }
 
+/**
+ * Writes a Cram-style TSV of fill-in-the-blank-name flashcards built from [nameExcerpts], optionally
+ * restricted to [chapterRange]
+ *
+ * Each card blanks out the name within its enclosing single-verse sentence; the back shows the name and
+ * verse reference.
+ */
 fun writeCramNameBlanks(
     studyData: StudyData,
     nameExcerpts: Sequence<Excerpt>,

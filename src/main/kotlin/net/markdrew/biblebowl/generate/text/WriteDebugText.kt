@@ -26,6 +26,12 @@ fun main(args: Array<String>) {
     )
 }
 
+/**
+ * Writes a plain-text debug dump of [studyData]'s annotated runs to a file in the working directory
+ *
+ * Each line shows a run's range, the active annotations, and the raw text (with newlines escaped).
+ * Useful for diagnosing renderer issues without going through LaTeX/DOCX compilation.
+ */
 fun writeBibleDocDebug(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val outputFile = File("$name-debug-text-${opts.fileNameSuffix}.txt")

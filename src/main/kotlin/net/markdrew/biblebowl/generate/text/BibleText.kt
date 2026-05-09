@@ -54,6 +54,11 @@ fun main(args: Array<String>) {
     )
 }
 
+/**
+ * Renders [studyData] as a LaTeX document under [productsPath], then compiles it to PDF (twice, for cross-refs)
+ *
+ * Writes `<simpleName>-bible-text-<suffix>.tex` and `.pdf` into `<productsPath>/<simpleName>/text/latex/`.
+ */
 fun writeBibleText(studyData: StudyData, productsPath: Path = Path.of(PRODUCTS_DIR_NAME), opts: TextOptions<String> = TextOptions()) {
     val name = studyData.studySet.simpleName
     val latexFile = productsPath.resolve(name, "text", "latex", "$name-bible-text-${opts.fileNameSuffix}.tex")
@@ -73,11 +78,20 @@ fun writeBibleText(studyData: StudyData, productsPath: Path = Path.of(PRODUCTS_D
 
 private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
 
+/**
+ * Renders [StudyData] to a LaTeX source file driven by a [TextOptions] configuration
+ *
+ * The actual layout, highlighting, and footnote handling are all done by walking [AnnotatedDoc]'s state
+ * transitions; the LaTeX preamble and macros are emitted at the document boundary.
+ */
 class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
 
+    /** Writes the LaTeX rendering of [studyData] to [file], creating parent directories as needed. */
     fun renderToFile(file: Path, studyData: StudyData) {
         renderToFile(file.toFile(), studyData)
     }
+
+    /** Writes the LaTeX rendering of [studyData] to [file], creating parent directories as needed. */
     fun renderToFile(file: File, studyData: StudyData) {
         file.parentFile.mkdirs()
         file.writer().use {
@@ -303,6 +317,13 @@ class BibleTextRenderer(private val opts: TextOptions<String> = TextOptions()) {
         private fun <T : Any> highlightString(excerpt: Excerpt, color: T): String =
             """"${excerpt.excerptText}" (${excerpt.excerptRange}:$color)"""
 
+        /**
+         * Builds an [AnnotatedDoc] for [studyData] with all the analysis layers needed for the requested
+         * [opts]: custom regex highlights, small caps, unique-word underlining, and name/number highlights.
+         *
+         * Custom highlights are deconflicted by length when multiple patterns overlap — the longer match
+         * wins and any displaced shorter matches are logged.
+         */
         fun <T : Any> annotatedDoc(studyData: StudyData, opts: TextOptions<T>): AnnotatedDoc<AnalysisUnit> {
             val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
                 BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS

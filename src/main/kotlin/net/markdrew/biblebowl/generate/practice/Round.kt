@@ -7,11 +7,22 @@ import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudyData
 import java.nio.file.Path
 
-enum class BibleUse { 
+/** Whether contestants may use a Bible during a round */
+enum class BibleUse {
     CLOSED, OPEN;
     override fun toString(): String = name.lowercase().replaceFirstChar { name.first() }
 }
 
+/**
+ * The Texas Bible Bowl rounds, with their canonical question counts, time limits, and Bible-use rules
+ *
+ * @param number 0-5; round 0 is the team Power Round
+ * @param shortName slug used in filenames (e.g. "verse-find")
+ * @param longName display name as printed on test sheets
+ * @param questions standard question count for the round
+ * @param minutes standard time limit in minutes
+ * @param bibleUse whether contestants may consult their Bible during this round
+ */
 enum class Round(
     val number: Int,
     val shortName: String,
@@ -28,23 +39,26 @@ enum class Round(
     EVENTS(5, "events", "In What Chapter - Events", 40, 10, CLOSED),
     ;
 
-    /**
-     * The pace of this type of test in questions per minute
-     */
+    /** Standard pace of this round in questions per minute */
     val questionsPerMinute: Double = questions.toDouble() / minutes
 
-    /**
-     * Compute how many minutes to allow for a test at the standard pace, but with a nonstandard number of [questions].
-     */
+    /** Time limit in minutes for a test of [questions] question(s) at this round's standard pace. */
     fun minutesAtPaceFor(questions: Int): Int = questions * minutes / this.questions
 
 //    fun practiceTest(): PracticeTest = PracticeTest(this)
 }
 
+/** Convenience builder for a [PracticeTest] with [seed] and an optional [numQuestions] override. */
 fun practiceTest(round: Round, content: PracticeContent, seed: Int, numQuestions: Int = round.questions): PracticeTest =
     PracticeTest(round, content, numQuestions = numQuestions, randomSeed = seed)
 
-// PRODUCE THE FULL SET
+/**
+ * Generates the full grid of practice tests for [studyData]: cumulative content through each chapter, times
+ * [repsPerRange] random seeds per chapter range
+ *
+ * The [writer] callback is invoked once per (content, seed) pair and is responsible for actually emitting
+ * the desired round(s) for that combination.
+ */
 fun writeFullSet(
     studyData: StudyData,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),

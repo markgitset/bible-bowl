@@ -25,11 +25,13 @@ fun main(args: Array<String>) {
 
 }
 
+/** Returns every occurrence of a [wordList] entry in [text] as an [Excerpt]. */
 fun findListWords(text: String, wordList: WordList): Sequence<Excerpt> =
     wordList.regexSequence().flatMap { regex ->
         regex.findAll(text).map { Excerpt(it.value, it.range) }
     }
 
+/** Builds an index of [wordList] entries in [studyData], grouped by lowercased word with the verses each appears in. */
 fun buildWordListIndex(studyData: StudyData, wordList: WordList): List<WordIndexEntry> =
     findListWords(studyData.text, wordList)
         .groupBy { it.excerptText.lowercase() }
@@ -37,6 +39,7 @@ fun buildWordListIndex(studyData: StudyData, wordList: WordList): List<WordIndex
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
         }
 
+/** Prints [excerpts] sorted alphabetically, with verse reference and surrounding sentence (target word blanked out). */
 fun printExcerpts(excerpts: Sequence<Excerpt>, studyData: StudyData) {
     excerpts.sortedBy { it.excerptText }.forEachIndexed { i, numExcerpt ->
         val (numString, numRange) = numExcerpt

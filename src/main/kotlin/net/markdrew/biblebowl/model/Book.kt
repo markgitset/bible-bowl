@@ -1,5 +1,15 @@
 package net.markdrew.biblebowl.model
 
+/**
+ * The 66 books of the Protestant Bible canon, in canonical order
+ *
+ * Each book carries display names at three levels (full, brief, three-letter) and a positional [number] (1..66)
+ * used to encode/decode packed [AbsoluteChapterNum] and [AbsoluteVerseNum] values.
+ *
+ * @param fullName the unabbreviated book name (e.g. "1 Corinthians")
+ * @param briefName a short name for index/footer use; defaults to [fullName]
+ * @param twoLetterCode optional override for the two-letter code; defaults to the first two letters of [name]
+ */
 enum class Book(val fullName: String, val briefName: String = fullName, private val twoLetterCode: String? = null) {
     GEN("Genesis", "Gen"),
     EXO("Exodus", "Exo"),
@@ -68,21 +78,39 @@ enum class Book(val fullName: String, val briefName: String = fullName, private 
     JUD("Jude"),
     REV("Revelation", "Rev");
 
+    /** 1-based canonical position (Genesis = 1, Revelation = 66) */
     val number = ordinal + 1
+
+    /** Largest possible chapter ref for this book, useful as a sentinel "to end of book" upper bound */
     val lastChapterRef = ChapterRef(this, BCV_FACTOR - 1)
+
+    /** Two-letter uppercase code for this book (e.g. "GE", "JG", "DT") */
     val twoLetter = (twoLetterCode ?: name.take(2)).uppercase()
 
+    /** Returns the [VerseRef] at [chapter]:[verse] in this book. */
     fun verseRef(chapter: Int, verse: Int): VerseRef = chapterRef(chapter).verse(verse)
+
+    /** Returns the [ChapterRef] for [chapter] in this book. */
     fun chapterRef(chapter: Int): ChapterRef = ChapterRef(this, chapter)
+
+    /** Returns the inclusive [ChapterRange] from chapter [first] through [last] of this book. */
     fun chapterRange(first: Int, last: Int): ChapterRange = chapterRef(first)..chapterRef(last)
+
+    /** Returns a sentinel [ChapterRange] covering every chapter of this book; the upper bound is [lastChapterRef]. */
     fun allChapters(): ChapterRange = chapterRef(1)..lastChapterRef
 
     companion object {
         val DEFAULT = MAT
 
+        /** Returns the book at 1-based canonical position [n] (1 = Genesis, 66 = Revelation). */
         fun fromNumber(n: Int): Book = entries[n-1]
 
-        // lenient parsing for user input, e.g.
+        /**
+         * Lenient parser tolerating both the three-letter enum name (case-insensitive) and a prefix of [fullName].
+         *
+         * Returns [default] if [s] is null. If [s] is non-null and matches neither form, returns [default] as
+         * well (i.e. unknown input falls back rather than throwing).
+         */
         fun parse(s: String?, default: Book? = DEFAULT): Book? = if (s == null) default else try {
             valueOf(s.uppercase())
         } catch (e: IllegalArgumentException) {

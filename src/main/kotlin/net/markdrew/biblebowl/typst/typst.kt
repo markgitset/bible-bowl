@@ -7,6 +7,15 @@ import kotlin.io.path.absolutePathString
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.nameWithoutExtension
 
+/**
+ * Compiles a Typst source file to PDF via the `typst` CLI and returns the resulting `.pdf` path
+ *
+ * Requires `typst` on PATH. Deletes the source `.typ` file after compilation unless [keepTypFiles] is true.
+ *
+ * @param showStdIo if true, typst's stdout is written to the parent process's stdout instead of being
+ *   discarded
+ * @param keepTypFiles preserve the `.typ` source file
+ */
 fun Path.typstToPdf(
     showStdIo: Boolean = false,
     keepTypFiles: Boolean = false,

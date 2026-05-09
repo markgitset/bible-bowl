@@ -20,6 +20,14 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.util.Date
 
+/**
+ * Bridges Mochi's Transit JSON wire format to and from the `kotlinx.serialization` [MochiData] tree
+ *
+ * Mochi mixes Transit-specific tagged values (`~#dt` for dates, `~#set` for sets, keyword-typed strings)
+ * with regular JSON. This object converts in two stages: Transit -> [JsonElement] tree -> Kotlin model
+ * (for decode), and the inverse for encode. Special-cased keys (defined in the private `*_KEYS` sets)
+ * preserve the right Transit types on the round trip.
+ */
 object MochiTransitFormat {
     @PublishedApi
     internal val json = Json {
@@ -34,9 +42,7 @@ object MochiTransitFormat {
     private val KEYWORD_VAL_KEYS = setOf("id", "deck-id", "template-id")
     private val KEYWORD_SET_KEYS = setOf("references")
 
-    /**
-     * Reads a Transit JSON InputStream and decodes it into your Kotlin models.
-     */
+    /** Reads Transit JSON from [inputStream] and decodes it into [T] via the intermediate [JsonElement] tree. */
     inline fun <reified T> decodeFromStream(inputStream: InputStream): T {
         val reader = TransitFactory.reader(TransitFactory.Format.JSON, inputStream)
         val transitObj = reader.read<Any>()
@@ -44,9 +50,7 @@ object MochiTransitFormat {
         return json.decodeFromJsonElement(jsonElement)
     }
 
-    /**
-     * Encodes your Kotlin models and writes them as Transit JSON to an OutputStream.
-     */
+    /** Encodes [value] as Transit JSON and writes the result to [outputStream]. */
     inline fun <reified T> encodeToStream(value: T, outputStream: OutputStream) {
         val jsonElement = json.encodeToJsonElement(value)
         val transitObj: Any? = jsonToTransit(null, jsonElement)

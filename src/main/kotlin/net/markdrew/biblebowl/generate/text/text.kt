@@ -5,6 +5,7 @@ import java.io.InputStream
 import java.net.URI
 import kotlin.io.path.toPath
 
+/** Default small-caps replacements: forms of the divine name and "I AM" sayings rendered in small caps. */
 val smallCapsNames = mapOf(
     "GOD" to "God",
     "LORD" to "Lord",
@@ -14,6 +15,12 @@ val smallCapsNames = mapOf(
     "I will be what I will be" to "I will be what I will be"
 )
 
+/**
+ * Regex patterns matching common references to God, Jesus, Holy Spirit, angels, etc.
+ *
+ * Used by renderers to apply divine-name highlighting and by name-extraction code to exclude these from
+ * the regular names index (so "God" / "Jesus" / "Christ" don't show up there by default).
+ */
 @Language("RegExp")
 val divineNames: Set<String> = setOf(
     "(?:L(?:ORD|ord),? (?:your |the )?)?God(?: of Israel)?", "(Lord )?Jesus( Christ)?", "Christ( of God| the Lord)?",

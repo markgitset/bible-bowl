@@ -5,6 +5,7 @@ import java.io.File
 import java.lang.ProcessBuilder.Redirect.DISCARD
 import java.nio.file.Path
 
+/** [latexToPdf] overload returning a [Path]; delegates to the [File] form. */
 fun Path.latexToPdf(
     showStdIo: Boolean = false,
     keepLogFiles: Boolean = false,
@@ -12,6 +13,18 @@ fun Path.latexToPdf(
     twice: Boolean = false
 ): Path = toFile().latexToPdf(showStdIo, keepLogFiles, keepTexFiles, twice).toPath()
 
+/**
+ * Compiles a LaTeX source file to PDF via `pdflatex` and returns the resulting `.pdf` file
+ *
+ * Requires `pdflatex` on PATH. Cleans up `.aux`, `.log`, and `.tex` siblings unless the corresponding
+ * `keep…` flags are set.
+ *
+ * @param showStdIo if true, pdflatex's stdout is written to the parent process's stdout instead of being
+ *   discarded (useful for diagnosing failures)
+ * @param keepLogFiles preserve `.aux` and `.log` next to the output PDF
+ * @param keepTexFiles preserve the `.tex` source file
+ * @param twice run `pdflatex` twice so cross-references resolve correctly
+ */
 fun File.latexToPdf(
     showStdIo: Boolean = false,
     keepLogFiles: Boolean = false,

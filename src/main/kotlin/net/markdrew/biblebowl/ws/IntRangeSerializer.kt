@@ -8,7 +8,9 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
 /**
- * Custom serializer for [IntRange]s
+ * kotlinx.serialization serializer for [IntRange] using a "first,last" string encoding
+ *
+ * Registered as a contextual serializer in [PassageText.json] so [Passage.range] round-trips through JSON.
  */
 object IntRangeSerializer : KSerializer<IntRange> {
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("IntRange", PrimitiveKind.STRING)

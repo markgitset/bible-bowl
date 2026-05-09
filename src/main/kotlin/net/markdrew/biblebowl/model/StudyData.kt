@@ -37,9 +37,33 @@ import java.util.SortedMap
 import kotlin.io.path.notExists
 import kotlin.io.path.useLines
 
+/** A character offset into [StudyData.text] */
 typealias CharOffset = Int
+
+/** A character offset range over [StudyData.text] */
 typealias CharOffsetRange = IntRange
 
+/**
+ * The fully-indexed in-memory representation of a [StudySet]'s ESV text
+ *
+ * Generators consume [StudyData] rather than re-parsing text. The full study set is one joined string
+ * ([text]); structural features (verses, headings, chapters, paragraphs, poetry, footnotes) are attached as
+ * disjoint character-offset annotations from the chupacabra library. Many derived views are exposed as `lazy`
+ * properties so callers pay only for what they use.
+ *
+ * [readData] reconstructs an instance from a previously persisted directory; [writeData] writes one to disk
+ * in the same TSV-based format.
+ *
+ * @param studySet which Bible portion this data represents
+ * @param text the joined ESV text of every chapter in [studySet], in canonical order
+ * @param verses per-verse character ranges over [text]
+ * @param headingCharRanges per-heading character ranges over [text], mapped to the heading title
+ * @param chapters per-chapter character ranges over [text]
+ * @param paragraphs per-paragraph character ranges over [text]; the value is the indent depth (0 for prose,
+ *   non-zero for poetry lines)
+ * @param footnotes character offsets at which a footnote anchor sits, mapped to the footnote text
+ * @param poetry character ranges over [text] that are typeset as poetry
+ */
 class StudyData(
     val studySet: StudySet,
     val text: String,
@@ -51,6 +75,7 @@ class StudyData(
     val poetry: DisjointRangeSet,
 ) {
 
+    /** Character ranges grouped by [Book]; one entry per book contained in [studySet] */
     val books: DisjointRangeMap<Book> by lazy {
         chapters.entries
             .groupingBy { (_, chapterRef) -> chapterRef.book }
@@ -58,19 +83,22 @@ class StudyData(
             .entries.associateTo(DisjointRangeMap()) { (book, charRange) -> charRange to book }
     }
 
+    /** Inverse of [verses]: character range for a given [VerseRef] */
     val verseIndex: Map<VerseRef, IntRange> by lazy {
         verses.entries.associate { (range, refNum) -> refNum to range }
     }
 
-    /** Character ranges by chapter number */
+    /** Inverse of [chapters]: character range for a given [ChapterRef] */
     val chapterIndex: Map<ChapterRef, IntRange> by lazy {
         chapters.entries.associate { (range, chapterNum) -> chapterNum to range }
     }
 
+    /** Lowercased word -> every character range where that word occurs */
     val wordIndex: Map<String, List<IntRange>> by lazy {
         words.groupBy { wordRange -> text.substring(wordRange).lowercase() }
     }
 
+    /** Headings as ordered domain objects, each carrying its 1-based index and the total heading count */
     val headings: List<Heading> by lazy {
         val maxIndex: Int = headingCharRanges.size
         headingCharRanges.entries.mapIndexed { index, (headingCharRange, headingTitle) ->
@@ -79,37 +107,46 @@ class StudyData(
         }
     }
 
-    /**
-     * Sentences (or sentence parts) that are guaranteed to NOT span more than one verse
-     */
+    /** Sentences (or sentence fragments) guaranteed not to span more than one verse, keyed by that verse */
     val oneVerseSentParts: DisjointRangeMap<VerseRef> by lazy { verses.maskedBy(sentences) }
 
+    /** All sentence ranges in [text], computed from a US-English [java.text.BreakIterator] */
     val sentences: DisjointRangeSet by lazy { identifySentences(text) }
 
+    /** Every word range in [text], using [wordsPattern] */
     val words: DisjointRangeSet by lazy { findAll(wordsPattern) }
 
+    /** True if [studySet] spans more than one [Book] */
     val isMultiBook: Boolean by lazy { books.size > 1 }
 
+    /** Renders a [VerseRef] for inline display, including the book name only when [isMultiBook] */
     val verseRefFormat: (VerseRef) -> String by lazy {
         if (isMultiBook) { verseRef: VerseRef -> verseRef.format(BRIEF_BOOK_FORMAT) }
         else { verseRef: VerseRef -> verseRef.format(NO_BOOK_FORMAT) }.noBreak()
     }
 
+    /** Renders a [ChapterRef] for inline display, including the book name only when [isMultiBook] */
     val chapterRefFormat: (ChapterRef) -> String by lazy {
         if (isMultiBook) { chapterRef: ChapterRef -> chapterRef.format(BRIEF_BOOK_FORMAT) }
         else { chapterRef: ChapterRef -> chapterRef.format(NO_BOOK_FORMAT) }.noBreak()
     }
 
+    /** Renders a list of [VerseRef]s compactly (e.g. "Mat 4:5,6; 6:8,10") */
     val compactVerseRefListFormat: (List<VerseRef>) -> String by lazy {
         if (isMultiBook) { verseRefs: List<VerseRef> -> verseRefs.format(BRIEF_BOOK_FORMAT) }
         else { verseRefs: List<VerseRef> -> verseRefs.joinToString { verseRefFormat(it) } }
     }
 
+    /** Like [compactVerseRefListFormat] but appending a frequency count to each verse */
     val compactWithCountVerseRefListFormat: (List<WithCount<VerseRef>>) -> String by lazy {
         if (isMultiBook) { verseRefs: List<WithCount<VerseRef>> -> verseRefs.formatWithCounts(BRIEF_BOOK_FORMAT) }
         else { verseRefs: List<WithCount<VerseRef>> -> verseRefs.joinToString(transform = verseRefFormat.withCount()) }
     }
 
+    /**
+     * Persists this [StudyData] under `<outPath>/<studySet.simpleName>/`, writing the joined text and one TSV
+     * file per annotation kind. Round-trips with [readData].
+     */
     fun writeData(outPath: Path) {
         val outDir = outPath.resolve(studySet.simpleName)
         writeText(outDir.resolve(studySet.simpleName + ".txt"))
@@ -171,9 +208,10 @@ class StudyData(
     }
 
     /**
-     * Returns a name/description of the smallest, named range (verse, heading, or chapter) that encloses the given
-     * range.  E.g., given a single would return a verse reference string, or given a few verses in the same chapter
-     * heading, would return that chapter heading.
+     * Returns a label for the smallest named range (verse, heading, or chapter) that encloses [range].
+     *
+     * For example, a range inside a single verse returns the verse reference; a range covering a few verses
+     * within one heading returns the heading; a range across an unnamed span returns null.
      */
     fun smallestNamedRange(range: IntRange): String? {
         val verseRef: VerseRef? = verses.valueEnclosing(range)
@@ -188,10 +226,10 @@ class StudyData(
         return null
     }
 
-    /** All chapter refs in this data, in Bible order */
+    /** Every chapter in [studySet], in canonical Bible order */
     val chapterRefs: List<ChapterRef> = chapters.values.toList()
 
-    /** The range of chapters in this book */
+    /** The first-to-last chapter range covered by this data */
     val chapterRange: ChapterRange by lazy {
         val values = chapterRefs
         val min = values.minOrNull() ?: throw Exception("Should never happen!")
@@ -199,43 +237,35 @@ class StudyData(
         min..max
     }
 
-    /**
-     * Returns the character range corresponding to the given chapter range
-     */
+    /** Returns the character range over [text] that corresponds to [selectedChaptersRange]. */
     fun charRangeFromChapterRange(selectedChaptersRange: ChapterRange): IntRange {
         val chapters = chapterRange.intersect(selectedChaptersRange) // ensure a valid chapter range
         return chapterIndex.getValue(chapters.start).first..chapterIndex.getValue(chapters.endInclusive).last
     }
 
-    /**
-     * Returns the character range from the beginning through [lastChapter], or the whole book if [lastChapter] is null
-     */
+    /** Returns the character range from the start of [text] through the end of [lastChapter]; if null, returns all of [text]. */
     fun charRangeThroughChapter(lastChapter: Int?): IntRange =
         if (lastChapter == null) text.indices
         else 0..chapters.entries.drop(lastChapter - 1).first().key.last
 
-    /**
-     * Returns chapter [[Heading]]s that intersect the given chapter range
-     */
+    /** Returns the [Heading]s whose chapter falls within [chapterRange]. */
     fun headings(chapterRange: ChapterRange): List<Heading> =
         headings.filter { it.verseRange.start.chapterRef in chapterRange }
 
-    /**
-     * Returns chapter [[Heading]]s that intersect the given chapter range
-     */
+    /** Returns the [Heading]s whose first chapter is one of [chapterRefs]. */
     fun headings(chapterRefs: Collection<ChapterRef>): List<Heading> =
         headings.filter { it.chapterRange.start in chapterRefs }
 
     /**
-     * Returns the given chapter number (with optional prefix/suffix) if it is less than the last chapter of the book,
-     * otherwise an empty string
+     * Renders [maxChapter] as `prefix$it$suffix` if it falls strictly inside this study set's chapter range,
+     * or returns an empty string otherwise (so callers can splice it into messages without an `if`).
      */
     fun maxChapterOrEmpty(prefix: String = "", maxChapter: Int?, suffix: String = ""): String =
         maxChapter?.takeIf { it < chapterRange.endInclusive.chapter }?.let { prefix + it + suffix }.orEmpty()
 
     /**
-     * Returns the given chapter range (with optional prefix/suffix) if it is less than all chapters of the book,
-     * otherwise an empty string
+     * Renders [range] as `prefix$it$suffix` if it is a strict subset of this study set's full chapter range,
+     * or returns an empty string otherwise.
      */
     fun chapterRangeOrEmpty(prefix: String = "", range: ChapterRange?, suffix: String = ""): String =
         range?.takeIf { it != chapterRange }
@@ -243,16 +273,23 @@ class StudyData(
             .orEmpty()
 
     /**
-     * For multi-book sets, these are relative chapters, not necessarily book chapters
+     * Returns the [first]..[last] chapter range using 1-based positions within this study set's chapters.
+     *
+     * For multi-book sets these are relative positions, not per-book chapter numbers.
      */
     fun relativeChapterRange(first: Int, last: Int): ChapterRange =
         with (chapterRefs.toList()) { this[first - 1]..this[last - 1] }
 
+    /** Returns the sentence range that fully contains [range], or null if none does. */
     fun enclosingSentence(range: IntRange): IntRange? = sentences.enclosing(range)
+
+    /** Returns the surrounding sentence as an [Excerpt], or null if no sentence fully contains [range]. */
     fun sentenceContext(range: IntRange): Excerpt? = enclosingSentence(range)?.let { excerpt(it) }
 
+    /** Slices [text] into an [Excerpt] over the given character [range]. */
     fun excerpt(range: IntRange): Excerpt = text.excerpt(range)
 
+    /** Returns the number of [words] entirely contained in [range]. */
     fun wordCount(range: IntRange): Int = words.enclosedBy(range).size
 
 //    fun splitLong(textRange: IntRange, maxLengthGoal: Int = 22): List<IntRange> {
@@ -261,39 +298,48 @@ class StudyData(
 //        return listOf(textRange)
 //    }
 
+    /** Like [enclosingSentence] but only returns sentences/sentence parts that don't cross verse boundaries. */
     fun enclosingSingleVerseSentence(range: IntRange): IntRange? = oneVerseSentParts.keyEnclosing(range)
+
+    /** [enclosingSingleVerseSentence] as an [Excerpt]. */
     fun singleVerseSentenceContext(range: IntRange): Excerpt? =
         enclosingSingleVerseSentence(range)?.let { excerpt(it) }
 
+    /** Materializes every verse as a [ReferencedVerse]. */
     fun verseList(): List<ReferencedVerse> =
         verses.entries.map { (range, verseRef) -> ReferencedVerse(verseRef, text.substring(range)) }
 
+    /** Returns the text of the given [verseRef]. */
     fun getVerse(verseRef: VerseRef): String = text.substring(verseIndex.getValue(verseRef))
+
+    /** Returns the verse that fully contains [charRange], or null if none does. */
     fun verseEnclosing(charRange: CharOffsetRange): VerseRef? = verses.valueEnclosing(charRange)
 
     /**
-     * Returns the heading that fully includes the given verse.  Note that some verses may span more than one heading,
-     * and in such cases, this function returns null.
+     * Returns the heading that fully contains [verseRef], or null if [verseRef] straddles a heading boundary
+     * (which can happen for verses that span more than one heading).
      */
     fun headingEnclosing(verseRef: VerseRef): String? = headingCharRanges.valueEnclosing(verseIndex.getValue(verseRef))
 
     /**
-     * Returns the heading that fully includes the given verse range.  Note that some verse ranges may span more than
-     * one heading, and in such cases, this function returns null.
+     * Returns the heading that fully contains [verseRange], or null if [verseRange] straddles a heading
+     * boundary.
      */
     fun headingEnclosing(verseRange: VerseRange): String? =
         headingCharRanges.valueEnclosing(verseRangeToCharRange(verseRange))
 
     /**
-     * Returns the headings that intersect the given verse.  Usually, this is only one heading, but there are some
-     * verses that span more than one heading.
+     * Returns every heading that intersects [verseRef].
+     *
+     * Usually exactly one, but some verses span more than one heading.
      */
     fun headingsIntersecting(verseRef: VerseRef): List<String> =
         headingCharRanges.valuesIntersectedBy(verseIndex.getValue(verseRef))
 
     /**
-     * Returns the headings that intersect the given verse range.  Usually, this is only one heading, but there are some
-     * verse ranges that span more than one heading.
+     * Returns every heading that intersects [verseRange].
+     *
+     * Usually exactly one, but some verse ranges span more than one heading.
      */
     fun headingsIntersecting(verseRange: VerseRange): List<String> =
         headingCharRanges.valuesIntersectedBy(verseRangeToCharRange(verseRange))
@@ -301,7 +347,10 @@ class StudyData(
     private fun verseRangeToCharRange(verseRange: VerseRange): IntRange =
         verseIndex.getValue(verseRange.start).first..verseIndex.getValue(verseRange.endInclusive).last
 
+    /** Returns the chapter that fully contains [charRange], or null if none does. */
     fun chapterEnclosing(charRange: CharOffsetRange): ChapterRef? = chapters.valueEnclosing(charRange)
+
+    /** Returns the verse containing [charOffset], or null if [charOffset] sits between verses. */
     fun verseContaining(charOffset: CharOffset): VerseRef? = verses.valueContaining(charOffset)
 
     /**
@@ -312,6 +361,11 @@ class StudyData(
 //        phraseWords.
 //    }
 
+    /**
+     * Runs every regex in [patterns] against [text] and returns the union of their match ranges.
+     *
+     * When two patterns produce overlapping matches, the longer range wins (the shorter is discarded).
+     */
     fun findAll(vararg patterns: Regex): DisjointRangeSet =
         patterns.fold(DisjointRangeSet()) { drs, pattern ->
             pattern.findAll(text).map { it.range }.forEach { r ->
@@ -325,12 +379,20 @@ class StudyData(
             drs
         }
 
+    /**
+     * Returns a [PracticeContent] view of this data, optionally limited to the chapters up through
+     * [throughChapter] (inclusive) for cumulative practice.
+     */
     fun practice(throughChapter: ChapterRef? = null): PracticeContent =
         if (throughChapter == null) PracticeContent(this)
         else PracticeContent(this, chapterRefs.take(chapterRefs.indexOf(throughChapter) + 1))
 
     companion object {
 
+        /**
+         * Pattern for tokenizing words: matches a comma-grouped number (e.g. "1,234") or a hyphenated word
+         * with an optional possessive ending
+         */
         internal val wordsPattern = """\d{1,3}(?:,\d{3})+|[-\w]+(?:[’']s)?""".toRegex()
 
         private fun <T> writeIterable(outPath: Path, iterable: Iterable<T>, formatFun: PrintWriter.(T) -> Unit) {
@@ -389,6 +451,13 @@ class StudyData(
             }.toMap().toSortedMap()
         }
 
+        /**
+         * Loads previously persisted [StudyData] for [studySet] from [dataDir].
+         *
+         * If the per-study-set directory doesn't exist, falls back to downloading and indexing from the ESV
+         * API (using [rawDataDir] as the download cache). Set [forceDownload] true to bypass any existing
+         * raw cache and re-fetch from the API.
+         */
         fun readData(
             studySet: StudySet = StandardStudySet.DEFAULT,
             dataDir: Path = defaultDataPath,

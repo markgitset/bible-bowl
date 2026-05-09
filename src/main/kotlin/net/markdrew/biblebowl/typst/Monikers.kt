@@ -22,6 +22,7 @@ fun main() {
     writeTypstMonikers(studySet, monikersCards).showPdf()
 }
 
+/** Generates the Monikers flashcards for [studySet] as a Typst-compiled PDF on Avery 5870 stock. */
 fun writeTypstMonikers(
     studySet: StudySet,
     monikersData: List<MonikersCard>,
@@ -65,6 +66,7 @@ private fun formatCardVerseRanges(card: HeadingCard): String = card.verseRanges.
 private fun formatCardFooter(card: HeadingCard): String =
     card.indices.joinToString(" & ") + " of " + card.allHeadings.size
 
+/** Emits the Typst source for the Monikers flashcards into [writer]. */
 fun writeMonikers(writer: Writer, monikersCards: List<MonikersCard>) {
     // Write front matter
     writer.appendLine("""

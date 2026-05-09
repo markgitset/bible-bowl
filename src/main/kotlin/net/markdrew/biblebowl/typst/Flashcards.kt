@@ -20,6 +20,7 @@ fun main() {
     writeTypstFlashCards(studyData).showPdf()
 }
 
+/** Generates the chapter-heading flashcards as a Typst-compiled PDF on Avery 5870 stock. */
 fun writeTypstFlashCards(studyData: StudyData, productsDir: Path = defaultProductsPath): Path {
     val studyName = studyData.studySet.simpleName
     val dir = productsDir.resolve(studyName, "flashcards").also { Files.createDirectories(it) }
@@ -59,6 +60,7 @@ private fun formatCardVerseRanges(card: HeadingCard): String = card.verseRanges.
 private fun formatCardFooter(card: HeadingCard): String =
     card.indices.joinToString(" & ") + " of " + card.allHeadings.size
 
+/** Emits the Typst source for the chapter-heading flashcards into [writer]. */
 fun writeFlashcards(writer: Writer, studyData: StudyData) {
     // Write front matter
     writer.appendLine("""

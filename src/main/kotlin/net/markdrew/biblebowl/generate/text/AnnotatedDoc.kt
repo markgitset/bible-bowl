@@ -11,6 +11,18 @@ import java.util.NavigableMap
 import java.util.TreeMap
 import kotlin.math.min
 
+/**
+ * A document text together with one or more layered annotation maps, each keyed by an annotation type [A]
+ *
+ * Renderers consume an [AnnotatedDoc] via [textRuns] (or [stateTransitions]) and walk its document one
+ * maximal-no-change run at a time. The whole-document range is automatically annotated with
+ * [wholeDocAnnotationKey], which provides the outermost open/close events so renderers can emit a preamble
+ * and postamble.
+ *
+ * @param docText the full document text
+ * @param wholeDocAnnotationKey annotation key used to mark the whole document range; chosen by the caller
+ *   from their [A] enum (typically a "DOC" or "STUDY_SET" entry)
+ */
 class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
 
     private val docRange: IntRange = docText.indices
@@ -22,18 +34,28 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
     // point annotations are considered to occur between index-1 and index
     private val pointAnnotationMaps: MutableMap<A, NavigableMap<Int, PointAnnotation<A>>> = mutableMapOf()
 
+    /**
+     * Adds (or replaces) the annotations for [annotationKey] from a range-keyed map
+     *
+     * Ranges are clipped to [docText]'s indices, so out-of-bounds entries are silently dropped.
+     */
     fun <V : Any> setAnnotations(annotationKey: A, annotationsRangeMap: DisjointRangeMap<V>) {
         annotationMaps[annotationKey] = annotationsRangeMap.mapNotNull { (annotationRange, annotationValue) ->
             annotationMapping(annotationRange, annotationKey, annotationValue)
         }.toMap(DisjointRangeMap())
     }
 
+    /**
+     * Adds (or replaces) the annotations for [annotationKey] from a set of ranges; each annotation gets the
+     * placeholder value `true`.
+     */
     fun setAnnotations(annotationKey: A, annotationsRangeSet: DisjointRangeSet) {
         annotationMaps[annotationKey] = annotationsRangeSet.mapNotNull { annotationRange ->
             annotationMapping(annotationRange, annotationKey, true)
         }.toMap(DisjointRangeMap())
     }
 
+    /** Adds (or replaces) the [PointAnnotation]s for [annotationKey] from a map of offset to value. */
     fun <V : Any> setAnnotations(annotationKey: A, pointAnnotationsMap: Map<Int, V>) {
         pointAnnotationMaps[annotationKey] = pointAnnotationsMap.mapNotNull { (offset: Int, value: V) ->
             if (offset !in docRange) null
@@ -47,6 +69,10 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
             else inDocRange to RangeAnnotation(key, value, range)
         }
 
+    /**
+     * Walks the document as a sequence of maximal [TextRun]s over which the active range annotations don't
+     * change, bracketed with empty runs at each end.
+     */
     @Suppress("KotlinConstantConditions")
     fun textRuns(): Sequence<TextRun<A>> = sequence {
         var prevEndExclusive = 0
@@ -96,12 +122,23 @@ class AnnotatedDoc<A>(val docText: String, wholeDocAnnotationKey: A) {
         return pointAnnotationMaps.values.mapNotNull { it[minOffset] }.toSet()
     }
 
+    /**
+     * Pairs each [TextRun]'s [Excerpt] with the [StateTransition] from the previous run, so renderers can
+     * emit open/close markup at each boundary.
+     */
     fun stateTransitions(): Sequence<Pair<Excerpt, StateTransition<A>>> = textRuns().windowed(2) { (prevRun, run) ->
         docText.excerpt(run.range) to prevRun.stateTransition(run)
     }
 
 }
 
+/**
+ * Builds an [AnnotatedDoc] from this [StudyData], populating the standard annotation layers
+ *
+ * If [annotationTypes] is non-empty, only the listed kinds are populated; otherwise every kind is included.
+ * Footnotes are split into [AnalysisUnit.LEADING_FOOTNOTE] (when the anchor sits at offset 0 or after
+ * whitespace) and [AnalysisUnit.FOOTNOTE] (everything else).
+ */
 fun StudyData.toAnnotatedDoc(vararg annotationTypes: AnalysisUnit): AnnotatedDoc<AnalysisUnit> =
     AnnotatedDoc(text, AnalysisUnit.STUDY_SET).apply {
         fun addAnns(unit: AnalysisUnit, map: DisjointRangeMap<*>) {

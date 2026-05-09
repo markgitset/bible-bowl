@@ -28,6 +28,11 @@ fun main(args: Array<String>) {
 //    }
 }
 
+/**
+ * Writes the complete word index (alphabetical + frequency) for [studyData] as a LaTeX PDF
+ *
+ * Excludes [stopWords] from the alphabetical section. The frequency section omits one-time words.
+ */
 fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(studyData)
         .map { wordIndexEntry ->

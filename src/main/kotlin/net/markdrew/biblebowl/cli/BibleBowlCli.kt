@@ -46,6 +46,13 @@ import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.Path
 
+/**
+ * Clikt command that drives the full BibleBowl generation pipeline
+ *
+ * Loads (or downloads + indexes) a [net.markdrew.biblebowl.model.StudyData] for the chosen
+ * [net.markdrew.biblebowl.model.StudySet] and runs every generator family — text variants, indices,
+ * flashcards, practice tests — under the supplied output directories.
+ */
 class BibleBowlCli : CliktCommand(
     name = "biblebowl",
     help = "Generate Bible Bowl resources and indices."

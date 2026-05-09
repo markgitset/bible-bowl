@@ -1,203 +1,151 @@
 package net.markdrew.biblebowl.analysis
 
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.datatest.withData
+import io.kotest.matchers.shouldBe
 import net.markdrew.biblebowl.model.Excerpt
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 
-internal class FindNumbersKtTest {
+class FindNumbersKtTest : StringSpec({
+    val twoToNine = listOf("two", "three", "four", "five", "six", "seven", "eight", "nine")
+    val oneToNine = listOf("one") + twoToNine
+    val twoToTwelve = twoToNine + listOf("ten", "eleven", "twelve")
+    val teens = listOf("thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
+    val tens = listOf("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
 
-    private val twoToNine =
-        listOf("two", "three", "four", "five", "six", "seven", "eight", "nine")
-    private val oneToNine = listOf("one") + twoToNine
-    private val twoToTwelve =
-        twoToNine + listOf("ten", "eleven", "twelve")
-    private val teens =
-        listOf("thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
-    private val tens =
-        listOf("twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
-
-    @Test
-    fun `findNumbers finds simple numbers`() {
-        assertFound(twoToTwelve)
+    fun checkFound(number: String) {
+        val prefix = "There were "
+        findNumbers("$prefix$number dogs.").toList() shouldBe
+            listOf(Excerpt(number, prefix.length until prefix.length + number.length))
     }
 
-    @Test
-    fun `findNumbers finds teen numbers`() {
-        assertRegexMatch(TEENS, teens)
-        assertFound(teens)
+    withData(nameFn = { "finds simple number \"$it\"" }, twoToTwelve) { checkFound(it) }
+
+    withData(nameFn = { "TEENS regex matches \"$it\"" }, teens) { teen ->
+        TEENS.toRegex().matches(teen) shouldBe true
+    }
+    withData(nameFn = { "finds teen number \"$it\"" }, teens) { checkFound(it) }
+
+    withData(
+        nameFn = { "finds hyphenated number \"$it\"" },
+        tens.flatMap { ten -> oneToNine.map { "$ten-$it" } }
+    ) { checkFound(it) }
+
+    "hyphenated-fraction regex sanity checks" {
+        BASE_FRACTIONS.toRegex().matches("half") shouldBe true
+        FRACTIONS.toRegex().matches("half") shouldBe true
+        FRACTIONS.toRegex().matches("one-half") shouldBe true
+    }
+    withData(
+        nameFn = { "finds hyphenated fraction \"$it\"" },
+        listOf("half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth")
+            .map { "one-$it" }
+    ) { checkFound(it) }
+
+    "non-hyphenated-fraction regex sanity checks" {
+        MULTI_NUMBER_PATTERN.toRegex().matches("four") shouldBe true
+        BASE_FRACTIONS.toRegex().matches("halfs") shouldBe true
+    }
+    withData(
+        nameFn = { "finds non-hyphenated fraction \"$it\"" },
+        listOf("half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth")
+            .map { "four ${it}s" }
+    ) { checkFound(it) }
+
+    withData(nameFn = { "TENS regex matches \"$it\"" }, tens) { ten ->
+        TENS.toRegex().matches(ten) shouldBe true
+    }
+    withData(nameFn = { "finds multiple of 10 \"$it\"" }, tens) { checkFound(it) }
+
+    val simpleOrdinals = listOf(
+        "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
+        "tenth", "eleventh", "twelfth"
+    )
+    withData(nameFn = { "ORDINALS regex matches simple ordinal \"$it\"" }, simpleOrdinals) { ord ->
+        ORDINALS.toRegex().matches(ord) shouldBe true
+    }
+    withData(nameFn = { "finds simple ordinal \"$it\"" }, simpleOrdinals) { checkFound(it) }
+    "does not find \"first\" standalone" {
+        findNumbers("first").toList() shouldBe emptyList()
     }
 
-    @Test
-    fun `findNumbers finds hyphenated numbers`() {
-        assertFound(tens.flatMap { ten -> oneToNine.map { "$ten-$it" } })
+    val teenOrdinals = teens.map { "${it}th" }
+    withData(nameFn = { "ORDINALS regex matches teen ordinal \"$it\"" }, teenOrdinals) { ord ->
+        ORDINALS.toRegex().matches(ord) shouldBe true
     }
+    withData(nameFn = { "finds teen ordinal \"$it\"" }, teenOrdinals) { checkFound(it) }
 
-    @Test
-    fun `findNumbers finds hyphenated fractions`() {
-        val fractions = listOf(
-            "half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"
-        ).map { "one-$it" }
-        assertRegexMatch(BASE_FRACTIONS, listOf("half"))
-        assertRegexMatch(FRACTIONS, listOf("half"))
-        assertRegexMatch(FRACTIONS, listOf("one-half"))
-        assertFound(fractions)
+    val hyphenatedOrdinals = tens.flatMap { t ->
+        listOf("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth")
+            .map { "$t-$it" }
     }
-
-    @Test
-    fun `findNumbers finds non-hyphenated fractions`() {
-        val fractions = listOf(
-            "half", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"
-        ).map { "four ${it}s" }
-        assertRegexMatch(MULTI_NUMBER_PATTERN, listOf("four"))
-        assertRegexMatch(BASE_FRACTIONS, listOf("halfs"))
-        assertRegexMatch(FRACTIONS, fractions)
-        assertFound(fractions)
+    withData(nameFn = { "ORDINALS regex matches hyphenated ordinal \"$it\"" }, hyphenatedOrdinals) { ord ->
+        ORDINALS.toRegex().matches(ord) shouldBe true
     }
+    withData(nameFn = { "finds hyphenated ordinal \"$it\"" }, hyphenatedOrdinals) { checkFound(it) }
 
-    @Test
-    fun `findNumbers finds multiple of 10 numbers`() {
-        assertRegexMatch(TENS, tens)
-        assertFound(tens)
-    }
+    withData(
+        nameFn = { "finds multiple-of-10 ordinal \"$it\"" },
+        listOf("twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth", "eightieth", "ninetieth")
+    ) { checkFound(it) }
 
-    @Test
-    fun `findNumbers finds simple ordinals`() {
-        val simpleOrdinals = listOf(
-            "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth",
-            "tenth", "eleventh", "twelfth"
+    withData(
+        nameFn = { "finds plural number \"$it\"" },
+        listOf(
+            "hundreds", "thousands", "ten thousands", "twenties", "thirties", "forties", "fifties",
+            "sixties", "seventies", "eighties", "nineties", "twos", "threes", "fours", "fives", "sixes",
+            "sevens", "eights", "nines", "tens", "elevens", "twelves", "thirteens"
         )
-        assertRegexMatch(ORDINALS, simpleOrdinals)
-        assertFound(simpleOrdinals)
-        assertNotFound("first")
+    ) { checkFound(it) }
+
+    withData(
+        nameFn = { "finds two-word number \"$it\"" },
+        listOf("six hundred", "five thousand", "ten thousands", "sixty-seven thousand")
+    ) { checkFound(it) }
+
+    withData(
+        nameFn = { "finds complex number phrase \"$it\"" },
+        listOf("thousands of ten thousands", "six hundred and second", "six hundred and first")
+    ) { checkFound(it) }
+
+    "finds multiple numbers in one sentence" {
+        findNumbers("You shall not eat just one day, or two days, or five days")
+            .map { it.excerptText }.toList() shouldBe listOf("one", "two", "five")
     }
 
-    @Test
-    fun `findNumbers finds teen ordinals`() {
-        val teenOrdinals = teens.map { "${it}th" }
-//        assertRegexMatch(TEEN_ORDINALS, teenOrdinals)
-        assertRegexMatch(ORDINALS, teenOrdinals)
-        assertFound(teenOrdinals)
+    withData(
+        nameFn = { "finds \"first\" as ordinal in: \"$it\"" },
+        "the first month of the year",
+        "he said to the first, 'How much do you owe my master?'",
+    ) { text ->
+        findNumbers(text).map { it.excerptText }.toList() shouldBe listOf("first")
     }
 
-    @Test
-    fun `findNumbers finds hyphenated ordinals`() {
-        val ones = listOf("first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth")
-        val hyphenatedOrdinals = tens.flatMap { t -> ones.map { "$t-$it" } }
-        assertRegexMatch(ORDINALS, hyphenatedOrdinals)
-        assertFound(hyphenatedOrdinals)
-    }
+    withData(
+        nameFn = { "finds fold \"$it\"" },
+        "sevenfold", "hundredfold", "seventy-sevenfold"
+    ) { checkFound(it) }
 
-    @Test
-    fun `findNumbers finds multiple of 10 ordinals`() {
-        assertFound(listOf(
-            "twentieth", "thirtieth", "fortieth", "fiftieth", "sixtieth", "seventieth", "eightieth", "ninetieth"
-        ))
+    withData(
+        nameFn = { "finds no number in: \"$it\"" },
+        "gathered together into one place,",
+        "brought of the firstborn of his flock",
+        "at the first",
+        "so that if one can",
+        "one said",
+        "is it not a little one",
+        "Complete the week of this one",
+        "Every one that is not speckled",
+        "every one that had white",
+        "But one day",
+        "And one night",
+        "he is the only one left",
+        "take this one also from me",
+        "from one end of Egypt",
+        "your brothers one mountain slope",
+        "on my behalf",
+        "seeing no one, he struck down",
+        "to your godly one, whom",
+    ) { text ->
+        findNumbers(text).toList() shouldBe emptyList()
     }
-
-    @Test
-    fun `findNumbers finds plural numbers`() {
-        assertFound(
-            listOf(
-                "hundreds", "thousands", "ten thousands", "twenties", "thirties", "forties", "fifties",
-                "sixties", "seventies", "eighties", "nineties", "twos", "threes", "fours", "fives", "sixes", "sevens",
-                "eights", "nines", "tens", "elevens", "twelves", "thirteens"
-            )
-        )
-    }
-
-    @Test
-    fun `findNumbers finds two word numbers`() {
-        assertFound(listOf("six hundred", "five thousand", "ten thousands", "sixty-seven thousand"))
-    }
-
-    @Test
-    fun `findNumbers finds weird combos`() {
-        assertFound(listOf(
-            "thousands of ten thousands",
-            "six hundred and second",
-            "six hundred and first"
-        ))
-    }
-
-    @Test
-    fun `findNumbers finds one as a number`() {
-        assertFound("You shall not eat just one day, or two days, or five days", "one", "two", "five")
-    }
-
-    @Test
-    fun `findNumbers finds first as an ordinal`() {
-        assertFound("the first month of the year", "first")
-        assertFound("he said to the first, ‘How much do you owe my master?’", "first")
-    }
-
-    @Test
-    fun `findNumbers finds folds`() {
-        assertFound(listOf(
-            "sevenfold",
-            "hundredfold",
-            "seventy-sevenfold"
-        ))
-    }
-
-    @Test
-    fun `findNumbers does not find non-numeric ones`() {
-        assertNotFound(
-            "gathered together into one place,",
-            "brought of the firstborn of his flock",
-            "at the first",
-            "so that if one can",
-            "one said",
-            "is it not a little one",
-            "Complete the week of this one",
-            "Every one that is not speckled",
-            "every one that had white",
-            "But one day",
-            "And one night",
-            "he is the only one left",
-            "take this one also from me",
-            "from one end of Egypt",
-            "your brothers one mountain slope",
-            "on my behalf",
-            "seeing no one, he struck down",
-            "to your godly one, whom",
-        )
-    }
-
-    private fun assertRegexMatch(regex: String, shouldMatch: List<String>) {
-        val exp = regex.toRegex()
-        for (s in shouldMatch) {
-            assertTrue(exp.matches(s)) { "Expected '$s' to match regex: $regex"}
-        }
-    }
-
-    private fun assertNoRegexMatch(regex: String, shouldNotMatch: List<String>) {
-        val exp = regex.toRegex()
-        for (s in shouldNotMatch) {
-            assertFalse(exp.matches(s)) { "Expected '$s' to NOT match regex: $regex"}
-        }
-    }
-
-    private fun assertFound(numbers: List<String>, prefix: String = "There were ", suffix: String = " dogs.") {
-        for (number in numbers) {
-            assertEquals(
-                listOf(Excerpt(number, prefix.length until prefix.length + number.length)),
-                findNumbers("$prefix$number$suffix").toList()
-            )
-        }
-    }
-
-    /** Doesn't check found ranges, but does check that the expected number strings were found */
-    private fun assertFound(text: String, vararg expectedNumberStrings: String) {
-        assertEquals(expectedNumberStrings.toList(), findNumbers(text).map { it.excerptText }.toList())
-    }
-
-    private fun assertNotFound(vararg noNumbers: String) {
-        for (s in noNumbers) {
-            val foundNumbers = findNumbers(s).toList()
-            assertTrue(foundNumbers.isEmpty()) { "Found number(s) $foundNumbers in '$s'"}
-        }
-    }
-
-}
+})

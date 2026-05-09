@@ -17,6 +17,11 @@ fun main() {
     printSimilarities(similaritiesIndex)
 }
 
+/**
+ * Bounded [TreeMap] that retains only the [topN] entries with the largest keys
+ *
+ * On put, if the size exceeds [topN], the smallest-key entry is evicted.
+ */
 class TopNMap<K, V>(val topN: Int) : TreeMap<K, V>() {
     override fun put(key: K, value: V): V? {
         val result: V? = super.put(key, value)
@@ -25,6 +30,11 @@ class TopNMap<K, V>(val topN: Int) : TreeMap<K, V>() {
     }
 }
 
+/**
+ * For each verse in [studyData], returns the top three other verses ranked by Levenshtein-based similarity
+ *
+ * Similarity is normalized to [0, 1] after subtracting length-difference penalty.
+ */
 fun buildSimilaritiesIndex(studyData: StudyData): Map<VerseRef, TopNMap<Double, VerseRef>> {
     val topNSize = 3
 //    val ssk = StringSubsequenceKernel()

@@ -10,6 +10,7 @@ import net.markdrew.biblebowl.model.VerseRef
 import java.nio.file.Paths
 
 
+/** Common English stop words excluded from word/phrase frequency analysis */
 val STOP_WORDS: Set<String> = setOf("the", "and", "of", "to", "a", "i", "who", "in", "on", "with", "for", "will",
     "you", "was", "is", "his", "he", "from", "that", "they", "are", "their", "it", "be", "like", "were", "have",
     "him", "them", "her", "not", "had", "has", "its", "your", "then", "but", "those", "no", "as", "what", "this",
@@ -25,10 +26,19 @@ fun main() {
     printWordIndex(wordIndex)
 }
 
+/** Pairs an [item] with a count, used for "verse with N occurrences" entries in indices */
 data class WithCount<T>(val item: T, val count: Int)
+
+/** Word-index entry whose verse references carry per-verse occurrence counts */
 typealias WordIndexEntryC = IndexEntry<String, WithCount<VerseRef>>
+
+/** Word-index entry: word -> list of verses where it appears */
 typealias WordIndexEntry = IndexEntry<String, VerseRef>
+
+/** Verse-index entry: verse -> list of words found in that verse */
 typealias VerseIndexEntry = IndexEntry<VerseRef, String>
+
+/** Chapter-index entry: chapter -> list of words found in that chapter */
 typealias ChapterIndexEntry = IndexEntry<ChapterRef, String>
 
 private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
@@ -39,6 +49,12 @@ private fun printWordIndex(buildWordIndex: List<WordIndexEntry>) {
         }
 }
 
+/**
+ * Builds a word index for [studyData], grouped by lowercased word with the verses each appears in
+ *
+ * @param stopWords words to exclude entirely (often [STOP_WORDS])
+ * @param frequencyRange if non-null, only words whose occurrence count falls in this range are kept
+ */
 fun buildWordIndex(
     studyData: StudyData,
     stopWords: Set<String> = setOf(),
@@ -52,6 +68,7 @@ fun buildWordIndex(
             })
         }
 
+/** Prints each entry's key and its occurrence count, sorted by ascending count. */
 fun printWordFrequencies(indexEntries: List<IndexEntry<*, *>>) {
     indexEntries.sortedBy { it.values.size }.forEach { (key, refs) ->
         println("%45s = %5d".format(key, refs.size))

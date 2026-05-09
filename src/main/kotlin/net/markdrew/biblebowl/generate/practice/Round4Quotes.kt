@@ -36,6 +36,13 @@ fun main(args: Array<String>) {
 //    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 
+/**
+ * Generates a Round 4 ("In What Chapter — Quotes") test PDF, or null if [practiceTest]'s content covers
+ * fewer than four chapters
+ *
+ * Mines the study text for unambiguous in-quotes sentences and asks contestants to identify the chapter
+ * each quotation comes from.
+ */
 fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path? {
     val studyData: StudyData = practiceTest.content.studyData
 

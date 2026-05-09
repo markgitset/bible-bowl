@@ -24,8 +24,18 @@ fun main(args: Array<String>) {
     writeEventCards(studyData)
 }
 
+/**
+ * Front/back content for one event-card flashcard
+ *
+ * @param event the event description shown on the front
+ * @param verseRange the verse range this event refers to
+ * @param headings the heading titles intersecting [verseRange], shown on the back alongside the reference
+ */
 data class EventData(val event: String, val verseRange: VerseRange, val headings: List<String>) {
+    /** The text shown on the front of the card. */
     fun front(): String = event
+
+    /** The text shown on the back of the card. */
     fun back(): String = "${verseRange.format(FULL_BOOK_FORMAT)} (${headings.joinToString(" AND ")})"
 }
 
@@ -44,6 +54,11 @@ private fun makePath(
     return dir.resolve("$setName-$fileType$suffix.csv")
 }
 
+/**
+ * Writes a Cram-style TSV of event flashcards for [studyData], optionally restricted to [chapterRange]
+ *
+ * Reads the curated event list via [net.markdrew.biblebowl.model.AllEventsParser].
+ */
 fun writeEventCards(
     studyData: StudyData,
     productsDir: Path = defaultProductsPath,

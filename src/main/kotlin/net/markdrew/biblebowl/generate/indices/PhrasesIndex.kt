@@ -25,12 +25,18 @@ fun main() {
     writeNonLocalPhrasesIndex(studyData, maxPhraseLength = 23)
 }
 
+/** Returns a formatter that replaces spaces with LaTeX non-breaking ties (~) so the output won't line-wrap. */
 fun <T> ((T) -> String).noBreak(): (T) -> String = { ref -> this(ref).replace(' ', '~') }
+
+/** Lifts a `(T) -> String` formatter to a `(WithCount<T>) -> String` by appending the count when > 1. */
 fun <T> ((T) -> String).withCount(): (WithCount<T>) -> String =
     { ref -> formatWithCount(this(ref.item), ref.count) }
+
+/** Returns [s] with `(×N)` appended when [count] > 1, suitable for LaTeX. */
 fun formatWithCount(s: String, count: Int): String =
     s + (if (count > 1) """(\(\times\)${count})""" else "")
 
+/** Specialized [formatWithCount] for a [VerseRef] rendered without a book name. */
 fun formatVerseRefWithCount(ref: WithCount<VerseRef>): String =
     ref.item.format(NO_BOOK_FORMAT) + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
 
@@ -72,6 +78,11 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
     file.latexToPdf()
 }
 
+/**
+ * Writes the non-local phrases index (alphabetical + frequency) for [studyData] as a LaTeX PDF
+ *
+ * "Non-local" = phrases that recur across more than one chapter; see [buildNonLocalPhrasesIndex].
+ */
 fun writeNonLocalPhrasesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
                               maxPhraseLength: Int = 50) {
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(studyData, maxPhraseLength)

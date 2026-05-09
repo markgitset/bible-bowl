@@ -8,43 +8,40 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+/**
+ * Retrofit interface for the ESV "passage/text" endpoint
+ *
+ * The full set of formatting parameters is exposed verbatim so callers can fine-tune the rendered text. All
+ * parameters mirror the ones documented at <https://api.esv.org/docs/passage-text/>; defaults here match the
+ * defaults [EsvIndexer] expects when parsing the response.
+ */
 interface EsvService {
 
     /**
-     * @param query (required) Passage reference query. Example references: Jn11.35; 43011035; Genesis 1-11;
-     * 01001001-01011032; Ps1,3; 19001001-19001006,19003001-19003008
-     * @param includePassageReferences Include a line at the top displaying the reference of the passage.
-     * Must be true or false. Default true.
-     * @param includeFirstVerseNumbers Display the verse number at the beginnings of chapters, e.g. [23:1].
-     * Must be true or false. Default true.
-     * @param includeVerseNumbers Display verse numbers in brackets, e.g. [4]. Must be true or false. Default true.
-     * @param includeFootnotes Display callouts to footnotes in the text. Must be true or false. Default true.
-     * @param includeFootnoteBody Display footnotes at the end of the text. Must be true or false. Default true.
-     * @param includeShortCopyright Include (ESV) at the end of the text. This fulfills your copyright display
-     * requirements. Must be true or false. Default true.
-     * @param includeCopyright Include a longer copyright at the end of the text. Mutually exclusive with
-     * include_short_copyright. This fulfills your copyright display requirements. Must be true or false. Default false.
-     * @param includePassageHorizontalLines Include a visual line of equal signs (====) above the beginning of each
-     * passage. Must be true or false. Default true.
-     * @param includeHeadingHorizontalLines Include a visual line of underscores (____) above each section heading.
-     * Must be true or false. Default true.
-     * @param horizontalLineLength Control the length of the line for include_passage_horizontal_lines and
-     * include_heading_horizontal_lines. Must be an integer. Default 55.
-     * @param includeHeadings Include extra-textual section headings, e.g. The Creation of the World.
-     * Must be true or false. Default true.
-     * @param includeSelahs Include Selah in certain Psalms. Must be true or false. Default true.
-     * @param indentUsing Should indentation use spaces or tabs? Must be 'space' or 'tab'. Default 'space'.
-     * @param indentParagraphs How many indentation characters to begin a paragraph with. Must be an integer.
-     * Default 2.
-     * @param indentPoetry Should poetry lines be indented? Must be true or false. Default true.
-     * @param indentPoetryLines How many indentation characters to use for a poetry indentation level.
-     * Must be an integer. Default 4.
-     * @param indentDeclares How many indentation characters to use for Declares the LORD in some of the prophets.
-     * Must be an integer. Default 40.
-     * @param indentPsalmDoxology How many indentation characters to use for Psalm doxologies. Must be an integer.
-     * Default 30.
-     * @param lineLength How long may a line be before it is wrapped? Use 0 for unlimited line lengths.
-     * Must be an integer. Default 0.
+     * Fetches the rendered text for [query]
+     *
+     * @param query passage reference (e.g. "Jn11.35", "43011035", "Genesis 1-11", or
+     *   "01001001-01011032,19001001-19001006")
+     * @param includePassageReferences include a leading line with the passage reference
+     * @param includeFirstVerseNumbers display the verse number at the start of each chapter, e.g. `[23:1]`
+     * @param includeVerseNumbers display verse numbers in brackets, e.g. `[4]`
+     * @param includeFootnotes display callouts to footnotes inline in the text
+     * @param includeFootnoteBody display footnote bodies at the end of the passage
+     * @param includeShortCopyright include "(ESV)" at the end of the text
+     * @param includeCopyright include the longer copyright at the end; mutually exclusive with
+     *   [includeShortCopyright]
+     * @param includePassageHorizontalLines draw a line of equal signs above each passage
+     * @param includeHeadingHorizontalLines draw a line of underscores above each section heading
+     * @param horizontalLineLength character width of the horizontal lines
+     * @param includeHeadings include extra-textual section headings
+     * @param includeSelahs include "Selah" in Psalms where it appears
+     * @param indentUsing `"space"` or `"tab"`
+     * @param indentParagraphs indent characters at the start of each paragraph
+     * @param indentPoetry whether to indent poetry lines at all
+     * @param indentPoetryLines indent characters per poetry indentation level
+     * @param indentDeclares indent characters for "Declares the LORD" lines in the prophets
+     * @param indentPsalmDoxology indent characters for Psalm doxologies
+     * @param lineLength wrap column; 0 means unlimited
      */
     @GET("v3/passage/text")
     fun text(@Query("q") query: String,
@@ -70,6 +67,13 @@ interface EsvService {
 
     companion object {
 
+        /**
+         * Builds an [EsvService] talking to api.esv.org
+         *
+         * If [token] is non-null, every outgoing request gets an `Authorization: Token <token>` header. The
+         * ESV API will reject unauthenticated requests, so for live use [token] must come from
+         * `ESV_API_TOKEN` (or be passed explicitly).
+         */
         fun create(token: String? = null): EsvService {
             val builder = Retrofit.Builder()
                 .baseUrl("https://api.esv.org/")

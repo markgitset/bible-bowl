@@ -6,13 +6,16 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
+/** Reads and writes Mochi flashcard archive files (`.mochi`, a ZIP of Transit JSON + optional media) */
 object MochiArchiveManager {
 
     private const val DATA_FILE_NAME = "data.json"
 
     /**
-     * Reads a .mochi archive from an InputStream, parses the Transit data, 
-     * and loads any media files into memory.
+     * Reads a `.mochi` archive from [inputStream], parsing the Transit JSON data and loading any media
+     * files into memory.
+     *
+     * @throws IllegalArgumentException if the archive is missing the `data.json` entry
      */
     fun readArchive(inputStream: InputStream): MochiArchive {
         var exportData: MochiData? = null
@@ -49,10 +52,7 @@ object MochiArchiveManager {
         )
     }
 
-    /**
-     * Packages a MochiArchive object back into a .mochi ZIP format and 
-     * writes it to the provided OutputStream.
-     */
+    /** Packages [archive] back into the `.mochi` ZIP format and writes it to [outputStream]. */
     fun writeArchive(archive: MochiArchive, outputStream: OutputStream) {
         ZipOutputStream(outputStream).use { zipOut ->
             

@@ -59,6 +59,12 @@ private fun makePath(
     return dir.resolve("$setName-$fileType$suffix.tsv")
 }
 
+/**
+ * Writes a Cram-style TSV of heading flashcards (heading title -> chapter range(s)) for [studyData],
+ * optionally restricted to [chapterRange]
+ *
+ * Headings that share a title across chapters collapse to one card with the chapter list joined by "OR".
+ */
 fun writeCramHeadings(
     studyData: StudyData,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
@@ -80,6 +86,10 @@ fun writeCramHeadings(
     println("Wrote data to: $cramHeadingsPath")
 }
 
+/**
+ * Writes a Cram-style TSV of reverse heading flashcards (chapter -> heading list) for [studyData],
+ * optionally restricted to [chapterRange]
+ */
 fun writeCramReverseHeadings(
     studyData: StudyData,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),

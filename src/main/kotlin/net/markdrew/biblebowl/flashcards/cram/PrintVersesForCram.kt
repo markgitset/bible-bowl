@@ -19,6 +19,7 @@ fun main(args: Array<String>) {
     writeCramVerses(studyData)
 }
 
+/** Writes a Cram-style TSV of verse flashcards (verse text -> heading + reference) for [studyData]. */
 fun writeCramVerses(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val setName = studyData.studySet.simpleName
 

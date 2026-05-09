@@ -4,6 +4,13 @@ import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.chupacabra.core.toMathString
 
+/**
+ * Returns the inner ranges of every span delimited by [startChar] on the left and [endPattern] on the right.
+ *
+ * Each returned range covers the characters between (but excluding) the delimiters.
+ *
+ * @throws Exception if a [startChar] is found with no matching [endPattern] occurrence after it.
+ */
 fun identifyDelimited(text: String, startChar: Char, endPattern: String): DisjointRangeSet {
     var start: Int
     var end = 0
@@ -19,8 +26,16 @@ fun identifyDelimited(text: String, startChar: Char, endPattern: String): Disjoi
     return quotes
 }
 
+/** Returns the ranges inside curly single-quotes (‘…’), avoiding the possessive "’s" form. */
 fun identifySingleQuotes(text: String): DisjointRangeSet = identifyDelimited(text, '‘', """’(?!s\b)""")
+
+/** Returns the ranges inside curly double-quotes (“…”). */
 fun identifyDoubleQuotes(text: String): DisjointRangeSet = identifyDelimited(text, '“', "”")
+
+/**
+ * Returns the union of [identifySingleQuotes] and [identifyDoubleQuotes] aligned by greatest-common-divisor,
+ * trimmed of surrounding punctuation, quotation marks, and whitespace, with empty ranges dropped.
+ */
 fun identifyQuotes(text: String): DisjointRangeSet = DisjointRangeSet(
     identifySingleQuotes(text).gcdAlignment(identifyDoubleQuotes(text)).map {
         trim(text, it) { c -> c in " :,‘’“”\n"}

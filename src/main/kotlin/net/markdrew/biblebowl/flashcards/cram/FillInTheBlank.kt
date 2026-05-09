@@ -8,8 +8,16 @@ import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeSet
 
+/**
+ * A fill-in-the-blank flashcard built from a clue excerpt with one or more answer spans blanked out
+ *
+ * @param clue the clue excerpt (typically a single-verse sentence fragment)
+ * @param answers the spans to blank out within [clue]; their text is also shown on the back
+ * @param verseRef verse the clue is drawn from; printed on the back for confirmation
+ */
 data class FillInTheBlank(val clue: Excerpt, val answers: List<Excerpt>, val verseRef: VerseRef) {
 
+    /** Renders this as a [Card] suitable for [CardWriter]. */
     fun toCramCard(): Card {
         val blankRanges = DisjointRangeSet(answers.map { it.excerptRange })
         val blankedClueString: String = clue.formatRanges(blankRanges, blankOut()).normalizeWS()

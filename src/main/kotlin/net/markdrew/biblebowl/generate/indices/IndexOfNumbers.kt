@@ -21,6 +21,7 @@ fun main() {
     writeNumbersIndex(StudyData.readData(StandardStudySet.DEFAULT, Paths.get(DATA_DIR_NAME)))
 }
 
+/** Writes the numbers index (alphabetical + frequency) for [studyData] as a LaTeX PDF. */
 fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS,
                       productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
     val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(studyData).map { wordIndexEntry ->
@@ -34,6 +35,14 @@ fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS,
     writeLatexIndex(studyData, indexEntries, "Number", productsDir = productsDir)
 }
 
+/**
+ * Writes a generic alphabetical+frequency LaTeX index for [indexEntries] under [productsDir]/<simpleName>/indices/
+ *
+ * Used as a shared backbone by the various per-category index writers.
+ *
+ * @param singularIndexType label for one entry (e.g. "Number")
+ * @param pluralIndexType label for many entries (defaults to [singularIndexType] + "s")
+ */
 fun writeLatexIndex(
     studyData: StudyData,
     indexEntries: List<WordIndexEntryC>,
@@ -45,6 +54,7 @@ fun writeLatexIndex(
     writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, file)
 }
 
+/** Path-typed overload of [writeLatexIndex] that delegates to the [File] version. */
 fun writeLatexIndex(
     studyData: StudyData,
     pluralIndexType: String,
@@ -55,6 +65,9 @@ fun writeLatexIndex(
     writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, file.toFile())
 }
 
+/**
+ * Writes the alphabetical and frequency sections of an index to [file] as LaTeX, then compiles to PDF.
+ */
 fun writeLatexIndex(
     studyData: StudyData,
     pluralIndexType: String,

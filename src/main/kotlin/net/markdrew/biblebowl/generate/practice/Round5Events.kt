@@ -33,13 +33,27 @@ fun main(args: Array<String>) {
     }
 }
 
+/**
+ * A practice question whose correct answer is one or more chapters
+ *
+ * @param question the question text (usually a heading title or quoted clue)
+ * @param answers acceptable correct chapter answers; the first entry is treated as canonical for the
+ *   answer key
+ * @param answerRefs optional source verse references shown in the answer key
+ */
 data class Question(
     val question: String,
-    // the FIRST answer is assumed to be the arbitrarily chosen correct answer
     val answers: List<ChapterRef>,
     val answerRefs: List<VerseRef>? = null,
 )
 
+/**
+ * Wraps [qAndA] as a multiple-choice question with [nChoices] options, drawing distractors from chapters
+ * adjacent to the correct answer in [coveredChapters]
+ *
+ * One of the [nChoices] is always "none of these" (returned as a `null` element in [MultiChoiceQuestion.choices]);
+ * with probability `1/nChoices` it is also the correct answer.
+ */
 fun multiChoice(
     qAndA: Question,
     coveredChapters: List<ChapterRef>,
@@ -71,10 +85,24 @@ fun multiChoice(
     return MultiChoiceQuestion(qAndA, allChoices, nSpecificChoices)
 }
 
+/**
+ * A [Question] presented as multiple choice, with one slot reserved for "none of these"
+ *
+ * @param choices candidate answers in display order; a `null` element represents the "none of these" choice
+ * @param noneIndex position of the "none of these" choice within [choices]
+ */
 data class MultiChoiceQuestion(val question: Question, val choices: List<ChapterRef?>, val noneIndex: Int) {
+    /** Index of the correct choice in [choices]; falls back to [noneIndex] when none of the choices match. */
     val correctChoice: Int = choices.indexOf(question.answers.first()).let { if (it < 0) noneIndex else it }
 }
 
+/**
+ * Generates a Round 5 ("In What Chapter — Events") test PDF, or null if [practiceTest]'s content covers
+ * fewer than three chapters
+ *
+ * Uses chapter heading titles as the questions and asks contestants to identify which chapter each event
+ * occurs in.
+ */
 fun writeRound5Events(
     practiceTest: PracticeTest,
     productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
@@ -92,6 +120,11 @@ fun writeRound5Events(
     return texFile.latexToPdf()
 }
 
+/**
+ * Samples chapter headings from [practiceTest]'s content into a list of multiple-choice questions
+ *
+ * Repeated heading titles are merged so all chapters that share the title are accepted as correct.
+ */
 fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoiceQuestion> {
     val content: PracticeContent = practiceTest.content
 
@@ -107,6 +140,7 @@ fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoic
         }.map { multiChoice(it, content.coveredChapters, practiceTest.random, nChoices) }
 }
 
+/** Writes a "In What Chapter" LaTeX test sheet (questions + answer key) for the given multiple-choice questions. */
 fun toLatexInWhatChapter(
     appendable: Appendable,
     practiceTest: PracticeTest,

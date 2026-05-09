@@ -36,6 +36,15 @@ private val REGEX_NAMES = setOf(
 
 private val ENGLISH_WORDS: Dictionary by lazy { DictionaryParser.parse("not-names.txt") }
 
+/**
+ * Builds a name index for [studyData], grouped by name with the verses each name appears in
+ *
+ * Names are detected via two complementary passes: a per-word capitalization heuristic that filters out
+ * common English words and a stop list of capitalized words that aren't names, plus a regex pass for
+ * multi-word names that the per-word pass misses.
+ *
+ * @param exceptNames names to exclude from the result (e.g. omit "God"/"Jesus" if they're indexed elsewhere)
+ */
 fun buildNamesIndex(
     studyData: StudyData,
     vararg exceptNames: String
@@ -45,6 +54,11 @@ fun buildNamesIndex(
         WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })
     }
 
+/**
+ * Returns every name occurrence in [studyData] as an [Excerpt], in canonical Bible order.
+ *
+ * Same detection logic as [buildNamesIndex] but flattened and ordered by character offset.
+ */
 fun findNames(studyData: StudyData, vararg exceptNames: String): Sequence<Excerpt> =
     nameCandidates(studyData, exceptNames)
         .flatten()
@@ -113,6 +127,7 @@ private fun nameCandidates(studyData: StudyData, exceptNames: Array<out String>)
         .values // only keep excerpt lists for which all excerpts start with a capital letter
 }
 
+/** Prints each distinct name with its occurrence count, sorted by ascending frequency. */
 fun printNameFrequencies(nameExcerpts: Sequence<Excerpt>) {
     nameExcerpts.groupBy { it.excerptText }
         .map { (name, excerpts) -> excerpts.size to name }

@@ -14,6 +14,7 @@ import net.markdrew.chupacabra.core.encloses
 import java.nio.file.Path
 import java.nio.file.Paths
 
+/** Returns [verse] with every whole-word occurrence of [target] wrapped in `<b><u>…</u></b>`. */
 fun highlightVerse(target: String, verse: String): String =
     verse.replace(Regex("""\b$target\b"""), "<b><u>$0</u></b>")
 
@@ -33,6 +34,12 @@ fun main(args: Array<String>) {
 //    }
 }
 
+/**
+ * Writes a Cram-style TSV of one-time-word flashcards for [studyData], optionally restricted to
+ * [chapterRange]
+ *
+ * Each card has the unique word on the front, and the heading + verse + highlighted verse text on the back.
+ */
 fun writeCramOneTimeWords(
     studyData: StudyData,
     oneTimeWords: List<IntRange>,

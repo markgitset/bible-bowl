@@ -1,15 +1,11 @@
 package net.markdrew.biblebowl.model
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 
-internal class BookDataTest {
-
-    @Test
-    fun `hyphenated words parse as one word`() {
-        assertEquals(
-            listOf("There", "were", "twenty-seven", "dogs"),
-            StudyData.wordsPattern.findAll("There were twenty-seven dogs.").map { it.value }.toList()
-        )
+class BookDataTest : StringSpec({
+    "wordsPattern treats hyphenated tokens as a single word" {
+        StudyData.wordsPattern.findAll("There were twenty-seven dogs.")
+            .map { it.value }.toList() shouldBe listOf("There", "were", "twenty-seven", "dogs")
     }
-}
+})

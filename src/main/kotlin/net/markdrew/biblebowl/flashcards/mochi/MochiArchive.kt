@@ -1,10 +1,10 @@
 package net.markdrew.biblebowl.flashcards.mochi
 
 /**
- * Represents a complete, parsed Mochi archive.
+ * A complete, parsed Mochi archive
  *
- * @param data The parsed Transit JSON data containing decks, templates, and cards.
- * @param mediaFiles A map of file paths to their raw byte contents (e.g., "image.png" -> [bytes]).
+ * @param data the parsed Transit JSON data containing decks, templates, and cards
+ * @param mediaFiles a map of file paths to their raw byte contents (e.g. "image.png" -> [bytes])
  */
 data class MochiArchive(
     val data: MochiData,

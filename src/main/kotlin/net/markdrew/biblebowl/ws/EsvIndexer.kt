@@ -11,6 +11,18 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import kotlin.math.max
 
+/**
+ * Parses the rendered text returned by the ESV API into [StudyData]
+ *
+ * Walks chapter passages line-by-line and incrementally appends them to a single buffer, keeping disjoint
+ * range maps for verses, headings, chapters, paragraphs, and poetry, plus a sorted map from footnote anchor
+ * offsets to footnote text. Recognizes ESV's text-format conventions: heading separator lines (`____`),
+ * verse markers (`[N]`), poetry blocks (delimited by blank lines plus a trailing indent line), and
+ * footnote callouts (`(N)`) with a "Footnotes" trailer.
+ *
+ * The intermediate `verses`/`headings`/etc. fields are public to make the parsing stages testable; in
+ * normal use callers should just invoke [indexBook] and consume the resulting [StudyData].
+ */
 class EsvIndexer(val studySet: StudySet) {
     val buffer = StringBuilder()
     val verses = DisjointRangeMap<VerseRef>()
@@ -31,6 +43,7 @@ class EsvIndexer(val studySet: StudySet) {
         return newOffset
     }
 
+    /** Indexes every chapter in [chapterPassages] in order and returns the resulting [StudyData]. */
     fun indexBook(chapterPassages: Sequence<Passage>): StudyData {
         chapterPassages.forEach {
             indexChapter(it)

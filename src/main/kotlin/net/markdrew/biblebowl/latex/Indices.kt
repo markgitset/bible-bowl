@@ -2,8 +2,21 @@ package net.markdrew.biblebowl.latex
 
 import java.io.Writer
 
+/** A key with its list of values, used as the row representation for the various LaTeX indices */
 data class IndexEntry<K, V>(val key: K, val values: List<V>)
 
+/**
+ * Writes one section of a LaTeX index — heading, intro paragraph, and the entries themselves
+ *
+ * @param entries the rows of the index
+ * @param indexTitle optional `\subsection*` heading printed above the entries
+ * @param indexPreface optional intro paragraph printed before the entries
+ * @param columns number of columns the entries are flowed into via `multicols`
+ * @param formatKey renders an entry's key (defaults to [toString])
+ * @param formatValue renders one value of an entry; only used when [formatValues] is left at its default
+ * @param formatValues renders an entry's value list as a single string; takes precedence over [formatValue]
+ *   when supplied
+ */
 fun <K, V> writeIndex(
     writer: Writer,
     entries: Iterable<IndexEntry<K, V>>,
@@ -33,6 +46,15 @@ fun <K, V> writeIndex(
     """.trimIndent())
 }
 
+/**
+ * Writes a complete LaTeX document with a centered title and optional intro paragraph, then runs
+ * [writeContent] inside the document body
+ *
+ * @param docTitle the document title rendered as a top-level `\section*`
+ * @param docPreface optional paragraph printed below the title
+ * @param allowParagraphBreaks if false, sets up penalties to discourage page breaks within paragraphs
+ * @param writeContent callback that writes the body content
+ */
 fun writeDoc(
     writer: Writer,
     docTitle: String,

@@ -82,6 +82,7 @@ import java.time.format.DateTimeFormatter
 
 private val logger: KLogger = KotlinLogging.logger {}
 
+/** Font names as accepted by docx4j's `<w:rFonts w:ascii="…">` attribute. */
 enum class WmlFont(val value: String) {
     TIMES_NEW_ROMAN("Times New Roman:liga"),
     QUATTROCENTO_SANS("Quattrocento Sans"),
@@ -102,6 +103,14 @@ fun main(args: Array<String>) {
     writeBibleDoc(studyData, LocalDate.of(2025, 4, 5))
 }
 
+/**
+ * Writes the standard pack of DOCX/PDF Bible-text variants for [studyData] under [productsPath]
+ *
+ * Generates six outputs: plain, unique-words-underlined, and full-highlighting versions in both
+ * [defaultStyle] (TBB official format) and [marksStyle] (Mark's two-column format).
+ *
+ * @param testDate date stamped on the cover/footer
+ */
 fun writeBibleDoc(studyData: StudyData, testDate: LocalDate, productsPath: Path = Path.of(PRODUCTS_DIR_NAME)) {
 
     val customHighlights: Map<String, Set<Regex>> = mapOf(
@@ -164,6 +173,7 @@ private fun writeOneText(
     return outputFile.docxToPdf()
 }
 
+/** Style parameters for the official Texas Bible Bowl document format. */
 val defaultStyle: Map<String, String> = mapOf(
     "mainFont" to WmlFont.QUATTROCENTO_SANS.value,
     "verseNumFont" to WmlFont.QUATTROCENTO_SANS.value,
@@ -175,6 +185,7 @@ val defaultStyle: Map<String, String> = mapOf(
     "justified" to "left",
 )
 
+/** Style parameters for Mark's preferred two-column document format. */
 val marksStyle: Map<String, String> = mapOf(
     "mainFont" to WmlFont.TIMES_NEW_ROMAN.value,
     "verseNumFont" to WmlFont.SANS_SERIF.value,
@@ -186,6 +197,17 @@ val marksStyle: Map<String, String> = mapOf(
     "justified" to "both",
 )
 
+/**
+ * Builds DOCX (Word) renderings of [StudyData] using docx4j and template fragments
+ *
+ * Templates (`fontTable.xml`, `styles.xml`, `footer.xml`, optional `frontMatter.xml` / `endMatter.xml`)
+ * are loaded from the classpath under `/<resourcePath>/`. [styleParams] supplies template variable
+ * substitutions; main font size is auto-derived from `opts.fontSize`.
+ *
+ * @param resourcePath classpath subdirectory containing the docx template fragments
+ * @param styleParams template variable substitutions; keys are referenced inside the templates
+ * @param opts text-rendering options (highlighting, fonts, etc.)
+ */
 class DocMaker(
     resourcePath: String = "tbb-doc-format",
     private val styleParams: Map<String, String> = defaultStyle,
@@ -246,6 +268,7 @@ class DocMaker(
         container.content.add(it)
     }
 
+    /** Renders [studyData] into a `.docx` at [outputFile], wiring up styles, footer, footnotes, and end matter. */
     fun renderText(outputFile: File, studyData: StudyData) {
         mainPart.addTargetPart(stylesPartFromTemplate(baseUri.resolveChild("styles.xml"), styleParams, opts))
 

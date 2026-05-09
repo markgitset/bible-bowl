@@ -192,6 +192,7 @@ private fun formatContextHeadings(card: HeadingCard): String {
     }.joinToString("\n")
 }
 
+/** Layout constants for the LaTeX flashcards (Avery 5870-compatible 2×5 grid) */
 object Flashcards {
     const val CARDS_PER_PAGE = 10
     const val CARDS_PER_ROW = 2

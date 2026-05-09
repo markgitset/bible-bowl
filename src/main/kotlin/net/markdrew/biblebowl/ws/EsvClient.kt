@@ -19,38 +19,17 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * @param includePassageReferences Include a line at the top displaying the reference of the passage.
- * Must be true or false. Default true.
- * @param includeFirstVerseNumbers Display the verse number at the beginnings of chapters, e.g. [23:1].
- * Must be true or false. Default true.
- * @param includeVerseNumbers Display verse numbers in brackets, e.g. [4]. Must be true or false. Default true.
- * @param includeFootnotes Display callouts to footnotes in the text. Must be true or false. Default true.
- * @param includeFootnoteBody Display footnotes at the end of the text. Must be true or false. Default true.
- * @param includeShortCopyright Include (ESV) at the end of the text. This fulfills your copyright display
- * requirements. Must be true or false. Default true.
- * @param includeCopyright Include a longer copyright at the end of the text. Mutually exclusive with
- * include_short_copyright. This fulfills your copyright display requirements. Must be true or false. Default false.
- * @param includePassageHorizontalLines Include a visual line of equal signs (====) above the beginning of each
- * passage. Must be true or false. Default true.
- * @param includeHeadingHorizontalLines Include a visual line of underscores (____) above each section heading.
- * Must be true or false. Default true.
- * @param horizontalLineLength Control the length of the line for include_passage_horizontal_lines and
- * include_heading_horizontal_lines. Must be an integer. Default 55.
- * @param includeHeadings Include extra-textual section headings, e.g. The Creation of the World.
- * Must be true or false. Default true.
- * @param includeSelahs Include Selah in certain Psalms. Must be true or false. Default true.
- * @param indentUsing Should indentation use spaces or tabs? Must be 'space' or 'tab'. Default 'space'.
- * @param indentParagraphs How many indentation characters to begin a paragraph with. Must be an integer.
- * Default 2.
- * @param indentPoetry Should poetry lines be indented? Must be true or false. Default true.
- * @param indentPoetryLines How many indentation characters to use for a poetry indentation level.
- * Must be an integer. Default 4.
- * @param indentDeclares How many indentation characters to use for Declares the LORD in some of the prophets.
- * Must be an integer. Default 40.
- * @param indentPsalmDoxology How many indentation characters to use for Psalm doxologies. Must be an integer.
- * Default 30.
- * @param lineLength How long may a line be before it is wrapped? Use 0 for unlimited line lengths.
- * Must be an integer. Default 0.
+ * High-level wrapper around [EsvService] that fetches one chapter at a time and caches the JSON response on disk
+ *
+ * Cached chapters live under `<rawDataDir>/<NN-Book>/<chapter>` where `NN` is the book's 1-based canonical
+ * number. A cached chapter is reused on subsequent runs unless `forceDownload` is true. When fetching from
+ * the live API the client sleeps `timeBetweenChapters` between requests to stay polite to ESV.
+ *
+ * The remaining constructor parameters mirror the ESV "passage/text" formatting options; see [EsvService.text]
+ * for details. Defaults here are tuned for downstream parsing by [EsvIndexer].
+ *
+ * @param rawDataDir local directory used for the chapter-level JSON cache
+ * @param token ESV API token; defaults to the `ESV_API_TOKEN` environment variable
  */
 class EsvClient(
     private val rawDataDir: Path = defaultRawDataPath,
@@ -77,6 +56,7 @@ class EsvClient(
     private val esvService: EsvService = EsvService.create(token),
 ) {
 
+    /** Builds (but does not execute) the underlying Retrofit [Call] for [query]. */
     fun query(query: String): Call<PassageText> = esvService.text(query,
         includePassageReferences,
         includeFirstVerseNumbers,
@@ -107,6 +87,12 @@ class EsvClient(
         return response.body()?.single() ?: throw Exception(response.errorBody()?.string())
     }
 
+    /**
+     * Streams every chapter of [book] from the API, one [Passage] per chapter, walking via the API's
+     * `next_chapter` link until the next chapter is in a different book.
+     *
+     * Does NOT use the on-disk cache; intended for ad-hoc whole-book pulls.
+     */
     fun bookByChapters(book: Book): Sequence<Passage> {
         var chapterNum: Int? = 1
         return generateSequence {
@@ -120,6 +106,14 @@ class EsvClient(
         }
     }
 
+    /**
+     * Streams every chapter in every range of [studySet] in canonical order, using the on-disk cache when
+     * available
+     *
+     * @param forceDownload if true, ignores the cache and re-fetches every chapter from the API
+     * @param timeBetweenChapters delay between live API calls to avoid overloading the ESV service; not
+     *   applied when responses come from the cache
+     */
     fun bookByChapters(
         studySet: StudySet,
         forceDownload: Boolean,
@@ -194,6 +188,7 @@ class EsvClient(
             "${start.absoluteVerse}-${endInclusive.absoluteVerse}"
         }
 
+        /** Builds a default-configured [EsvClient] using [token] (defaults to the `ESV_API_TOKEN` env var). */
         fun create(token: String? = System.getenv("ESV_API_TOKEN")): EsvClient = EsvClient(token = token)
 
     }

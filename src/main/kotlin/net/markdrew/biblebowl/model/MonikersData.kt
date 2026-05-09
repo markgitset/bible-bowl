@@ -5,6 +5,9 @@ import net.markdrew.biblebowl.parseTsv
 import java.io.IOException
 import java.net.URL
 
+/**
+ * A clue/description pair anchored to a verse range, with a point value; used for "Monikers"-style flashcards
+ */
 data class MonikersCard(
     val clue: String,
     val description: String,
@@ -12,8 +15,10 @@ data class MonikersCard(
     val points: Int,
 )
 
+/** Loads [MonikersCard]s from a per-study-set `monikers.tsv` resource */
 object MonikersParser {
 
+    /** Parses one TSV line into a [MonikersCard]; columns are `clue`, `description`, `verseRange`, `points`. */
     fun parseTsvLine(split: List<String>): MonikersCard {
         require(split.size >= 4) { "Missing fields in: $split" }
         require(split.size <= 4) { "Extra fields in: $split" }
@@ -24,8 +29,14 @@ object MonikersParser {
         return MonikersCard(clue, description, ref, points)
     }
 
+    /** Loads all moniker cards for [studySet]. */
     fun loadCards(studySet: StandardStudySet): List<MonikersCard> = loadCards(studySet.set)
 
+    /**
+     * Loads all moniker cards for [studySet] from the bundled resource `/<simpleName>/monikers.tsv`.
+     *
+     * @throws IOException if the resource is missing or any line fails to parse
+     */
     fun loadCards(studySet: StudySet): List<MonikersCard> {
         val resourceName = "/${studySet.simpleName}/monikers.tsv"
         val resource: URL = getResource(resourceName)
