@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
     application
+    id("org.jetbrains.dokka") version "2.0.0"
 }
 
 // set the project version from tags and commits in Git repository
