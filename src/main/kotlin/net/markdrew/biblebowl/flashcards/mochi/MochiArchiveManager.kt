@@ -11,11 +11,17 @@ object MochiArchiveManager {
 
     private const val DATA_FILE_NAME = "data.json"
 
+    // Security limits to prevent zip bombs
+    private const val MAX_ENTRY_SIZE = 100 * 1024 * 1024 // 100 MB
+    private const val MAX_TOTAL_SIZE = 500 * 1024 * 1024 // 500 MB
+    private const val MAX_ENTRIES = 10000
+
     /**
      * Reads a `.mochi` archive from [inputStream], parsing the Transit JSON data and loading any media
      * files into memory.
      *
      * @throws IllegalArgumentException if the archive is missing the `data.json` entry
+     * @throws IllegalStateException if the archive exceeds size or entry count limits (potential zip bomb)
      */
     fun readArchive(inputStream: InputStream): MochiArchive {
         var exportData: MochiData? = null
@@ -23,9 +29,35 @@ object MochiArchiveManager {
 
         ZipInputStream(inputStream).use { zipIn ->
             var entry: ZipEntry? = zipIn.nextEntry
+            var totalBytesRead = 0L
+            var entryCount = 0
+
             while (entry != null) {
+                entryCount++
+                if (entryCount > MAX_ENTRIES) {
+                    throw IllegalStateException("Archive contains too many entries (max $MAX_ENTRIES)")
+                }
+
                 if (!entry.isDirectory) {
-                    val bytes = zipIn.readBytes()
+                    val baos = java.io.ByteArrayOutputStream()
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    var entryBytesRead = 0L
+
+                    while (zipIn.read(buffer).also { bytesRead = it } != -1) {
+                        baos.write(buffer, 0, bytesRead)
+                        entryBytesRead += bytesRead
+                        totalBytesRead += bytesRead
+
+                        if (entryBytesRead > MAX_ENTRY_SIZE) {
+                            throw IllegalStateException("Archive entry exceeds maximum size limit (max $MAX_ENTRY_SIZE bytes)")
+                        }
+                        if (totalBytesRead > MAX_TOTAL_SIZE) {
+                            throw IllegalStateException("Archive total size exceeds maximum limit (max $MAX_TOTAL_SIZE bytes)")
+                        }
+                    }
+
+                    val bytes = baos.toByteArray()
                     
                     if (entry.name == DATA_FILE_NAME) {
                         // Pass the byte array as a stream to our Transit decoder
