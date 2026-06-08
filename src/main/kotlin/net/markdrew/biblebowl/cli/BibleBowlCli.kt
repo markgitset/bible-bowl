@@ -14,15 +14,13 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.types.enum
+import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.input.interactiveMultiSelectList
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
-import net.markdrew.biblebowl.generate.text.Docx
-import net.markdrew.biblebowl.generate.text.Latex
 import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.generate.text.Typst
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -39,16 +37,18 @@ import kotlin.time.TimeSource
 /**
  * Clikt command that drives the full BibleBowl generation pipeline
  *
- * Loads (or downloads + indexes) a [net.markdrew.biblebowl.model.StudyData] for the chosen
- * [net.markdrew.biblebowl.model.StudySet] and runs every generator family — text variants, indices,
+ * Loads (or downloads + indexes) a [StudyData] for the chosen
+ * [StudySet] and runs every generator family — text variants, indices,
  * flashcards, practice tests — under the supplied output directories.
  */
 class BibleBowlCli : CliktCommand(name = "biblebowl") {
 
+    private val defaultTextFormats: Set<OutputFormat> = setOf(Typst)
+
     // clikt 5 removed the `help`/`epilog` constructor params; help text now comes from this override.
     // (We override commandHelp, not help, so the member name doesn't collide with the imported
     // `.help()` option/argument extensions.)
-    override fun commandHelp(context: Context): String = "Generate Bible Bowl resources and indices."
+    override fun help(context: Context): String = "Generate Texas Bible Bowl resources."
 
 //    private val userHomeDir = Path(System.getProperty("user.home"))
 //    private val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
@@ -60,16 +60,16 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .optional()
         .help("Name of the study set to use (default: ${StandardStudySet.DEFAULT.simpleName})")
 
-    private val forceDownload: Boolean by option("--force-download", "-f")
+    private val forceDownload: Boolean by option("--force-download", "-F")
         .flag(default = false)
         .help("Force download and re-index the study set, even if data exists (default: false)")
 
     private val recomputeAnnotations: Boolean by option("--recompute-annotations")
         .flag(default = false)
-        .help("Recompute and overwrite cached name/number/highlight annotations, ignoring any sidecar " +
-            "cache (default: false)")
+        .help("Recompute and overwrite cached name/number/highlight annotations, ignoring any cache " +
+            "(default: false)")
 
-    private val resources: List<String> by option("--resource", "-R")
+    private val resources: List<String> by option("--resource", "-r")
         .multiple()
         .help("Resource(s) to generate; repeatable. Each value is a category or a resource slug " +
             "(see --list). Default: generate everything.")
@@ -82,18 +82,18 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .flag(default = false)
         .help("List the available resources and categories, then exit (default: false)")
 
-    private val textFormats: List<TextFormat> by option("--format", "-t")
-        .enum<TextFormat>(ignoreCase = true)
+    private val textFormats: List<OutputFormat> by option("--format", "-f")
+        .choice(OutputFormat.all.associateBy { it.subdir }, ignoreCase = true)
         .multiple()
-        .help("Text format(s) to generate; repeatable. One of: ${TextFormat.entries.joinToString { it.name.lowercase() }} " +
-            "(default: all)")
+        .help("Text format(s) to generate; repeatable. One of: ${OutputFormat.all.joinToString { it.subdir }} " +
+            "(default: ${defaultTextFormats.joinToString { it.subdir }})")
 
-    private val dataDir: Path by option("--data-dir", "-d")
+    private val dataDir: Path by option("--data-dir")
         .convert { Path(it) }
         .default(defaultDataPath)
         .help("Directory where Bible bowl data is stored (default: $defaultDataPath)")
 
-    private val rawDataDir: Path by option("--raw-data-dir", "-r")
+    private val rawDataDir: Path by option("--raw-data-dir")
         .convert { Path(it) }
         .default(defaultRawDataPath)
         .help("Directory where Bible bowl raw data is stored (default: $defaultRawDataPath)")
@@ -108,8 +108,8 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         print(BANNER)
 
         val formats: Set<OutputFormat> =
-            if (textFormats.isEmpty()) setOf(Typst)
-            else textFormats.map { it.outputFormat }.toSet()
+            if (textFormats.isEmpty()) defaultTextFormats
+            else textFormats.toSet()
         val registry: List<StudyResource> = studyResources(formats, TEST_DATE)
 
         if (listResources) {
@@ -193,13 +193,6 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         // Date stamped on generated covers/footers.
         private val TEST_DATE: LocalDate = LocalDate.of(2026, 3, 28)
     }
-}
-
-/** CLI-selectable text formats, each mapped to its [OutputFormat]. */
-enum class TextFormat(val outputFormat: OutputFormat) {
-    DOCX(Docx),
-    LATEX(Latex),
-    TYPST(Typst),
 }
 
 fun main(args: Array<String>) = BibleBowlCli().main(args)

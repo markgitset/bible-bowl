@@ -16,6 +16,14 @@ sealed interface OutputFormat {
 
     /** Source file extension (without leading dot), e.g. `"docx"`, `"tex"`. */
     val extension: String
+
+    companion object {
+        /**
+         * Every output format, in CLI/menu order; [subdir] doubles as the format's lowercase token.
+         * Keep this in sync when adding a new [OutputFormat] subtype.
+         */
+        val all: List<OutputFormat> = listOf(Docx, Latex, Typst)
+    }
 }
 
 /** DOCX/Word output. The writer's source file is a `.docx`; PDF is produced by LibreOffice headless. */

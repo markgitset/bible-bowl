@@ -35,11 +35,11 @@ import net.markdrew.biblebowl.typst.writeTypstFlashCards
 import java.nio.file.Path
 import java.time.LocalDate
 
-/** Top-level grouping of study resources. The lowercased [name] doubles as the `-R` category token. */
+/** Top-level grouping of study resources. The lowercased [name] doubles as the `-r` category token. */
 enum class ResourceCategory { TEXT, INDICES, FLASHCARDS, PRACTICE }
 
 /**
- * One generatable study resource: a stable [slug] (selectable via `-R`), its [category], a
+ * One generatable study resource: a stable [slug] (selectable via `-r`), its [category], a
  * human-readable [label] (shown by `--list`/the picker), and the [generate] action that writes it.
  */
 class StudyResource(
