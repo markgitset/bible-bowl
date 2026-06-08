@@ -9,7 +9,7 @@ class StudyResourcesTest : StringSpec({
 
     // A small fixed registry so the test doesn't depend on the real generator wiring.
     fun resource(slug: String, category: ResourceCategory) =
-        StudyResource(slug, category, slug) { _, _ -> }
+        StudyResource(slug, category, slug) { _, _, _ -> }
 
     val registry: List<StudyResource> = listOf(
         resource("text", ResourceCategory.TEXT),

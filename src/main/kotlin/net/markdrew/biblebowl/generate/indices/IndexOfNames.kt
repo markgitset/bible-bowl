@@ -38,10 +38,14 @@ private fun writeNamesList(studyData: StudyData) {
 }
 
 /** Writes the names index (alphabetical + frequency) for [studyData] as a LaTeX PDF. */
-fun writeNamesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeNamesIndex(
+    studyData: StudyData,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    nameRanges: List<IntRange> = findNames(studyData).map { it.excerptRange }.toList(),
+) {
     val studyName = studyData.studySet.simpleName
     val exceptNames: Array<String> = arrayOf()
-    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData, *exceptNames)
+    val indexEntries: List<WordIndexEntryC> = buildNamesIndex(studyData, nameRanges)
         .map { wordIndexEntry ->
             WordIndexEntryC(
                 wordIndexEntry.key,

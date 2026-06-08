@@ -1,10 +1,10 @@
 package net.markdrew.biblebowl.generate.text
 
-import mu.KLogger
-import mu.KotlinLogging
-import net.markdrew.biblebowl.analysis.findNames
-import net.markdrew.biblebowl.analysis.findNumbers
-import net.markdrew.biblebowl.analysis.oneTimeWords
+import net.markdrew.biblebowl.analysis.AnnotationStore
+import net.markdrew.biblebowl.analysis.NamesSource
+import net.markdrew.biblebowl.analysis.NumbersSource
+import net.markdrew.biblebowl.analysis.OneTimeWordsSource
+import net.markdrew.biblebowl.analysis.RegexSetSource
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -19,13 +19,7 @@ import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
 import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
 import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
 import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
-import net.markdrew.biblebowl.model.Excerpt
 import net.markdrew.biblebowl.model.StudyData
-import net.markdrew.chupacabra.core.DisjointRangeMap
-import net.markdrew.chupacabra.core.DisjointRangeSet
-import net.markdrew.chupacabra.core.length
-
-private val log: KLogger = KotlinLogging.logger {}
 
 /**
  * Format-agnostic annotation pipeline that turns a [StudyData] plus a [FeatureOptions] into the
@@ -37,6 +31,11 @@ private val log: KLogger = KotlinLogging.logger {}
  * highlighting). Writers walk the doc's state transitions and emit format-specific markup; they do not
  * re-detect any of these layers.
  *
+ * Each feature layer is produced through an [AnnotationStore], so the expensive regex/NLP passes run at
+ * most once per study set per run (and can be served from disk across runs). The doc depends only on
+ * `(studyData, features)` — never on layout or writer — so a single built doc is reused across every
+ * format and layout that shares those features.
+ *
  * REGEX annotation values are [HighlightColor]s (not bare strings), so each writer can format the color
  * for its own output: DOCX writers call [HighlightColor.toHex]; LaTeX writers reference
  * [HighlightColor.name] and emit `\definecolor` blocks for it in the preamble.
@@ -44,70 +43,27 @@ private val log: KLogger = KotlinLogging.logger {}
 object BibleAnnotationPipeline {
 
     /**
-     * Builds an [AnnotatedDoc] for [studyData] with all structural layers plus the feature layers
-     * enabled by [features].
-     *
-     * Custom highlights are deconflicted by length when multiple patterns overlap — the longer match
-     * wins, and any displaced shorter matches are logged.
+     * Builds an [AnnotatedDoc] for [studyData] with all structural layers plus the feature layers enabled
+     * by [features], pulling each feature layer from [store].
      */
-    fun build(studyData: StudyData, features: FeatureOptions): AnnotatedDoc<AnalysisUnit> {
-        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = studyData.toAnnotatedDoc(
+    fun build(
+        studyData: StudyData,
+        features: FeatureOptions,
+        store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
+    ): AnnotatedDoc<AnalysisUnit> {
+        val regexHighlights = store.get(RegexHighlightSource(features.customHighlights))
+        val smallCaps = RegexSetSource("small-caps", features.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
+        return studyData.toAnnotatedDoc(
             BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
         ).apply {
-            val regexAnnotationsRangeMap: DisjointRangeMap<HighlightColor> =
-                features.customHighlights.entries.fold(DisjointRangeMap()) { allHighlights, (color, patterns) ->
-                    val highlights: DisjointRangeSet = studyData.findAll(*patterns.toTypedArray())
-                    highlights.forEach { range ->
-                        val maxExistingHighlight = allHighlights.intersectedBy(range).maxByOrNull { it.key.length() }
-                        if (maxExistingHighlight == null) {
-                            allHighlights[range] = color
-                        } else {
-                            val newExcerpt: Excerpt = studyData.excerpt(range)
-                            val verse = studyData.verseEnclosing(range)?.format() ?: "UNK_VERSE"
-                            if (maxExistingHighlight.key.length() > range.length()) {
-                                val existingExcerpt: Excerpt = studyData.excerpt(maxExistingHighlight.key)
-                                log.warn {
-                                    "In ${verse}, skipping ${highlightString(newExcerpt, color)} because " +
-                                        "${highlightString(existingExcerpt, maxExistingHighlight.value)} is longer!"
-                                }
-                            } else {
-                                val replaced: DisjointRangeMap<HighlightColor> =
-                                    allHighlights.putForcefully(range, color)
-                                replaced.forEach { (replacedRange, replacedColor) ->
-                                    val existingExcerpt: Excerpt = studyData.excerpt(replacedRange)
-                                    log.warn {
-                                        "In ${verse}, replacing " +
-                                            "${highlightString(existingExcerpt, replacedColor)} because " +
-                                            "${highlightString(newExcerpt, color)} is longer!"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    allHighlights
-                }
-            setAnnotations(REGEX, regexAnnotationsRangeMap)
-            setAnnotations(SMALL_CAPS, DisjointRangeSet(
-                studyData.findAll(*features.smallCaps.keys.map { Regex.fromLiteral(it) }.toTypedArray())
-            ))
-            if (features.underlineUniqueWords) setAnnotations(UNIQUE_WORD, DisjointRangeSet(oneTimeWords(studyData)))
+            setAnnotations(REGEX, regexHighlights)
+            setAnnotations(SMALL_CAPS, store.ranges(smallCaps))
+            if (features.underlineUniqueWords) setAnnotations(UNIQUE_WORD, store.ranges(OneTimeWordsSource))
             if (features.highlightNames) {
-                val namesRangeSet = DisjointRangeSet(
-                    findNames(studyData, exceptNames = divineNames.toTypedArray())
-                        .map { it.excerptRange }.toList()
-                )
-                // remove any ranges that intersect with custom regex ranges
-                val deconflicted = namesRangeSet.minusEnclosedBy(regexAnnotationsRangeMap)
-                setAnnotations(NAME, deconflicted)
+                // remove any names that intersect with custom regex ranges
+                setAnnotations(NAME, store.ranges(NamesSource(divineNames)).minusEnclosedBy(regexHighlights))
             }
-            if (features.highlightNumbers) {
-                val numbersRangeSet = DisjointRangeSet(findNumbers(studyData.text).map { it.excerptRange }.toList())
-                setAnnotations(NUMBER, numbersRangeSet)
-            }
+            if (features.highlightNumbers) setAnnotations(NUMBER, store.ranges(NumbersSource))
         }
-        return annotatedDoc
     }
-
-    private fun highlightString(excerpt: Excerpt, color: HighlightColor): String =
-        """"${excerpt.excerptText}" (${excerpt.excerptRange}:${color.name})"""
 }

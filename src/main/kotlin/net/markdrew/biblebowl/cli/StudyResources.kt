@@ -1,7 +1,10 @@
 package net.markdrew.biblebowl.cli
 
+import net.markdrew.biblebowl.analysis.AnnotationStore
+import net.markdrew.biblebowl.analysis.NamesSource
+import net.markdrew.biblebowl.analysis.NumbersSource
+import net.markdrew.biblebowl.analysis.OneTimeWordsSource
 import net.markdrew.biblebowl.analysis.WordList
-import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.cli.ResourceCategory.FLASHCARDS
 import net.markdrew.biblebowl.cli.ResourceCategory.INDICES
 import net.markdrew.biblebowl.cli.ResourceCategory.PRACTICE
@@ -43,7 +46,7 @@ class StudyResource(
     val slug: String,
     val category: ResourceCategory,
     val label: String,
-    val generate: (StudyData, Path) -> Unit,
+    val generate: (StudyData, AnnotationStore, Path) -> Unit,
 )
 
 /** A category-specific word-list index: its [wordList] plus the singular/plural labels the index uses. */
@@ -69,34 +72,44 @@ private val WORD_LISTS: List<WordListSpec> = listOf(
  */
 fun studyResources(formats: Set<OutputFormat>, testDate: LocalDate): List<StudyResource> = buildList {
     // TEXT
-    add(StudyResource("text", TEXT, "Bible text variants") { data, dir ->
-        generateBibleTexts(data, testDate, dir, formats)
+    add(StudyResource("text", TEXT, "Bible text variants") { data, store, dir ->
+        generateBibleTexts(data, testDate, dir, formats, store)
     })
 
     // INDICES
-    add(StudyResource("unique-words-index", INDICES, "One-time words index") { d, p -> writeOneTimeWordsIndex(d, p) })
-    add(StudyResource("unique-words-homework", INDICES, "One-time words homework") { d, p -> writeOneTimeWordsHomework(d, p) })
-    add(StudyResource("full-index", INDICES, "Full word index") { d, p -> writeFullIndex(d, productsDir = p) })
-    add(StudyResource("numbers-index", INDICES, "Numbers index") { d, p -> writeNumbersIndex(d, productsDir = p) })
-    add(StudyResource("names-index", INDICES, "Names index") { d, p -> writeNamesIndex(d, p) })
-    add(StudyResource("phrases-index", INDICES, "Non-local phrases index") { d, p -> writeNonLocalPhrasesIndex(d, p) })
-    add(StudyResource("headings-index", INDICES, "Headings index (PDF)") { d, p -> writeHeadingsPdf(d, p) })
-    add(StudyResource("headings-text", INDICES, "Headings list (text)") { d, p -> writeHeadingsText(d, p) })
+    add(StudyResource("unique-words-index", INDICES, "One-time words index") { d, store, p ->
+        writeOneTimeWordsIndex(d, p, store.rangeList(OneTimeWordsSource))
+    })
+    add(StudyResource("unique-words-homework", INDICES, "One-time words homework") { d, store, p ->
+        writeOneTimeWordsHomework(d, p, store.rangeList(OneTimeWordsSource))
+    })
+    add(StudyResource("full-index", INDICES, "Full word index") { d, _, p -> writeFullIndex(d, productsDir = p) })
+    add(StudyResource("numbers-index", INDICES, "Numbers index") { d, store, p ->
+        writeNumbersIndex(d, productsDir = p, numberRanges = store.rangeList(NumbersSource))
+    })
+    add(StudyResource("names-index", INDICES, "Names index") { d, store, p ->
+        writeNamesIndex(d, p, store.rangeList(NamesSource()))
+    })
+    add(StudyResource("phrases-index", INDICES, "Non-local phrases index") { d, _, p -> writeNonLocalPhrasesIndex(d, p) })
+    add(StudyResource("headings-index", INDICES, "Headings index (PDF)") { d, _, p -> writeHeadingsPdf(d, p) })
+    add(StudyResource("headings-text", INDICES, "Headings list (text)") { d, _, p -> writeHeadingsText(d, p) })
     for (spec in WORD_LISTS) {
-        add(StudyResource(spec.slug, INDICES, "${spec.plural} word-list index") { d, p ->
+        add(StudyResource(spec.slug, INDICES, "${spec.plural} word-list index") { d, _, p ->
             writeWordListIndex(p, d, spec.wordList, spec.singular, spec.plural)
         })
     }
 
     // FLASHCARDS
-    add(StudyResource("cram-verses", FLASHCARDS, "Cram verses deck") { d, p -> writeCramVerses(d, p) })
-    add(StudyResource("cram-headings", FLASHCARDS, "Cram headings deck") { d, p -> writeCramHeadings(d, p) })
-    add(StudyResource("cram-reverse-headings", FLASHCARDS, "Cram reverse-headings deck") { d, p -> writeCramReverseHeadings(d, p) })
-    add(StudyResource("cram-one-time-words", FLASHCARDS, "Cram one-time-words deck") { d, p -> writeCramOneTimeWords(d, oneTimeWords(d), p) })
-    add(StudyResource("typst-cards", FLASHCARDS, "Typst heading flashcards (PDF)") { d, p -> writeTypstFlashCards(d, p) })
+    add(StudyResource("cram-verses", FLASHCARDS, "Cram verses deck") { d, _, p -> writeCramVerses(d, p) })
+    add(StudyResource("cram-headings", FLASHCARDS, "Cram headings deck") { d, _, p -> writeCramHeadings(d, p) })
+    add(StudyResource("cram-reverse-headings", FLASHCARDS, "Cram reverse-headings deck") { d, _, p -> writeCramReverseHeadings(d, p) })
+    add(StudyResource("cram-one-time-words", FLASHCARDS, "Cram one-time-words deck") { d, store, p ->
+        writeCramOneTimeWords(d, store.rangeList(OneTimeWordsSource), p)
+    })
+    add(StudyResource("typst-cards", FLASHCARDS, "Typst heading flashcards (PDF)") { d, _, p -> writeTypstFlashCards(d, p) })
 
     // PRACTICE
-    add(StudyResource("practice", PRACTICE, "Practice test set (rounds 1, 4, 5)") { d, p ->
+    add(StudyResource("practice", PRACTICE, "Practice test set (rounds 1, 4, 5)") { d, _, p ->
         writeFullSet(d, p) { content, seed, dir ->
             writeRound1VerseFind(practiceTest(Round.FIND_THE_VERSE, content, seed, numQuestions = 20), dir)
             writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), dir)

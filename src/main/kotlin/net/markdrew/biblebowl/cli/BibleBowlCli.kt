@@ -17,6 +17,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
 import com.github.ajalt.mordant.input.interactiveMultiSelectList
 import net.markdrew.biblebowl.BANNER
+import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
@@ -62,6 +63,11 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
     private val forceDownload: Boolean by option("--force-download", "-f")
         .flag(default = false)
         .help("Force download and re-index the study set, even if data exists (default: false)")
+
+    private val recomputeAnnotations: Boolean by option("--recompute-annotations")
+        .flag(default = false)
+        .help("Recompute and overwrite cached name/number/highlight annotations, ignoring any sidecar " +
+            "cache (default: false)")
 
     private val resources: List<String> by option("--resource", "-R")
         .multiple()
@@ -141,9 +147,15 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             }
         }
 
+        val annotationStore = AnnotationStore(
+            studyData,
+            cacheDir = dataDir.resolve(studySet.simpleName),
+            forceRecompute = recomputeAnnotations,
+        )
+
         for (resource in selected) {
             echo("Generating ${resource.label} (${resource.slug})...")
-            resource.generate(studyData, productsDir)
+            resource.generate(studyData, annotationStore, productsDir)
         }
 
         echo("Generation complete. Output in $productsDir (took ${started.elapsedNow()})")

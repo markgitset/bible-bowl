@@ -37,11 +37,15 @@ private fun writeOneTimeWordsList(studyData: StudyData) {
 }
 
 /** Writes the one-time-words index (alphabetical + by appearance) for [studyData] as a LaTeX PDF. */
-fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeOneTimeWordsIndex(
+    studyData: StudyData,
+    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    oneTimeWordRanges: List<IntRange> = oneTimeWords(studyData),
+) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
-    val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData)
-    val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(studyData)
+    val indexEntriesByWord: List<WordIndexEntry> = oneTimeWordsIndexByWord(studyData, oneTimeWordRanges)
+    val indexEntriesByVerse: List<VerseIndexEntry> = oneTimeWordsIndexByVerse(studyData, oneTimeWordRanges)
     val dir = productsDir.resolve(simpleName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$simpleName-index-one-time-words.tex")
     Files.newBufferedWriter(file).use { writer ->
@@ -65,10 +69,14 @@ fun writeOneTimeWordsIndex(studyData: StudyData, productsDir: Path = Path.of(PRO
 }
 
 /** Writes the per-chapter one-time-words homework sheet as a LaTeX PDF. */
-fun writeOneTimeWordsHomework(studyData: StudyData, productsDir: Path = defaultProductsPath) {
+fun writeOneTimeWordsHomework(
+    studyData: StudyData,
+    productsDir: Path = defaultProductsPath,
+    oneTimeWordRanges: List<IntRange> = oneTimeWords(studyData),
+) {
     val simpleName = studyData.studySet.simpleName
     val set = studyData.studySet
-    val indexEntriesByChapter: List<ChapterIndexEntry> = oneTimeWordsIndexByChapter(studyData)
+    val indexEntriesByChapter: List<ChapterIndexEntry> = oneTimeWordsIndexByChapter(studyData, oneTimeWordRanges)
     val dir = productsDir.resolve(simpleName, "homework").also { Files.createDirectories(it) }
     val file: Path = dir.resolve("$simpleName-homework-one-time-words.tex")
     Files.newBufferedWriter(file).use { writer ->
@@ -86,19 +94,19 @@ fun writeOneTimeWordsHomework(studyData: StudyData, productsDir: Path = defaultP
     file.latexToPdf(keepTexFiles = true)
 }
 
-private fun oneTimeWordsIndexByWord(studyData: StudyData): List<WordIndexEntry> = oneTimeWords(studyData).map {
+private fun oneTimeWordsIndexByWord(studyData: StudyData, ranges: List<IntRange>): List<WordIndexEntry> = ranges.map {
     val ref: VerseRef = studyData.verseEnclosing(it) ?: throw Exception()
     IndexEntry(studyData.excerpt(it).excerptText, listOf(ref))
 }
 
-private fun oneTimeWordsIndexByVerse(studyData: StudyData): List<VerseIndexEntry> = oneTimeWords(studyData)
+private fun oneTimeWordsIndexByVerse(studyData: StudyData, ranges: List<IntRange>): List<VerseIndexEntry> = ranges
     .groupBy {
         studyData.verseEnclosing(it) ?: throw Exception()
     }.map { (ref, wordRanges) ->
         IndexEntry(ref, wordRanges.map { studyData.excerpt(it).excerptText })
     }
 
-private fun oneTimeWordsIndexByChapter(studyData: StudyData): List<ChapterIndexEntry> = oneTimeWords(studyData)
+private fun oneTimeWordsIndexByChapter(studyData: StudyData, ranges: List<IntRange>): List<ChapterIndexEntry> = ranges
     .groupBy {
         studyData.chapterEnclosing(it) ?: throw Exception()
     }.map { (ref, wordRanges) ->

@@ -6,6 +6,7 @@ import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNumbersIndex
+import net.markdrew.biblebowl.analysis.findNumbers
 import net.markdrew.biblebowl.fileForProduct
 import net.markdrew.biblebowl.latex.IndexEntry
 import net.markdrew.biblebowl.latex.latexToPdf
@@ -23,8 +24,9 @@ fun main() {
 
 /** Writes the numbers index (alphabetical + frequency) for [studyData] as a LaTeX PDF. */
 fun writeNumbersIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS,
-                      productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
-    val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(studyData).map { wordIndexEntry ->
+                      productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+                      numberRanges: List<IntRange> = findNumbers(studyData.text).map { it.excerptRange }.toList()) {
+    val indexEntries: List<WordIndexEntryC> = buildNumbersIndex(studyData, numberRanges).map { wordIndexEntry ->
         WordIndexEntryC(
             wordIndexEntry.key,
             wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) ->

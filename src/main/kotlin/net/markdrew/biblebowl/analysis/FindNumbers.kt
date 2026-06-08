@@ -87,7 +87,11 @@ fun findNumbers(text: String): Sequence<Excerpt> =
 
 /** Builds a number index for [studyData], grouping by lowercased number string with the verses each appears in. */
 fun buildNumbersIndex(studyData: StudyData): List<WordIndexEntry> =
-    findNumbers(studyData.text)
+    buildNumbersIndex(studyData, findNumbers(studyData.text).map { it.excerptRange }.toList())
+
+/** Builds a number index from precomputed number [ranges] (e.g. from a shared annotation cache). */
+fun buildNumbersIndex(studyData: StudyData, ranges: List<IntRange>): List<WordIndexEntry> =
+    ranges.map { studyData.excerpt(it) }
         .groupBy { it.excerptText.lowercase() }
         .map { (key, excerpts) ->
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })

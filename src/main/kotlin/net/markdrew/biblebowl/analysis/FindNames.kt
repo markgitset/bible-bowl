@@ -55,6 +55,21 @@ fun buildNamesIndex(
     }
 
 /**
+ * Builds a name index from precomputed name [ranges] (e.g. from a shared annotation cache).
+ *
+ * Groups occurrences by lowercased text exactly as [buildNamesIndex] does; pass the ranges from a
+ * [findNames] run with the same `exceptNames` to get identical output.
+ */
+fun buildNamesIndex(studyData: StudyData, ranges: List<IntRange>): List<WordIndexEntry> =
+    ranges.map { studyData.excerpt(it) }
+        .groupBy { it.excerptText.lowercase() }
+        .map { (_, excerpts) ->
+            WordIndexEntry(excerpts.first().excerptText, excerpts.map {
+                studyData.verseEnclosing(it.excerptRange) ?: throw Exception()
+            })
+        }
+
+/**
  * Returns every name occurrence in [studyData] as an [Excerpt], in canonical Bible order.
  *
  * Same detection logic as [buildNamesIndex] but flattened and ordered by character offset.
