@@ -127,7 +127,7 @@ Nathan
 Nathanael
 Neri
 Nicodemus
-(?<!Mahlah,\s+)Noah
+(?<!Mahlah,\s)Noah
 Nun
 Obed
 Og

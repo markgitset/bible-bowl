@@ -640,7 +640,7 @@
 #versenum(21) the king of #myhl(placesColor)[Taanach], #mynumber[one]; the king of #myhl(placesColor)[Megiddo], #mynumber[one]; 
 #versenum(22) the king of #myhl(placesColor)[Kedesh], #mynumber[one]; the king of #myhl(placesColor)[Jokneam] in #myhl(placesColor)[Carmel], #mynumber[one]; 
 #versenum(23) the king of #myhl(placesColor)[Dor] in #underline[#myhl(placesColor)[Naphath-dor]], #mynumber[one]; the king of #underline[#myhl(placesColor)[Goiim]] in #myhl(placesColor)[Galilee],#footnote[Joshua 12:23 Septuagint; Hebrew #emph[Gilgal]] #mynumber[one]; 
-#versenum(24) the king of #myname[Tirzah], #mynumber[one]: in all, #underline[#mynumber[thirty-one]] kings.
+#versenum(24) the king of #myhl(placesColor)[Tirzah], #mynumber[one]: in all, #underline[#mynumber[thirty-one]] kings.
 
 
   

@@ -320,7 +320,7 @@ Thebez
 Timnah
 Timnath-heres
 Timnath-serah
-(?<=king\s+of\s+)Tirzah
+(?<=king\sof\s)Tirzah
 Ummah
 Zaanannim
 Zanoah
