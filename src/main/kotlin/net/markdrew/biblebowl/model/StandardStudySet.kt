@@ -57,27 +57,34 @@ enum class StandardStudySet(val set: StudySet) {
         val DEFAULT: StudySet = ACTS.set
 
         /**
-         * Resolves a user-supplied name to a [StudySet], falling back to [default] when nothing matches.
+         * Resolves a user-supplied name to a [StudySet], falling back to [default] when [queryName] is null or
+         * nothing matches.
+         *
+         * See [parseOrNull] for the match order. Callers that want to reject an unrecognized name (rather than
+         * silently defaulting) should use [parseOrNull] instead.
+         */
+        fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =
+            if (queryName == null) default else parseOrNull(queryName) ?: default
+
+        /**
+         * Resolves a non-null [queryName] to a [StudySet], or returns null when nothing matches.
          *
          * Match order: exact enum name (case-insensitive), then a prefix match against the enum name, the
          * [StudySet.simpleName], or the [StudySet.name]. If none match, the input is parsed as a single [Book]
          * via [Book.parse].
          */
-        fun parse(queryName: String?, default: StudySet = DEFAULT): StudySet =
-            if (queryName == null) {
-                default
-            } else {
-                val studySet: StudySet? = try {
-                    valueOf(queryName.uppercase())
-                } catch (e: IllegalArgumentException) {
-                    val lowerQueryName = queryName.lowercase()
-                    entries.firstOrNull { sss ->
-                        setOf(sss.name, sss.set.simpleName, sss.set.name).any {
-                            it.lowercase().startsWith(lowerQueryName)
-                        }
+        fun parseOrNull(queryName: String): StudySet? {
+            val studySet: StudySet? = try {
+                valueOf(queryName.uppercase())
+            } catch (e: IllegalArgumentException) {
+                val lowerQueryName = queryName.lowercase()
+                entries.firstOrNull { sss ->
+                    setOf(sss.name, sss.set.simpleName, sss.set.name).any {
+                        it.lowercase().startsWith(lowerQueryName)
                     }
-                }?.set
-                studySet ?: Book.parse(queryName, null)?.let { StudySet(it) } ?: default
-            }
+                }
+            }?.set
+            return studySet ?: Book.parse(queryName, null)?.let { StudySet(it) }
+        }
     }
 }

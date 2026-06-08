@@ -33,6 +33,7 @@ import net.markdrew.biblebowl.ws.Passage
 import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.Path
+import kotlin.time.TimeSource
 
 /**
  * Clikt command that drives the full BibleBowl generation pipeline
@@ -97,6 +98,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .help("Directory for output products (default: $defaultProductsPath)")
 
     override fun run() {
+        val started = TimeSource.Monotonic.markNow()
         print(BANNER)
 
         val formats: Set<OutputFormat> =
@@ -124,7 +126,9 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             return
         }
 
-        val studySet: StudySet = StandardStudySet.parse(studySetName)
+        val studySet: StudySet = studySetName?.let { name ->
+            StandardStudySet.parseOrNull(name) ?: throw UsageError("unrecognized study set: $name")
+        } ?: StandardStudySet.DEFAULT
         val studyData = try {
             StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
         } catch (e: NoSuchFileException) {
@@ -142,7 +146,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             resource.generate(studyData, productsDir)
         }
 
-        echo("Generation complete. Output in $productsDir")
+        echo("Generation complete. Output in $productsDir (took ${started.elapsedNow()})")
     }
 
     /** Prints the available resources grouped by category, used by `--list`. */
