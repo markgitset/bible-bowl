@@ -149,12 +149,16 @@ class EsvIndexer(val studySet: StudySet) {
         FOOTNOTE_REF_REGEX.findAll(text).forEach {
             buffer.append(text.substring(lastStart, it.range.first))
             val noteNumber = it.groupValues[1].toInt()
-            // footnotes that occur *before* text are normally preceded by a space; when this happens we want to skip
-            // the *following* space so that the offset of the footnote is the same as the offset of the first text to
-            // which it applies
+
+            // Handle leading footnotes (shifting past the following space to the start of the next word)
             val shiftNoteRight = (it.range.first == 0 || text[it.range.first - 1] == ' ')
                     && text.length > it.range.last + 1 && text[it.range.last + 1] == ' '
-            noteOffsetsByNoteNumber[noteNumber] = buffer.length + (if (shiftNoteRight) 1 else 0)
+
+            // Handle regular footnotes (shifting past any trailing punctuation so they anchor after commas/periods)
+            val textAfterFootnote = text.substring(it.range.last + 1)
+            val punctuationShift = textAfterFootnote.takeWhile { char -> char in ".,;:?!'\"”’)]" }.length
+
+            noteOffsetsByNoteNumber[noteNumber] = buffer.length + (if (shiftNoteRight) 1 else punctuationShift)
             lastStart = it.range.last + 1
         }
         buffer.append(text.substring(lastStart))

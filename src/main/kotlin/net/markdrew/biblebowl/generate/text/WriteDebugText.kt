@@ -13,17 +13,7 @@ private val logger: KLogger = KotlinLogging.logger {}
 fun main(args: Array<String>) {
     val studySet = StandardStudySet.parse(args.firstOrNull())
     val studyData = StudyData.readData(studySet)
-//    val customHighlights = mapOf(
-////        "divineColor" to divineNames.map { it.toRegex() }.toSet(),
-//        "namesColor" to setOf("John the Baptist".toRegex()),
-//    )
-//    writeBibleText(book, TextOptions(fontSize = 12, names = false, numbers = false, uniqueWords = true))
-//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = false))
-//    writeBibleText(book, TextOptions(names = false, numbers = false, uniqueWords = true))
-    writeBibleDocDebug(
-        studyData,
-//        TextOptions(names = true, numbers = true, uniqueWords = true, customHighlights = customHighlights)
-    )
+    writeBibleDocDebug(studyData)
 }
 
 /**
@@ -32,12 +22,16 @@ fun main(args: Array<String>) {
  * Each line shows a run's range, the active annotations, and the raw text (with newlines escaped).
  * Useful for diagnosing renderer issues without going through LaTeX/DOCX compilation.
  */
-fun writeBibleDocDebug(studyData: StudyData, opts: TextOptions<String> = TextOptions()) {
+fun writeBibleDocDebug(
+    studyData: StudyData,
+    features: FeatureOptions = FeatureOptions(),
+    layout: LayoutOptions = LayoutOptions(),
+) {
     val name = studyData.studySet.simpleName
-    val outputFile = File("$name-debug-text-${opts.fileNameSuffix}.txt")
-//    val outputFile = File("$PRODUCTS_DIR/$name/text/$name-bible-text-${opts.fileNameSuffix}.docx")
+    val suffix = BibleTextPipeline.fileNameSuffix(layout, features)
+    val outputFile = File("$name-debug-text-$suffix.txt")
     PrintWriter(outputFile).use { out ->
-        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleTextRenderer.annotatedDoc(studyData, opts)
+        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleAnnotationPipeline.build(studyData, features)
         annotatedDoc.textRuns().forEach { run ->
             val annotationsString = run.annotations.joinToString(", ") { it.toShortString() }
             val text = annotatedDoc.docText.substring(run.range).replace("\n", "\\n")

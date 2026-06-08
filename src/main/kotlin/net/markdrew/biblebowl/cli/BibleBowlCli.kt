@@ -34,7 +34,7 @@ import net.markdrew.biblebowl.generate.practice.writeFullSet
 import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
 import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
-import net.markdrew.biblebowl.generate.text.writeBibleDoc
+import net.markdrew.biblebowl.generate.text.generateBibleTexts
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -108,15 +108,9 @@ class BibleBowlCli : CliktCommand(
             }
         }
 
-        // Write LaTEX-set PDFs of the text
-//        writeBibleText(studyData, productsDir)
-//        writeBibleText(studyData, productsDir,
-//            TextOptions(highlightNames = true, highlightNumbers = true, underlineUniqueWords = true)
-//        )
-
         // write a bunch of variations of the Bible text
         if (!skipText) {
-            writeBibleDoc(studyData, LocalDate.of(2026, 3, 28), productsDir)
+            generateBibleTexts(studyData, LocalDate.of(2026, 3, 28), productsDir)
         }
 
         // Generate files (rest unchanged from BiblebowlKt.main)
@@ -144,6 +138,7 @@ class BibleBowlCli : CliktCommand(
         writeCramHeadings(studyData, productsDir)
         writeCramReverseHeadings(studyData, productsDir)
         writeCramOneTimeWords(studyData, oneTimeWords(studyData), productsDir)
+
 //        val nameExcerpts = findNames(studyData, "god", "jesus", "christ")
 //        writeCramNameBlanks(studyData, nameExcerpts)
 //        writeCramFewTimeWords(studyData)

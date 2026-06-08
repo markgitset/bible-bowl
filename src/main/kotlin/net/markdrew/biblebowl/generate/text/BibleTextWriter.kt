@@ -1,0 +1,73 @@
+package net.markdrew.biblebowl.generate.text
+
+import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.StudyData
+import java.nio.file.Path
+
+/**
+ * Identifier for an output technology.
+ *
+ * Drives output-directory naming (`text/<subdir>/`) and source-file extension. Adding a new format is
+ * a matter of adding an [OutputFormat] subtype and a matching [BibleTextWriter] implementation.
+ */
+sealed interface OutputFormat {
+    /** Subdirectory under `<productsPath>/<simpleName>/text/` where this format's outputs are written. */
+    val subdir: String
+
+    /** Source file extension (without leading dot), e.g. `"docx"`, `"tex"`. */
+    val extension: String
+}
+
+/** DOCX/Word output. The writer's source file is a `.docx`; PDF is produced by LibreOffice headless. */
+data object Docx : OutputFormat {
+    override val subdir: String = "docx"
+    override val extension: String = "docx"
+}
+
+/** LaTeX output. The writer's source file is a `.tex`; PDF is produced by `pdflatex` (twice, for cross-refs). */
+data object Latex : OutputFormat {
+    override val subdir: String = "latex"
+    override val extension: String = "tex"
+}
+
+/** Typst output. The writer's source file is a `.typ`; PDF is produced by the `typst compile` CLI. */
+data object Typst : OutputFormat {
+    override val subdir: String = "typst"
+    override val extension: String = "typ"
+}
+
+/**
+ * Format-specific Bible-text writer.
+ *
+ * A writer takes a [BibleAnnotationPipeline]-built [AnnotatedDoc] plus the layout/feature options the
+ * matrix selected and produces a source file at [outputFile] (typically followed by a downstream PDF
+ * conversion the writer handles internally).
+ *
+ * Capability is declared via [supports]: writers that cannot honor a particular [LayoutOptions]
+ * combination (e.g., the LaTeX preamble currently hardcodes two-column layout) return false, and the
+ * orchestrator fails at config time rather than silently dropping the option.
+ */
+interface BibleTextWriter {
+    /** Identifies the output technology for path/extension purposes. */
+    val format: OutputFormat
+
+    /**
+     * True if this writer can honor [layout] without silently dropping any option. Default: true.
+     * Override to reject layouts the writer cannot render correctly.
+     */
+    fun supports(layout: LayoutOptions): Boolean = true
+
+    /**
+     * Renders [doc] to [outputFile] under the given [layout] and [features].
+     *
+     * Implementations may also produce derived artifacts next to [outputFile] (e.g., a PDF compiled
+     * from the source file). Parent directories are created as needed.
+     */
+    fun write(
+        outputFile: Path,
+        doc: AnnotatedDoc<AnalysisUnit>,
+        studyData: StudyData,
+        layout: LayoutOptions,
+        features: FeatureOptions,
+    )
+}

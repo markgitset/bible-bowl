@@ -161,10 +161,6 @@ fun main(args: Array<String>) {
         }
     }
 
-    // Write LaTEX-set PDFs of the text
-//    writeBibleText(studyData)
-//    writeBibleText(studyData, TextOptions(names = true, numbers = true, uniqueWords = true))
-
     // Write PDF indices
     writeOneTimeWordsIndex(studyData)
     writeFullIndex(studyData)

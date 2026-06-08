@@ -1,0 +1,175 @@
+package net.markdrew.biblebowl.generate.text
+
+import net.markdrew.biblebowl.model.AnalysisUnit
+import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
+import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
+import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
+import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
+import net.markdrew.biblebowl.model.AnalysisUnit.NAME
+import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
+import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
+import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
+import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
+import net.markdrew.biblebowl.model.AnalysisUnit.SMALL_CAPS
+import net.markdrew.biblebowl.model.AnalysisUnit.UNIQUE_WORD
+import net.markdrew.biblebowl.model.AnalysisUnit.VERSE
+import net.markdrew.biblebowl.model.Book
+import net.markdrew.biblebowl.model.ChapterRef
+import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.VerseRef
+
+/**
+ * Shared traversal of an annotated Bible document. Iterates [AnnotatedDoc.stateTransitions] and
+ * dispatches to [BibleTextHandler] methods in a fixed order (see [BibleTextHandler] for the
+ * contract).
+ *
+ * Responsibilities centralized here so handlers don't reimplement them:
+ * - Verse-ref lookup for footnote anchor positions (with `±1` fallback at verse boundaries).
+ * - Packaging a continuing REGEX/NAME/NUMBER annotation as a [HighlightContext] for [BibleTextHandler.trailingFootnote].
+ * - Reading the PARAGRAPH annotation value as the poetry indent level.
+ * - Computing `isFirstVerseOfChapter`.
+ * - Skipping iterations that fall outside any paragraph (matches the previous per-writer guard).
+ * - Honoring [FeatureOptions] flag guards on highlight events.
+ */
+object BibleTextWalker {
+
+    fun walk(
+        doc: AnnotatedDoc<AnalysisUnit>,
+        studyData: StudyData,
+        layout: LayoutOptions,
+        features: FeatureOptions,
+        handler: BibleTextHandler,
+    ) {
+        handler.documentBegin(studyData, layout, features)
+
+        for ((excerpt, transition) in doc.stateTransitions()) {
+
+            // 1. Close ended highlights
+            if (features.underlineUniqueWords && transition.isEnded(UNIQUE_WORD)) handler.uniqueWordEnd()
+            if (transition.isEnded(REGEX)) handler.regexEnd()
+            if (features.highlightNames && transition.isEnded(NAME)) handler.nameEnd()
+            if (features.highlightNumbers && transition.isEnded(NUMBER)) handler.numberEnd()
+            if (transition.isEnded(SMALL_CAPS)) handler.smallCapsEnd()
+
+            // 8. Trailing footnote. The continuing-highlight context lets LaTeX handlers do their
+            //    close-emit-reopen dance; other writers ignore it.
+            transition.postPoint(FOOTNOTE)?.apply {
+                val anchorPos = excerpt.excerptRange.first - 1
+                val verseRef = lookupVerse(studyData, anchorPos)
+                val continuing = continuingHighlightContext(transition)
+                handler.trailingFootnote(verseRef, value as String, continuing)
+            }
+
+            // 2. Structural endings
+            if (transition.isEnded(PARAGRAPH)) handler.paragraphEnd(transition.isPresent(POETRY))
+            if (transition.isEnded(POETRY)) handler.poetryEnd()
+            if (transition.isEnded(CHAPTER)) handler.chapterEnd(layout.chapterBreaksPage)
+
+            // 3. Structural beginnings — book, chapter, heading. These (and steps 5-8) fire even
+            //    when no PARAGRAPH is active in the new run, mirroring the historical LaTeX/Typst
+            //    behavior (no paragraph guard). The `inParagraph` parameter exposes the annotation
+            //    state so the DOCX handler — which historically gated on `transition.present(PARAGRAPH)`
+            //    — can match its old behavior exactly. Other handlers can ignore the flag.
+            val inParagraph: Boolean = transition.isPresent(PARAGRAPH)
+            transition.beginning(BOOK)?.apply { handler.bookBegin(value as Book) }
+            transition.beginning(CHAPTER)?.apply {
+                handler.chapterBegin(value as ChapterRef, studyData.isMultiBook, layout.useHeadingsForChapters, inParagraph)
+            }
+            transition.beginning(HEADING)?.apply { handler.headingBegin(value as String, inParagraph) }
+
+            // 4. Paragraph + poetry + verse begins
+            val paragraphAnn = transition.present(PARAGRAPH)
+            val inPoetry: Boolean = transition.isPresent(POETRY)
+            val isFirstPoetryParagraph: Boolean = transition.isBeginning(POETRY)
+            val poetryIndentLevel: Int = if (inPoetry && paragraphAnn != null) paragraphAnn.value as Int else 0
+            // `inParagraph` already computed above for the structural-beginnings call.
+            if (isFirstPoetryParagraph) handler.poetryBegin()
+            if (transition.isBeginning(PARAGRAPH)) {
+                handler.paragraphBegin(poetryIndentLevel, inPoetry, isFirstPoetryParagraph)
+            }
+            transition.beginning(VERSE)?.apply {
+                val verseRef = value as VerseRef
+                val chapterRef = transition.present(CHAPTER)?.value as? ChapterRef
+                    ?: error("VERSE begin outside any CHAPTER at $verseRef")
+                handler.verseBegin(
+                    verse = verseRef,
+                    chapter = chapterRef,
+                    multiBook = studyData.isMultiBook,
+                    isFirstVerseOfChapter = verseRef.verse == 1,
+                    useHeadingsForChapters = layout.useHeadingsForChapters,
+                    inPoetry = inPoetry,
+                )
+            }
+
+            // 4b. Poetry indent — when a new paragraph begins inside POETRY, emit indentation
+            //     between the verse number and any leading footnote/text. DOCX uses this for tab
+            //     runs; LaTeX/Typst handle poetry indentation in `text()` and no-op here.
+            if (transition.isBeginning(PARAGRAPH) && inPoetry && poetryIndentLevel > 0) {
+                handler.poetryIndent(poetryIndentLevel)
+            }
+
+            // 5. Leading footnote — precedes the upcoming text, outside any new highlight group
+            transition.prePoint(LEADING_FOOTNOTE)?.apply {
+                val anchorPos = excerpt.excerptRange.first
+                val verseRef = lookupVerse(studyData, anchorPos)
+                println(
+                    "DBG_LEADING_FOOTNOTE: verse=$verseRef anchorPos=$anchorPos " +
+                        "endPara=${transition.isEnded(PARAGRAPH)} beginPara=${transition.isBeginning(PARAGRAPH)} " +
+                        "presentPara=${transition.isPresent(PARAGRAPH)} " +
+                        "beginVerse=${transition.isBeginning(VERSE)} " +
+                        "excerpt=${excerpt.excerptText.take(40).replace("\n", "\\n")}"
+                )
+                handler.leadingFootnote(verseRef, value as String)
+            }
+
+            // 5b. Verse separator — emitted after verseBegin and leadingFootnote, but before text/highlights
+            if (transition.isBeginning(VERSE)) {
+                handler.verseSeparator(inPoetry)
+            }
+
+            // 6. Open new highlights
+            if (features.underlineUniqueWords && transition.isBeginning(UNIQUE_WORD)) handler.uniqueWordBegin()
+            if (features.highlightNames && transition.isBeginning(NAME)) handler.nameBegin()
+            if (features.highlightNumbers && transition.isBeginning(NUMBER)) handler.numberBegin()
+            if (transition.isBeginning(REGEX)) {
+                val color = transition.beginning.first { it.key == REGEX }.value as HighlightColor
+                handler.regexBegin(color)
+            }
+            if (transition.isBeginning(SMALL_CAPS)) handler.smallCapsBegin()
+
+            // 7. Text
+            handler.text(excerpt.excerptText, inPoetry, inParagraph)
+        }
+
+        handler.documentEnd()
+    }
+
+    /**
+     * Resolves the verse a footnote anchor sits in. The annotation pipeline can place an anchor
+     * exactly at a verse boundary; in that case the `valueContaining` lookup at the literal anchor
+     * position returns null. Probe ±1 to find the adjacent verse.
+     */
+    private fun lookupVerse(studyData: StudyData, anchorPos: Int): VerseRef {
+        return studyData.verses.valueContaining(anchorPos)
+            ?: studyData.verses.valueContaining(anchorPos - 1)
+            ?: studyData.verses.valueContaining(anchorPos + 1)
+            ?: error("Could not resolve verse for footnote anchor at position $anchorPos")
+    }
+
+    /**
+     * Returns the single REGEX / NAME / NUMBER annotation that continues across this transition,
+     * packaged as a [HighlightContext]. Assumes at most one such annotation is active (the
+     * deconfliction logic in `BibleAnnotationPipeline` enforces this).
+     */
+    private fun continuingHighlightContext(transition: StateTransition<AnalysisUnit>): HighlightContext {
+        val ann = transition.continuing.firstOrNull { it.key in setOf(REGEX, NAME, NUMBER) }
+            ?: return HighlightContext.None
+        return when (ann.key) {
+            REGEX -> HighlightContext.Regex(ann.value as HighlightColor)
+            NAME -> HighlightContext.Name
+            NUMBER -> HighlightContext.Number
+            else -> HighlightContext.None
+        }
+    }
+}

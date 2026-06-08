@@ -9,8 +9,8 @@ import net.markdrew.biblebowl.model.VerseRef
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 
-class BibleTextKtTest : StringSpec({
-    fun makeStudyData(highlightOrder: Map<String, Set<Regex>>): Pair<StudyData, TextOptions<String>> {
+class BibleAnnotationPipelineTest : StringSpec({
+    fun makeStudyData(palette: HighlightPalette): Pair<StudyData, FeatureOptions> {
         val studyData = StudyData(
             studySet = StudySet("Test", "test", ChapterRef(Book.GEN, 1)..ChapterRef(Book.GEN, 3)),
             text = "This is a test sentence with some words.",
@@ -21,26 +21,29 @@ class BibleTextKtTest : StringSpec({
             footnotes = sortedMapOf(),
             poetry = DisjointRangeSet()
         )
-        return studyData to TextOptions<String>(customHighlights = highlightOrder)
+        return studyData to FeatureOptions(customHighlights = palette)
     }
+
+    fun palette(vararg entries: Pair<String, Set<Regex>>): HighlightPalette =
+        HighlightPalette(entries.map { (name, regexes) ->
+            HighlightColor(name, Triple(0, 0, 0)) to regexes
+        })
 
     // TODO: the commented-out assertions below test the expected behaviour for overlapping highlights
     //  (the shorter overlap should be dropped). Reinstate once the algorithm is locked down.
-    "annotatedDoc completes without error when shorter highlight overlaps a longer one" {
-        val (studyData, opts) = makeStudyData(mapOf(
+    "build completes without error when shorter highlight overlaps a longer one" {
+        val (studyData, features) = makeStudyData(palette(
             "first" to setOf("test sentence".toRegex()),
             "second" to setOf("sentence with some".toRegex()),
         ))
-        BibleTextRenderer.annotatedDoc(studyData, opts)
-        // Assertions.assertThrows(IllegalStateException::class.java) { BibleTextRenderer.annotatedDoc(studyData, opts) }
+        BibleAnnotationPipeline.build(studyData, features)
     }
 
-    "annotatedDoc completes without error when longer highlight overlaps a shorter one" {
-        val (studyData, opts) = makeStudyData(mapOf(
+    "build completes without error when longer highlight overlaps a shorter one" {
+        val (studyData, features) = makeStudyData(palette(
             "second" to setOf("sentence with some".toRegex()),
             "first" to setOf("test sentence".toRegex()),
         ))
-        BibleTextRenderer.annotatedDoc(studyData, opts)
-        // Assertions.assertThrows(IllegalStateException::class.java) { BibleTextRenderer.annotatedDoc(studyData, opts) }
+        BibleAnnotationPipeline.build(studyData, features)
     }
 })

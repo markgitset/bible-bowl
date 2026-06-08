@@ -26,6 +26,6 @@ data class TextRun<K>(
         continuing = newRun.annotations.intersect(annotations),
         beginning = newRun.annotations - annotations,
         prePointAnns = newRun.prePointAnns,
-        postPointAnns = newRun.postPointAnns,
+        postPointAnns = this.postPointAnns,
     )
 }
