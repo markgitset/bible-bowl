@@ -12,9 +12,9 @@
 #let namesColor  = rgb(204, 204, 204)
 #let numsColor   = rgb(255, 182, 108)
 #let divineColor = rgb(255, 255, 0)
-#let womenColor = rgb(255, 153, 255)
 #let menColor = rgb(153, 204, 255)
 #let placesColor = rgb(153, 255, 153)
+#let womenColor = rgb(255, 153, 255)
 #let myhl(color, body) = highlight(fill: color, body)
 #let myname(body)   = myhl(namesColor,  body)
 #let mynumber(body) = myhl(numsColor,   body)
@@ -22,7 +22,7 @@
     fill: rgb("404040"),
     inset: (x: 3pt, y: 1pt),
     radius: 1pt,
-    text(fill: white, weight: "bold", font: "Libertinus Serif", size: 0.8em)[#n],
+    text(fill: white, weight: "bold", font: "Libertinus Serif")[#n],
 )
 #let chapter-heading(label) = heading(
     level: 1, outlined: false,
@@ -101,7 +101,7 @@
 
   
 #versenum(15) Then she let them down by a #underline[rope] through the window, for her house was built into the city wall, so that she lived in the wall. 
-#versenum(16) And she said#footnote[Joshua 2:15 Or #emph[had said]] to them, “Go into the hills, or the pursuers will #underline[encounter] you, and hide there #mynumber[three] days until the pursuers have returned. Then afterward you may go your way.” 
+#versenum(16) And she said#footnote[Joshua 2:16 Or #emph[had said]] to them, “Go into the hills, or the pursuers will #underline[encounter] you, and hide there #mynumber[three] days until the pursuers have returned. Then afterward you may go your way.” 
 #versenum(17) The men said to her, “We will be guiltless with respect to this oath of yours that you have made us swear. 
 #versenum(18) Behold, when we come into the land, you shall #underline[tie] this scarlet cord in the window through which you let us down, and you shall gather into your house your father and mother, your brothers, and all your father’s household. 
 #versenum(19) Then if anyone goes out of the doors of your house into the #underline[street], his blood shall be on his own head, and we shall be guiltless. But if a hand is laid on anyone who is with you in the house, his blood shall be on our head. 
@@ -125,7 +125,7 @@
 #versenum(1) Then #myhl(menColor)[Joshua] rose early in the morning and they set out from #myhl(placesColor)[Shittim]. And they came to the #myhl(placesColor)[Jordan], he and all the people of #myname[Israel], and lodged there before they passed over. 
 #versenum(2) At the end of #mynumber[three] days the officers went through the camp 
 #versenum(3) and commanded the people, “As soon as you see the ark of the covenant of the #myhl(divineColor)[#smallcaps[Lord] your God] being carried by the Levitical priests, then you shall set out from your place and follow it. 
-#versenum(4) Yet there shall be a distance between you and it, about #mynumber[2,000] #underline[cubits#footnote[Joshua 3:4 A #emph[cubit] was about 18 inches or 45 centimeters]] in length. Do not come near it, in order that you may know the way you shall go, for you have not passed this way before.” 
+#versenum(4) Yet there shall be a distance between you and it, about #mynumber[2,000] #underline[cubits]#footnote[Joshua 3:4 A #emph[cubit] was about 18 inches or 45 centimeters] in length. Do not come near it, in order that you may know the way you shall go, for you have not passed this way before.” 
 #versenum(5) Then #myhl(menColor)[Joshua] said to the people, “Consecrate yourselves, for tomorrow the #myhl(divineColor)[#smallcaps[Lord]] will do wonders among you.” 
 #versenum(6) And #myhl(menColor)[Joshua] said to the priests, “Take up the ark of the covenant and pass on before the people.” So they took up the ark of the covenant and went before the people.
 
@@ -213,7 +213,7 @@
 
   
 #versenum(8) When the #underline[circumcising] of the whole nation was finished, they remained in their places in the camp until they were #underline[healed]. 
-#versenum(9) And the #myhl(divineColor)[#smallcaps[Lord]] said to #myhl(menColor)[Joshua], “Today I have #underline[rolled] away the reproach of #myhl(placesColor)[Egypt] from you.” And so the name of that place is called #myhl(placesColor)[Gilgal#footnote[Joshua 5:9 #emph[Gilgal] sounds like the Hebrew for #emph[to roll]]] to this day.
+#versenum(9) And the #myhl(divineColor)[#smallcaps[Lord]] said to #myhl(menColor)[Joshua], “Today I have #underline[rolled] away the reproach of #myhl(placesColor)[Egypt] from you.” And so the name of that place is called #myhl(placesColor)[Gilgal]#footnote[Joshua 5:9 #emph[Gilgal] sounds like the Hebrew for #emph[to roll]] to this day.
 
 
   
@@ -334,7 +334,7 @@
 #versenum(16) So #myhl(menColor)[Joshua] rose early in the morning and brought #myname[Israel] near tribe by tribe, and the tribe of #myname[Judah] was taken. 
 #versenum(17) And he brought near the clans of #myname[Judah], and the clan of the #myname[Zerahites] was taken. And he brought near the clan of the #myname[Zerahites] man by man, and #myhl(menColor)[Zabdi] was taken. 
 #versenum(18) And he brought near his household man by man, and #myhl(menColor)[Achan] the son of #myhl(menColor)[Carmi], son of #myhl(menColor)[Zabdi], son of #myhl(menColor)[Zerah], of the tribe of #myname[Judah], was taken. 
-#versenum(19) Then #myhl(menColor)[Joshua] said to #myhl(menColor)[Achan], “My son, give glory to the #myhl(divineColor)[#smallcaps[Lord] God of Israel] and give #underline[praise#footnote[Joshua 7:19 Or #emph[and make confession]]] to him. And tell me now what you have done; do not hide it from me.” 
+#versenum(19) Then #myhl(menColor)[Joshua] said to #myhl(menColor)[Achan], “My son, give glory to the #myhl(divineColor)[#smallcaps[Lord] God of Israel] and give #underline[praise]#footnote[Joshua 7:19 Or #emph[and make confession]] to him. And tell me now what you have done; do not hide it from me.” 
 #versenum(20) And #myhl(menColor)[Achan] answered #myhl(menColor)[Joshua], “Truly I have sinned against the #myhl(divineColor)[#smallcaps[Lord] God of Israel], and this is what I did: 
 #versenum(21) when I saw among the spoil a beautiful cloak from #underline[#myhl(placesColor)[Shinar]], and #mynumber[200] shekels of silver, and a bar of gold #underline[weighing] #underline[#mynumber[50]] shekels,#footnote[Joshua 7:21 A #emph[shekel] was about 2/5 ounce or 11 grams] then I #underline[coveted] them and took them. And see, they are hidden in the earth inside my tent, with the silver underneath.”
 
@@ -462,7 +462,7 @@
 
 
 #versenum(1) As soon as #myhl(menColor)[Adoni-zedek], king of #myhl(placesColor)[Jerusalem], heard how #myhl(menColor)[Joshua] had captured #myhl(placesColor)[Ai] and had devoted it to destruction,#footnote[Joshua 10:1 That is, set apart (devoted) as an offering to the Lord (for destruction); also verses 28, 35, 37, 39, 40] doing to #myhl(placesColor)[Ai] and its king as he had done to #myhl(placesColor)[Jericho] and its king, and how the inhabitants of #myhl(placesColor)[Gibeon] had made peace with #myname[Israel] and were among them, 
-#versenum(2) he#footnote[Joshua 10:1 One Hebrew manuscript, Vulgate (compare Syriac); most Hebrew manuscripts #emph[they]] feared greatly, because #myhl(placesColor)[Gibeon] was a great city, like one of the #underline[royal] cities, and because it was greater than #myhl(placesColor)[Ai], and all its men were warriors. 
+#versenum(2) he#footnote[Joshua 10:2 One Hebrew manuscript, Vulgate (compare Syriac); most Hebrew manuscripts #emph[they]] feared greatly, because #myhl(placesColor)[Gibeon] was a great city, like one of the #underline[royal] cities, and because it was greater than #myhl(placesColor)[Ai], and all its men were warriors. 
 #versenum(3) So #myhl(menColor)[Adoni-zedek] king of #myhl(placesColor)[Jerusalem] sent to #underline[#myhl(menColor)[Hoham]] king of #myhl(placesColor)[Hebron], to #underline[#myhl(menColor)[Piram]] king of #myhl(placesColor)[Jarmuth], to #myhl(menColor)[Japhia] king of #myhl(placesColor)[Lachish], and to #myhl(menColor)[Debir] king of #myhl(placesColor)[Eglon], saying, 
 #versenum(4) “Come up to me and help me, and let us strike #myhl(placesColor)[Gibeon]. For it has made peace with #myhl(menColor)[Joshua] and with the people of #myname[Israel].” 
 #versenum(5) Then the #mynumber[five] kings of the #myname[Amorites], the king of #myhl(placesColor)[Jerusalem], the king of #myhl(placesColor)[Hebron], the king of #myhl(placesColor)[Jarmuth], the king of #myhl(placesColor)[Lachish], and the king of #myhl(placesColor)[Eglon], gathered their forces and went up with all their #underline[armies] and encamped against #myhl(placesColor)[Gibeon] and made war against it.
@@ -583,7 +583,7 @@
 
   
 #versenum(10) And #myhl(menColor)[Joshua] turned back at that time and captured #myhl(placesColor)[Hazor] and struck its king with the sword, for #myhl(placesColor)[Hazor] formerly was the head of all those #underline[kingdoms]. 
-#versenum(11) And they struck with the sword all who were in it, devoting them to destruction;#footnote[Joshua 11:10 That is, setting apart (devoting) as an offering to the Lord (for destruction); also verses 12, 20, 21] there was none left that breathed. And he burned #myhl(placesColor)[Hazor] with fire. 
+#versenum(11) And they struck with the sword all who were in it, devoting them to destruction;#footnote[Joshua 11:11 That is, setting apart (devoting) as an offering to the Lord (for destruction); also verses 12, 20, 21] there was none left that breathed. And he burned #myhl(placesColor)[Hazor] with fire. 
 #versenum(12) And all the cities of those kings, and all their kings, #myhl(menColor)[Joshua] captured, and struck them with the edge of the sword, devoting them to destruction, just as #myhl(menColor)[Moses] the servant of the #myhl(divineColor)[#smallcaps[Lord]] had commanded. 
 #versenum(13) But none of the cities that stood on #underline[mounds] did #myname[Israel] burn, except #myhl(placesColor)[Hazor] alone; that #myhl(menColor)[Joshua] burned. 
 #versenum(14) And all the spoil of these cities and the livestock, the people of #myname[Israel] took for their plunder. But every person they struck with the edge of the sword until they had destroyed them, and they did not leave any who breathed. 
@@ -614,7 +614,7 @@
 #versenum(1) Now these are the kings of the land whom the people of #myname[Israel] defeated and took possession of their land beyond the #myhl(placesColor)[Jordan] toward the sunrise, from the #myhl(placesColor)[Valley of the Arnon] to #myhl(placesColor)[Mount Hermon], with all the #myhl(placesColor)[Arabah] eastward: 
 #versenum(2) #myhl(menColor)[Sihon] king of the #myname[Amorites] who lived at #myhl(placesColor)[Heshbon] and ruled from #myhl(placesColor)[Aroer], which is on the edge of the #myhl(placesColor)[Valley of the Arnon], and from the middle of the valley as far as the river #myhl(placesColor)[Jabbok], the boundary of the #myname[Ammonites], that is, #mynumber[half] of #myhl(placesColor)[Gilead], 
 #versenum(3) and the #myhl(placesColor)[Arabah] to the #myhl(placesColor)[Sea of Chinneroth] eastward, and in the direction of #myhl(placesColor)[Beth-jeshimoth], to the #myhl(placesColor)[Sea of the Arabah], the #myhl(placesColor)[Salt Sea], southward to the foot of the slopes of #myhl(placesColor)[Pisgah]; 
-#versenum(4) and #myhl(menColor)[Og#footnote[Joshua 12:4 Septuagint; Hebrew #emph[the boundary of Og]]] king of #myhl(placesColor)[Bashan], one of the remnant of the #myname[Rephaim], who lived at #myhl(placesColor)[Ashtaroth] and at #myhl(placesColor)[Edrei] 
+#versenum(4) and #myhl(menColor)[Og]#footnote[Joshua 12:4 Septuagint; Hebrew #emph[the boundary of Og]] king of #myhl(placesColor)[Bashan], one of the remnant of the #myname[Rephaim], who lived at #myhl(placesColor)[Ashtaroth] and at #myhl(placesColor)[Edrei] 
 #versenum(5) and ruled over #myhl(placesColor)[Mount Hermon] and #myhl(placesColor)[Salecah] and all #myhl(placesColor)[Bashan] to the boundary of the #myname[Geshurites] and the #myname[Maacathites], and over #mynumber[half] of #myhl(placesColor)[Gilead] to the boundary of #myhl(menColor)[Sihon] king of #myhl(placesColor)[Heshbon]. 
 #versenum(6) #myhl(menColor)[Moses], the servant of the #myhl(divineColor)[#smallcaps[Lord]], and the people of #myname[Israel] defeated them. And #myhl(menColor)[Moses] the servant of the #myhl(divineColor)[#smallcaps[Lord]] gave their land for a possession to the #myname[Reubenites] and the #myname[Gadites] and the #mynumber[half]-tribe of #myname[Manasseh].
 
@@ -663,7 +663,7 @@
 #section-heading[The Inheritance East of the Jordan]
 
 
-#versenum(8) With the other #mynumber[half] of the tribe of #myname[Manasseh#footnote[Joshua 13:8 Hebrew #emph[With it]]] the #myname[Reubenites] and the #myname[Gadites] received their inheritance, which #myhl(menColor)[Moses] gave them, beyond the #myhl(placesColor)[Jordan] eastward, as #myhl(menColor)[Moses] the servant of the #myhl(divineColor)[#smallcaps[Lord]] gave them: 
+#versenum(8) With the other #mynumber[half] of the tribe of #myname[Manasseh]#footnote[Joshua 13:8 Hebrew #emph[With it]] the #myname[Reubenites] and the #myname[Gadites] received their inheritance, which #myhl(menColor)[Moses] gave them, beyond the #myhl(placesColor)[Jordan] eastward, as #myhl(menColor)[Moses] the servant of the #myhl(divineColor)[#smallcaps[Lord]] gave them: 
 #versenum(9) from #myhl(placesColor)[Aroer], which is on the edge of the #myhl(placesColor)[Valley of the Arnon], and the city that is in the middle of the valley, and all the tableland of #myhl(placesColor)[Medeba] as far as #myhl(placesColor)[Dibon]; 
 #versenum(10) and all the cities of #myhl(menColor)[Sihon] king of the #myname[Amorites], who reigned in #myhl(placesColor)[Heshbon], as far as the boundary of the #myname[Ammonites]; 
 #versenum(11) and #myhl(placesColor)[Gilead], and the region of the #myname[Geshurites] and #myname[Maacathites], and all #myhl(placesColor)[Mount Hermon], and all #myhl(placesColor)[Bashan] to #myhl(placesColor)[Salecah]; 
@@ -736,7 +736,7 @@
   
 #versenum(13) Then #myhl(menColor)[Joshua] blessed him, and he gave #myhl(placesColor)[Hebron] to #myhl(menColor)[Caleb] the son of #myhl(menColor)[Jephunneh] for an inheritance. 
 #versenum(14) Therefore #myhl(placesColor)[Hebron] became the inheritance of #myhl(menColor)[Caleb] the son of #myhl(menColor)[Jephunneh] the #myname[Kenizzite] to this day, because he wholly followed the #myhl(divineColor)[#smallcaps[Lord], the God of Israel]. 
-#versenum(15) Now the name of #myhl(placesColor)[Hebron] formerly was #myhl(placesColor)[Kiriath-arba].#footnote[Joshua 14:15 #emph[Kiriath-arba] means #emph[the city of Arba]] (#myhl(menColor)[Arba#footnote[Joshua 14:15 Hebrew #emph[He]]] was the #underline[greatest] man among the #myname[Anakim].) And the land had rest from war.
+#versenum(15) Now the name of #myhl(placesColor)[Hebron] formerly was #myhl(placesColor)[Kiriath-arba].#footnote[Joshua 14:15 #emph[Kiriath-arba] means #emph[the city of Arba]] (#myhl(menColor)[Arba]#footnote[Joshua 14:15 Hebrew #emph[He]] was the #underline[greatest] man among the #myname[Anakim].) And the land had rest from war.
 
 
   
@@ -947,7 +947,7 @@
 #versenum(15) And the southern side #underline[begins] at the outskirts of #myhl(placesColor)[Kiriath-jearim]. And the boundary goes from there to #myhl(placesColor)[Ephron],#footnote[Joshua 18:15 See 15:9; Hebrew #emph[westward]] to the spring of the waters of #myhl(placesColor)[Nephtoah]. 
 #versenum(16) Then the boundary goes down to the border of the mountain that #underline[overlooks] the #myhl(placesColor)[Valley of the Son of Hinnom], which is at the north end of the #myhl(placesColor)[Valley of Rephaim]. And it then goes down the #myhl(placesColor)[Valley of Hinnom], south of the shoulder of the #myname[Jebusites], and #underline[downward] to #myhl(placesColor)[En-rogel]. 
 #versenum(17) Then it bends in a #underline[northerly] direction going on to #myhl(placesColor)[En-shemesh], and from there goes to #underline[#myhl(placesColor)[Geliloth]], which is opposite the ascent of #myhl(placesColor)[Adummim]. Then it goes down to the stone of #myhl(menColor)[Bohan] the son of #myhl(menColor)[Reuben], 
-#versenum(18) and passing on to the north of the shoulder of #myhl(placesColor)[Beth-arabah#footnote[Joshua 18:18 Septuagint; Hebrew #emph[to the shoulder over against the Arabah]]] it goes down to the #myhl(placesColor)[Arabah]. 
+#versenum(18) and passing on to the north of the shoulder of #myhl(placesColor)[Beth-arabah]#footnote[Joshua 18:18 Septuagint; Hebrew #emph[to the shoulder over against the Arabah]] it goes down to the #myhl(placesColor)[Arabah]. 
 #versenum(19) Then the boundary passes on to the north of the shoulder of #myhl(placesColor)[Beth-hoglah]. And the boundary ends at the northern bay of the #myhl(placesColor)[Salt Sea], at the south end of the #myhl(placesColor)[Jordan]: this is the southern border. 
 #versenum(20) The #myhl(placesColor)[Jordan] forms its boundary on the #underline[eastern] side. This is the inheritance of the people of #myname[Benjamin], according to their clans, boundary by boundary all around.
 
@@ -960,7 +960,7 @@
 #versenum(25) #myhl(placesColor)[Gibeon], #myhl(placesColor)[Ramah], #myhl(placesColor)[Beeroth], 
 #versenum(26) #myhl(placesColor)[Mizpeh], #myhl(placesColor)[Chephirah], #underline[#myhl(placesColor)[Mozah]], 
 #versenum(27) #myhl(placesColor)[Rekem], #underline[#myhl(placesColor)[Irpeel]], #underline[#myhl(placesColor)[Taralah]], 
-#versenum(28) #underline[#myhl(placesColor)[Zela]], #underline[#myhl(placesColor)[Haeleph]], #myhl(placesColor)[Jebus#footnote[Joshua 18:28 Septuagint, Syriac, Vulgate; Hebrew #emph[the Jebusite]]] (that is, #myhl(placesColor)[Jerusalem]), #myhl(placesColor)[Gibeah#footnote[Joshua 18:28 Hebrew #emph[Gibeath]]] and #myhl(placesColor)[Kiriath-jearim#footnote[Joshua 18:28 Septuagint; Hebrew #emph[Kiriath]]]—#mynumber[fourteen] cities with their villages. This is the inheritance of the people of #myname[Benjamin] according to its clans.
+#versenum(28) #underline[#myhl(placesColor)[Zela]], #underline[#myhl(placesColor)[Haeleph]], #myhl(placesColor)[Jebus]#footnote[Joshua 18:28 Septuagint, Syriac, Vulgate; Hebrew #emph[the Jebusite]] (that is, #myhl(placesColor)[Jerusalem]), #myhl(placesColor)[Gibeah]#footnote[Joshua 18:28 Hebrew #emph[Gibeath]] and #myhl(placesColor)[Kiriath-jearim]#footnote[Joshua 18:28 Septuagint; Hebrew #emph[Kiriath]]—#mynumber[fourteen] cities with their villages. This is the inheritance of the people of #myname[Benjamin] according to its clans.
 
 
   
@@ -1499,14 +1499,14 @@
 
   
 #versenum(15) Then the people of #myname[Israel] cried out to the #myhl(divineColor)[#smallcaps[Lord]], and the #myhl(divineColor)[#smallcaps[Lord]] raised up for them a deliverer, #myhl(menColor)[Ehud], the son of #underline[#myhl(menColor)[Gera]], the #underline[#myname[Benjaminite]], a left-handed man. The people of #myname[Israel] sent tribute by him to #myhl(menColor)[Eglon] the king of #myhl(placesColor)[Moab]. 
-#versenum(16) And #myhl(menColor)[Ehud] made for himself a sword with #mynumber[two] #underline[edges], a #underline[cubit#footnote[Judges 3:16 A #emph[cubit] was about 18 inches or 45 centimeters]] in length, and he bound it on his right thigh under his clothes. 
+#versenum(16) And #myhl(menColor)[Ehud] made for himself a sword with #mynumber[two] #underline[edges], a #underline[cubit]#footnote[Judges 3:16 A #emph[cubit] was about 18 inches or 45 centimeters] in length, and he bound it on his right thigh under his clothes. 
 #versenum(17) And he presented the tribute to #myhl(menColor)[Eglon] king of #myhl(placesColor)[Moab]. Now #myhl(menColor)[Eglon] was a very fat man. 
 #versenum(18) And when #myhl(menColor)[Ehud] had finished #underline[presenting] the tribute, he sent away the people who carried the tribute. 
 #versenum(19) But he himself turned back at the idols near #myhl(placesColor)[Gilgal] and said, “I have a secret message for you, O king.” And he commanded, “#underline[Silence].” And all his #underline[attendants] went out from his presence. 
 #versenum(20) And #myhl(menColor)[Ehud] came to him as he was sitting alone in his cool roof chamber. And #myhl(menColor)[Ehud] said, “I have a message from #myhl(divineColor)[God] for you.” And he arose from his #underline[seat]. 
 #versenum(21) And #myhl(menColor)[Ehud] reached with his left hand, took the sword from his right thigh, and thrust it into his belly. 
 #versenum(22) And the #underline[hilt] also went in after the blade, and the fat closed over the blade, for he did not pull the sword out of his belly; and the #underline[dung] came out. 
-#versenum(23) Then #myhl(menColor)[Ehud] went out into the #underline[porch#footnote[Judges 3:23 The meaning of the Hebrew word is uncertain]] and closed the doors of the roof chamber behind him and locked them.
+#versenum(23) Then #myhl(menColor)[Ehud] went out into the #underline[porch]#footnote[Judges 3:23 The meaning of the Hebrew word is uncertain] and closed the doors of the roof chamber behind him and locked them.
 
 
   
@@ -1631,10 +1631,10 @@
 
     
 #versenum(10) “Tell of it, you who #underline[ride] on #underline[white] donkeys,\
-    #vin you who sit on rich #underline[carpets#footnote[Judges 5:10 The meaning of the Hebrew word is uncertain; it may connote #emph[saddle blankets]]]\
+    #vin you who sit on rich #underline[carpets]#footnote[Judges 5:10 The meaning of the Hebrew word is uncertain; it may connote #emph[saddle blankets]]\
     #vin and you who walk by the way.\
     
-#versenum(11) To the sound of #underline[musicians#footnote[Judges 5:11 Or #emph[archers]; the meaning of the Hebrew word is uncertain]] at the #underline[watering] places,\
+#versenum(11) To the sound of #underline[musicians]#footnote[Judges 5:11 Or #emph[archers]; the meaning of the Hebrew word is uncertain] at the #underline[watering] places,\
     #vin there they #underline[repeat] the righteous triumphs of the #myhl(divineColor)[#smallcaps[Lord]],\
     #vin the righteous triumphs of his villagers in #myhl(placesColor)[Israel].\
 
@@ -1654,7 +1654,7 @@
 #versenum(14) From #myname[Ephraim] their #underline[root] they marched down into the valley,#footnote[Judges 5:14 Septuagint; Hebrew #emph[in Amalek]]\
     #vin following you, #myname[Benjamin], with your #underline[kinsmen];\
     from #myhl(menColor)[Machir] marched down the commanders,\
-    #vin and from #myname[Zebulun] those who bear the #underline[lieutenant’s#footnote[Judges 5:14 Hebrew #emph[commander’s]]] staff;\
+    #vin and from #myname[Zebulun] those who bear the #underline[lieutenant’s]#footnote[Judges 5:14 Hebrew #emph[commander’s]] staff;\
     
 #versenum(15) the princes of #myname[Issachar] came with #myhl(womenColor)[Deborah],\
     #vin and #myname[Issachar] #underline[faithful] to #myhl(menColor)[Barak];\
@@ -1777,7 +1777,7 @@
 #versenum(11) Now the #myhl(divineColor)[angel of the #smallcaps[Lord]] came and sat under the terebinth at #myhl(placesColor)[Ophrah], which belonged to #myhl(menColor)[Joash] the #underline[#myname[Abiezrite]], while his son #myhl(menColor)[Gideon] was beating out wheat in the winepress to hide it from the #myname[Midianites]. 
 #versenum(12) And the #myhl(divineColor)[angel of the #smallcaps[Lord]] appeared to him and said to him, “The #myhl(divineColor)[#smallcaps[Lord]] is with you, O mighty man of valor.” 
 #versenum(13) And #myhl(menColor)[Gideon] said to him, “Please, my lord, if the #myhl(divineColor)[#smallcaps[Lord]] is with us, why then has all this happened to us? And where are all his wonderful deeds that our fathers #underline[recounted] to us, saying, ‘Did not the #myhl(divineColor)[#smallcaps[Lord]] bring us up from #myhl(placesColor)[Egypt]?’ But now the #myhl(divineColor)[#smallcaps[Lord]] has forsaken us and given us into the hand of #myname[Midian].” 
-#versenum(14) And the #myhl(divineColor)[#smallcaps[Lord]#footnote[Judges 6:14 Septuagint #emph[the angel of the Lord]; also verse 16]] turned to him and said, “Go in this might of yours and save #myname[Israel] from the hand of #myname[Midian]; do not I send you?” 
+#versenum(14) And the #myhl(divineColor)[#smallcaps[Lord]]#footnote[Judges 6:14 Septuagint #emph[the angel of the Lord]; also verse 16] turned to him and said, “Go in this might of yours and save #myname[Israel] from the hand of #myname[Midian]; do not I send you?” 
 #versenum(15) And he said to him, “Please, Lord, how can I save #myname[Israel]? Behold, my clan is the #underline[weakest] in #myhl(placesColor)[Manasseh], and I am the #underline[least] in my father’s house.” 
 #versenum(16) And the #myhl(divineColor)[#smallcaps[Lord]] said to him, “But I will be with you, and you shall strike the #myname[Midianites] as one man.” 
 #versenum(17) And he said to him, “If now I have found favor in your eyes, then show me a sign that it is you who speak with me. 
@@ -1807,7 +1807,7 @@
 #versenum(29) And they said to one another, “Who has done this thing?” And after they had searched and inquired, they said, “#myhl(menColor)[Gideon] the son of #myhl(menColor)[Joash] has done this thing.” 
 #versenum(30) Then the men of the town said to #myhl(menColor)[Joash], “Bring out your son, that he may die, for he has broken down the altar of #myname[Baal] and cut down the #myname[Asherah] beside it.” 
 #versenum(31) But #myhl(menColor)[Joash] said to all who stood against him, “Will you contend for #myname[Baal]? Or will you save him? Whoever #underline[contends] for him shall be put to death by morning. If he is a god, let him contend for himself, because his altar has been broken down.” 
-#versenum(32) Therefore on that day #myhl(menColor)[Gideon#footnote[Judges 6:32 Hebrew #emph[he]]] was called #myhl(menColor)[Jerubbaal], that is to say, “Let #myname[Baal] contend against him,” because he broke down his altar.
+#versenum(32) Therefore on that day #myhl(menColor)[Gideon]#footnote[Judges 6:32 Hebrew #emph[he]] was called #myhl(menColor)[Jerubbaal], that is to say, “Let #myname[Baal] contend against him,” because he broke down his altar.
 
 
   
@@ -2019,7 +2019,7 @@
   
 #versenum(34) So #myhl(menColor)[Abimelech] and all the men who were with him rose up by night and set an ambush against #myhl(placesColor)[Shechem] in #mynumber[four] companies. 
 #versenum(35) And #myhl(menColor)[Gaal] the son of #myhl(menColor)[Ebed] went out and stood in the entrance of the gate of the city, and #myhl(menColor)[Abimelech] and the people who were with him rose from the ambush. 
-#versenum(36) And when #myhl(menColor)[Gaal] saw the people, he said to #myhl(menColor)[Zebul], “Look, people are coming down from the mountaintops!” And #myhl(menColor)[Zebul] said to him, “You #underline[mistake#footnote[Judges 9:36 Hebrew #emph[You see]]] the #underline[shadow] of the mountains for men.” 
+#versenum(36) And when #myhl(menColor)[Gaal] saw the people, he said to #myhl(menColor)[Zebul], “Look, people are coming down from the mountaintops!” And #myhl(menColor)[Zebul] said to him, “You #underline[mistake]#footnote[Judges 9:36 Hebrew #emph[You see]] the #underline[shadow] of the mountains for men.” 
 #versenum(37) #myhl(menColor)[Gaal] spoke again and said, “Look, people are coming down from the #underline[center] of the land, and one company is coming from the direction of the #underline[#myhl(placesColor)[Diviners]’ Oak].” 
 #versenum(38) Then #myhl(menColor)[Zebul] said to him, “Where is your mouth now, you who said, ‘Who is #myhl(menColor)[Abimelech], that we should serve him?’ Are not these the people whom you #underline[despised]? Go out now and fight with them.” 
 #versenum(39) And #myhl(menColor)[Gaal] went out at the head of the leaders of #myhl(placesColor)[Shechem] and fought with #myhl(menColor)[Abimelech]. 
@@ -2146,7 +2146,7 @@
 
 #versenum(29) Then the #myhl(divineColor)[Spirit] of the #myhl(divineColor)[#smallcaps[Lord]] was upon #myhl(menColor)[Jephthah], and he passed through #myhl(placesColor)[Gilead] and #myhl(placesColor)[Manasseh] and passed on to #myhl(placesColor)[Mizpah] of #myhl(placesColor)[Gilead], and from #myhl(placesColor)[Mizpah] of #myhl(placesColor)[Gilead] he passed on to the #myname[Ammonites]. 
 #versenum(30) And #myhl(menColor)[Jephthah] made a vow to the #myhl(divineColor)[#smallcaps[Lord]] and said, “If you will give the #myname[Ammonites] into my hand, 
-#versenum(31) then whatever#footnote[Judges 11:30 Or #emph[whoever]] comes out from the doors of my house to meet me when I return in peace from the #myname[Ammonites] shall be the #myhl(divineColor)[#smallcaps[Lord]]’s, and I will offer it#footnote[Judges 11:31 Or #emph[him]] up for a burnt offering.” 
+#versenum(31) then whatever#footnote[Judges 11:31 Or #emph[whoever]] comes out from the doors of my house to meet me when I return in peace from the #myname[Ammonites] shall be the #myhl(divineColor)[#smallcaps[Lord]]’s, and I will offer it#footnote[Judges 11:31 Or #emph[him]] up for a burnt offering.” 
 #versenum(32) So #myhl(menColor)[Jephthah] crossed over to the #myname[Ammonites] to fight against them, and the #myhl(divineColor)[#smallcaps[Lord]] gave them into his hand. 
 #versenum(33) And he struck them from #myhl(placesColor)[Aroer] to the neighborhood of #underline[#myhl(placesColor)[Minnith]], #mynumber[twenty] cities, and as far as #underline[#myhl(placesColor)[Abel-keramim]], with a great blow. So the #myname[Ammonites] were subdued before the people of #myname[Israel].
 
@@ -2234,7 +2234,7 @@
 #versenum(16) And the #myhl(divineColor)[angel of the #smallcaps[Lord]] said to #myhl(menColor)[Manoah], “If you detain me, I will not eat of your food. But if you prepare a burnt offering, then offer it to the #myhl(divineColor)[#smallcaps[Lord]].” (For #myhl(menColor)[Manoah] did not know that he was the #myhl(divineColor)[angel of the #smallcaps[Lord]].) 
 #versenum(17) And #myhl(menColor)[Manoah] said to the #myhl(divineColor)[angel of the #smallcaps[Lord]], “What is your name, so that, when your words come true, we may #underline[honor] you?” 
 #versenum(18) And the #myhl(divineColor)[angel of the #smallcaps[Lord]] said to him, “Why do you ask my name, #underline[seeing] it is wonderful?” 
-#versenum(19) So #myhl(menColor)[Manoah] took the young goat with the grain offering, and offered it on the rock to the #myhl(divineColor)[#smallcaps[Lord]], to the one who #underline[works#footnote[Judges 13:19 Septuagint, Vulgate; Hebrew #emph[Lord, and working]]] wonders, and #myhl(menColor)[Manoah] and his wife were watching. 
+#versenum(19) So #myhl(menColor)[Manoah] took the young goat with the grain offering, and offered it on the rock to the #myhl(divineColor)[#smallcaps[Lord]], to the one who #underline[works]#footnote[Judges 13:19 Septuagint, Vulgate; Hebrew #emph[Lord, and working]] wonders, and #myhl(menColor)[Manoah] and his wife were watching. 
 #versenum(20) And when the flame went up toward heaven from the altar, the #myhl(divineColor)[angel of the #smallcaps[Lord]] went up in the flame of the altar. Now #myhl(menColor)[Manoah] and his wife were watching, and they fell on their faces to the ground.
 
 
@@ -2289,7 +2289,7 @@
 
 
   
-#versenum(15) On the #mynumber[fourth#footnote[Judges 14:15 Septuagint, Syriac; Hebrew #emph[seventh]]] day they said to #myhl(menColor)[Samson]’s wife, “#underline[Entice] your husband to tell us what the riddle is, lest we burn you and your father’s house with fire. Have you invited us here to #underline[impoverish] us?” 
+#versenum(15) On the #mynumber[fourth]#footnote[Judges 14:15 Septuagint, Syriac; Hebrew #emph[seventh]] day they said to #myhl(menColor)[Samson]’s wife, “#underline[Entice] your husband to tell us what the riddle is, lest we burn you and your father’s house with fire. Have you invited us here to #underline[impoverish] us?” 
 #versenum(16) And #myhl(menColor)[Samson]’s wife wept over him and said, “You only hate me; you do not love me. You have put a riddle to my people, and you have not told me what it is.” And he said to her, “Behold, I have not told my father nor my mother, and shall I tell you?” 
 #versenum(17) She wept before him the #mynumber[seven] days that their feast #underline[lasted], and on the #mynumber[seventh] day he told her, because she pressed him hard. Then she told the riddle to her people. 
 #versenum(18) And the men of the city said to him on the #mynumber[seventh] day before the sun went down,
@@ -2474,7 +2474,7 @@
 
   
 #versenum(11) So #mynumber[600] men of the tribe of #myname[Dan], armed with weapons of war, set out from #myhl(placesColor)[Zorah] and #myhl(placesColor)[Eshtaol], 
-#versenum(12) and went up and encamped at #myhl(placesColor)[Kiriath-jearim] in #myhl(placesColor)[Judah]. On this account that place is called #myhl(placesColor)[Mahaneh-dan#footnote[Judges 18:12 #emph[Mahaneh-dan] means #emph[camp of Dan]]] to this day; behold, it is west of #myhl(placesColor)[Kiriath-jearim]. 
+#versenum(12) and went up and encamped at #myhl(placesColor)[Kiriath-jearim] in #myhl(placesColor)[Judah]. On this account that place is called #myhl(placesColor)[Mahaneh-dan]#footnote[Judges 18:12 #emph[Mahaneh-dan] means #emph[camp of Dan]] to this day; behold, it is west of #myhl(placesColor)[Kiriath-jearim]. 
 #versenum(13) And they passed on from there to #myhl(placesColor)[the hill country of Ephraim], and came to the house of #myhl(menColor)[Micah].
 
 
@@ -2629,7 +2629,7 @@
 #versenum(40) But when the signal began to rise out of the city in a #underline[column] of smoke, the #myname[Benjaminites] looked behind them, and behold, the whole of the city went up in smoke to heaven. 
 #versenum(41) Then the men of #myname[Israel] turned, and the men of #myname[Benjamin] were dismayed, for they saw that disaster was close upon them. 
 #versenum(42) Therefore they turned their backs before the men of #myname[Israel] in the direction of the wilderness, but the battle overtook them. And those who came out of the cities were #underline[destroying] them in their midst. 
-#versenum(43) Surrounding the #myname[Benjaminites], they pursued them and trod them down from #underline[#myhl(placesColor)[Nohah#footnote[Judges 20:43 Septuagint; Hebrew \[at their\] #emph[resting place]]]] as far as opposite #myhl(placesColor)[Gibeah] on the east. 
+#versenum(43) Surrounding the #myname[Benjaminites], they pursued them and trod them down from #underline[#myhl(placesColor)[Nohah]]#footnote[Judges 20:43 Septuagint; Hebrew \[at their\] #emph[resting place]] as far as opposite #myhl(placesColor)[Gibeah] on the east. 
 #versenum(44) #mynumber[Eighteen thousand] men of #myname[Benjamin] fell, all of them men of valor. 
 #versenum(45) And they turned and fled toward the wilderness to the #myhl(placesColor)[rock of Rimmon]. #mynumber[Five thousand] men of them were cut down in the highways. And they were pursued hard to #underline[#myhl(placesColor)[Gidom]], and #mynumber[2,000] men of them were struck down. 
 #versenum(46) So all who fell that day of #myname[Benjamin] were #underline[#mynumber[25,000]] men who drew the sword, all of them men of valor. 
@@ -2816,8 +2816,8 @@
 #versenum(1) Now #myhl(menColor)[Boaz] had gone up to the gate and sat down there. And behold, the redeemer, of whom #myhl(menColor)[Boaz] had spoken, came by. So #myhl(menColor)[Boaz] said, “Turn aside, #underline[friend]; sit down here.” And he turned aside and sat down. 
 #versenum(2) And he took #mynumber[ten] men of the elders of the city and said, “Sit down here.” So they sat down. 
 #versenum(3) Then he said to the redeemer, “#myhl(womenColor)[Naomi], who has come back from the country of #myhl(placesColor)[Moab], is #underline[selling] the #underline[parcel] of land that belonged to our relative #myhl(menColor)[Elimelech]. 
-#versenum(4) So I thought I would tell you of it and say, ‘Buy it in the presence of those sitting here and in the presence of the elders of my people.’ If you will redeem it, redeem it. But if you#footnote[Ruth 4:3 Hebrew #emph[he]] will not, tell me, that I may know, for there is no one besides you to redeem it, and I come after you.” And he said, “I will redeem it.” 
-#versenum(5) Then #myhl(menColor)[Boaz] said, “The day you buy the field from the hand of #myhl(womenColor)[Naomi], you also #underline[acquire] #myhl(womenColor)[Ruth#footnote[Ruth 4:5 Masoretic Text #emph[you also buy it from Ruth]]] the #myname[Moabite], the widow of the dead, in order to perpetuate the name of the dead in his inheritance.” 
+#versenum(4) So I thought I would tell you of it and say, ‘Buy it in the presence of those sitting here and in the presence of the elders of my people.’ If you will redeem it, redeem it. But if you#footnote[Ruth 4:4 Hebrew #emph[he]] will not, tell me, that I may know, for there is no one besides you to redeem it, and I come after you.” And he said, “I will redeem it.” 
+#versenum(5) Then #myhl(menColor)[Boaz] said, “The day you buy the field from the hand of #myhl(womenColor)[Naomi], you also #underline[acquire] #myhl(womenColor)[Ruth]#footnote[Ruth 4:5 Masoretic Text #emph[you also buy it from Ruth]] the #myname[Moabite], the widow of the dead, in order to perpetuate the name of the dead in his inheritance.” 
 #versenum(6) Then the redeemer said, “I cannot redeem it for myself, lest I #underline[impair] my own inheritance. Take my right of #underline[redemption] yourself, for I cannot redeem it.”
 
 

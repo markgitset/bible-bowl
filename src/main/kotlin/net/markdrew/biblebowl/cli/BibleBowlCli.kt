@@ -1,6 +1,10 @@
 package net.markdrew.biblebowl.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.UsageError
+import com.github.ajalt.clikt.core.main
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.arguments.optional
@@ -8,37 +12,21 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
+import com.github.ajalt.mordant.input.interactiveMultiSelectList
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.analysis.WordList
-import net.markdrew.biblebowl.analysis.oneTimeWords
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
-import net.markdrew.biblebowl.flashcards.cram.writeCramHeadings
-import net.markdrew.biblebowl.flashcards.cram.writeCramOneTimeWords
-import net.markdrew.biblebowl.flashcards.cram.writeCramReverseHeadings
-import net.markdrew.biblebowl.flashcards.cram.writeCramVerses
-import net.markdrew.biblebowl.generate.indices.writeFullIndex
-import net.markdrew.biblebowl.generate.indices.writeHeadingsPdf
-import net.markdrew.biblebowl.generate.indices.writeHeadingsText
-import net.markdrew.biblebowl.generate.indices.writeNamesIndex
-import net.markdrew.biblebowl.generate.indices.writeNonLocalPhrasesIndex
-import net.markdrew.biblebowl.generate.indices.writeNumbersIndex
-import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsHomework
-import net.markdrew.biblebowl.generate.indices.writeOneTimeWordsIndex
-import net.markdrew.biblebowl.generate.indices.writeWordListIndex
-import net.markdrew.biblebowl.generate.practice.Round
-import net.markdrew.biblebowl.generate.practice.practiceTest
-import net.markdrew.biblebowl.generate.practice.writeFullSet
-import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
-import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
-import net.markdrew.biblebowl.generate.practice.writeRound5Events
-import net.markdrew.biblebowl.generate.text.generateBibleTexts
+import net.markdrew.biblebowl.generate.text.Docx
+import net.markdrew.biblebowl.generate.text.Latex
+import net.markdrew.biblebowl.generate.text.OutputFormat
+import net.markdrew.biblebowl.generate.text.Typst
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
-import net.markdrew.biblebowl.typst.writeTypstFlashCards
 import net.markdrew.biblebowl.ws.EsvClient
 import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
@@ -53,10 +41,13 @@ import kotlin.io.path.Path
  * [net.markdrew.biblebowl.model.StudySet] and runs every generator family — text variants, indices,
  * flashcards, practice tests — under the supplied output directories.
  */
-class BibleBowlCli : CliktCommand(
-    name = "biblebowl",
-    help = "Generate Bible Bowl resources and indices."
-) {
+class BibleBowlCli : CliktCommand(name = "biblebowl") {
+
+    // clikt 5 removed the `help`/`epilog` constructor params; help text now comes from this override.
+    // (We override commandHelp, not help, so the member name doesn't collide with the imported
+    // `.help()` option/argument extensions.)
+    override fun commandHelp(context: Context): String = "Generate Bible Bowl resources and indices."
+
 //    private val userHomeDir = Path(System.getProperty("user.home"))
 //    private val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
 //    private val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
@@ -71,9 +62,24 @@ class BibleBowlCli : CliktCommand(
         .flag(default = false)
         .help("Force download and re-index the study set, even if data exists (default: false)")
 
-    private val skipText: Boolean by option("--no-text")
+    private val resources: List<String> by option("--resource", "-R")
+        .multiple()
+        .help("Resource(s) to generate; repeatable. Each value is a category or a resource slug " +
+            "(see --list). Default: generate everything.")
+
+    private val interactive: Boolean by option("--interactive", "-i")
         .flag(default = false)
-        .help("Skip generating the texts (default: false)")
+        .help("Interactively pick which resources to generate from a checklist (default: false)")
+
+    private val listResources: Boolean by option("--list")
+        .flag(default = false)
+        .help("List the available resources and categories, then exit (default: false)")
+
+    private val textFormats: List<TextFormat> by option("--format", "-t")
+        .enum<TextFormat>(ignoreCase = true)
+        .multiple()
+        .help("Text format(s) to generate; repeatable. One of: ${TextFormat.entries.joinToString { it.name.lowercase() }} " +
+            "(default: all)")
 
     private val dataDir: Path by option("--data-dir", "-d")
         .convert { Path(it) }
@@ -92,10 +98,33 @@ class BibleBowlCli : CliktCommand(
 
     override fun run() {
         print(BANNER)
-        val studySet: StudySet =
-            StandardStudySet.parse(studySetName)
 
-//        val dataPath = Paths.get(dataDir)
+        val formats: Set<OutputFormat> =
+            if (textFormats.isEmpty()) setOf(Typst)
+            else textFormats.map { it.outputFormat }.toSet()
+        val registry: List<StudyResource> = studyResources(formats, TEST_DATE)
+
+        if (listResources) {
+            printResourceList(registry)
+            return
+        }
+
+        // Resolve the selection BEFORE loading data, so a bad -R token or a canceled picker fails
+        // fast without paying the download/index cost.
+        val selected: List<StudyResource> = when {
+            interactive -> selectInteractively(registry)
+            else -> try {
+                resolveSelection(resources, registry)
+            } catch (e: IllegalArgumentException) {
+                throw UsageError(e.message ?: "invalid --resource selection")
+            }
+        }
+        if (selected.isEmpty()) {
+            echo("Nothing selected; nothing to generate.")
+            return
+        }
+
+        val studySet: StudySet = StandardStudySet.parse(studySetName)
         val studyData = try {
             StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
         } catch (e: NoSuchFileException) {
@@ -108,51 +137,53 @@ class BibleBowlCli : CliktCommand(
             }
         }
 
-        // write a bunch of variations of the Bible text
-        if (!skipText) {
-            generateBibleTexts(studyData, LocalDate.of(2026, 3, 28), productsDir)
+        for (resource in selected) {
+            echo("Generating ${resource.label} (${resource.slug})...")
+            resource.generate(studyData, productsDir)
         }
-
-        // Generate files (rest unchanged from BiblebowlKt.main)
-        writeOneTimeWordsIndex(studyData, productsDir)
-        writeOneTimeWordsHomework(studyData, productsDir)
-        writeFullIndex(studyData, productsDir = productsDir)
-        writeNumbersIndex(studyData, productsDir = productsDir)
-        writeNamesIndex(studyData, productsDir)
-        writeNonLocalPhrasesIndex(studyData, productsDir)
-
-        writeWordListIndex(productsDir, studyData, WordList.ANGELS_DEMONS, "Angel or Demon", "Angels or Demons")
-        writeWordListIndex(productsDir, studyData, WordList.ANIMALS, "Animal")
-        writeWordListIndex(productsDir, studyData, WordList.BODY_PARTS, "Body Part")
-        writeWordListIndex(productsDir, studyData, WordList.COLORS, "Color")
-        writeWordListIndex(productsDir, studyData, WordList.FOODS, "Food")
-        writeWordListIndex(productsDir, studyData, WordList.MEN, "Man", "Men")
-        writeWordListIndex(productsDir, studyData, WordList.WOMEN, "Woman", "Women")
-        writeWordListIndex(productsDir, studyData, WordList.PLACES, "Place")
-
-        writeHeadingsPdf(studyData, productsDir)
-        writeHeadingsText(studyData, productsDir)
-        writeHeadingsText(studyData, productsDir)
-
-        writeCramVerses(studyData, productsDir)
-        writeCramHeadings(studyData, productsDir)
-        writeCramReverseHeadings(studyData, productsDir)
-        writeCramOneTimeWords(studyData, oneTimeWords(studyData), productsDir)
-
-//        val nameExcerpts = findNames(studyData, "god", "jesus", "christ")
-//        writeCramNameBlanks(studyData, nameExcerpts)
-//        writeCramFewTimeWords(studyData)
-
-        writeFullSet(studyData, productsDir) { content, seed, productsDir ->
-            writeRound1VerseFind(practiceTest(Round.FIND_THE_VERSE, content, seed, numQuestions = 20), productsDir)
-            writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), productsDir)
-            writeRound5Events(practiceTest(Round.EVENTS, content, seed), productsDir)
-        }
-
-        writeTypstFlashCards(studyData, productsDir)
 
         echo("Generation complete. Output in $productsDir")
     }
+
+    /** Prints the available resources grouped by category, used by `--list`. */
+    private fun printResourceList(registry: List<StudyResource>) {
+        echo("Available resources (use -R <category|slug>, repeatable; default generates all):")
+        for (category in ResourceCategory.entries) {
+            val inCategory = registry.filter { it.category == category }
+            if (inCategory.isEmpty()) continue
+            echo("\n  ${category.name.lowercase()}")
+            for (resource in inCategory) {
+                echo("    ${resource.slug.padEnd(24)} ${resource.label}")
+            }
+        }
+    }
+
+    /** Presents a mordant checklist of all resources and returns those the user selected. */
+    private fun selectInteractively(registry: List<StudyResource>): List<StudyResource> {
+        if (!terminal.terminalInfo.inputInteractive) {
+            throw UsageError("--interactive requires an interactive terminal; use -R to select resources instead.")
+        }
+        // Returns null if the user aborts (e.g. Ctrl-C); treat that as an empty selection.
+        val chosenSlugs: Set<String> = terminal.interactiveMultiSelectList {
+            title("Select resources to generate (↑/↓ move, space toggles, enter confirms)")
+            for (resource in registry) {
+                addEntry(resource.slug, "${resource.category.name.lowercase()} — ${resource.label}", false)
+            }
+        }.orEmpty().toSet()
+        return registry.filter { it.slug in chosenSlugs }
+    }
+
+    private companion object {
+        // Date stamped on generated covers/footers.
+        private val TEST_DATE: LocalDate = LocalDate.of(2026, 3, 28)
+    }
+}
+
+/** CLI-selectable text formats, each mapped to its [OutputFormat]. */
+enum class TextFormat(val outputFormat: OutputFormat) {
+    DOCX(Docx),
+    LATEX(Latex),
+    TYPST(Typst),
 }
 
 fun main(args: Array<String>) = BibleBowlCli().main(args)

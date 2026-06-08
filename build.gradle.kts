@@ -28,7 +28,12 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.5.6")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
     implementation("org.apache.lucene:lucene-analyzers-common:8.11.3")
-    implementation("com.github.markgitset:chupacabra:v0.1.0")
+    // chupacabra transitively drags in the old com.github.ajalt:clikt:2.6.0 (different groupId, so
+    // Gradle won't dedupe it against our clikt 5.x). Its packages shadow clikt 5's and break option
+    // resolution, so exclude it.
+    implementation("com.github.markgitset:chupacabra:v0.1.0") {
+        exclude(group = "com.github.ajalt", module = "clikt")
+    }
     implementation("org.apache.opennlp:opennlp-tools:1.9.4")
     implementation("org.apache.lucene:lucene-core:9.10.0")
     implementation("org.apache.poi:poi-ooxml:5.2.5")
@@ -37,7 +42,7 @@ dependencies {
 //    implementation("org.docx4j:docx4j-bundle:11.4.9")
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
-    implementation("com.github.ajalt.clikt:clikt:4.3.0")
+    implementation("com.github.ajalt.clikt:clikt:5.1.0")
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.kotest:kotest-framework-datatest:5.9.1")

@@ -13,7 +13,6 @@ import net.markdrew.biblebowl.generate.text.HighlightColor
 import net.markdrew.biblebowl.generate.text.HighlightContext
 import net.markdrew.biblebowl.generate.text.LayoutOptions
 import net.markdrew.biblebowl.generate.text.OutputFormat
-import net.markdrew.biblebowl.generate.text.resolveChild
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
@@ -126,23 +125,32 @@ private class DocxHandler(
     private var activeRegex: HighlightColor? = null
     private var activeSmallCaps: Boolean = false
 
-    private val baseUri: URI = javaClass.getResource("/${style.resourcePath}")?.toURI()
-        ?: throw IllegalStateException("Couldn't find resource in classpath: /${style.resourcePath}")
+    /**
+     * Resolves a template fragment (e.g. `styles.xml`) under the style's resource directory to its
+     * classpath URL. We go through [Class.getResource] rather than resolving a child off a base
+     * directory URI: the latter requires NIO path resolution, which throws
+     * [java.nio.file.FileSystemNotFoundException] when the app runs from a jar (a `jar:…!/…` URI whose
+     * zip filesystem isn't open). The returned URI is only ever opened as a stream, which works for
+     * both `file:` and `jar:` URLs.
+     */
+    private fun template(child: String): URI =
+        javaClass.getResource("/${style.resourcePath}/$child")?.toURI()
+            ?: throw IllegalStateException("Couldn't find template resource in classpath: /${style.resourcePath}/$child")
 
     private var footerRel: Relationship? = null
 
     init {
-        mainPart.addTargetPart(fontTableFromTemplate(baseUri.resolveChild("fontTable.xml")))
+        mainPart.addTargetPart(fontTableFromTemplate(template("fontTable.xml")))
     }
 
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         mainPart.addTargetPart(stylesPartFromTemplate(
-            baseUri.resolveChild("styles.xml"),
+            template("styles.xml"),
             style.typography.toTemplateBindings(layout.fontSize),
         ))
         footerRel = mainPart.addTargetPart(
             footerFromTemplate(
-                baseUri.resolveChild("footer.xml"), mapOf(
+                template("footer.xml"), mapOf(
                     "title" to studyData.studySet.name,
                     "date" to layout.testDate.format(dateFormatter),
                 )
@@ -401,7 +409,7 @@ private class DocxHandler(
     }
 
     private fun addEndMatter() {
-        addContentsFromDoc(baseUri.resolveChild("endMatter.xml"))
+        addContentsFromDoc(template("endMatter.xml"))
     }
 
     private fun addFootnotes() {

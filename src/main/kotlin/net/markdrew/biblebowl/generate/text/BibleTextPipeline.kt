@@ -90,18 +90,20 @@ fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
 ))
 
 /**
- * Generates the standard pack of DOCX Bible-text variants for [studyData] under [productsPath]
+ * Generates the standard pack of Bible-text variants for [studyData] under [productsPath]
  *
- * Produces six outputs: plain, unique-words-underlined, and full-highlighting in both [TbbDocxStyle]
- * (TBB official format) and [MarksDocxStyle] (Mark's two-column format). This is the unified
+ * For each requested format in [formats], produces six outputs: plain, unique-words-underlined, and
+ * full-highlighting in both the TBB official style and Mark's two-column style. This is the unified
  * replacement for the legacy `writeBibleDoc(...)` and `writeBibleText(...)` entry points.
  *
  * @param testDate date stamped on the cover/footer
+ * @param formats which output formats to generate (default: all of [Docx], [Latex], [Typst])
  */
 fun generateBibleTexts(
     studyData: StudyData,
     testDate: LocalDate,
     productsPath: Path,
+    formats: Set<OutputFormat> = setOf(Docx, Latex, Typst),
 ) {
     val tbbLayoutPlain = LayoutOptions(testDate = testDate, fontSize = 12)
     val marksLayoutPlain = LayoutOptions(
@@ -120,32 +122,38 @@ fun generateBibleTexts(
         customHighlights = fullHighlightPalette(),
     )
 
-    val tbb = DocxBibleTextWriter(TbbDocxStyle)
-    val marks = DocxBibleTextWriter(MarksDocxStyle)
-    for ((writer, layout) in listOf(tbb to tbbLayoutPlain, marks to marksLayoutPlain)) {
-        for (features in listOf(plain, unique, full)) {
-            BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
-        }
-    }
-
-    val tbbLatex = LatexBibleTextWriter()
-    val marksLatex = LatexBibleTextWriter()
-    for ((writer, layout) in listOf(tbbLatex to tbbLayoutPlain, marksLatex to marksLayoutPlain)) {
-        for (features in listOf(plain, unique, full)) {
-            try {
+    if (Docx in formats) {
+        val tbb = DocxBibleTextWriter(TbbDocxStyle)
+        val marks = DocxBibleTextWriter(MarksDocxStyle)
+        for ((writer, layout) in listOf(tbb to tbbLayoutPlain, marks to marksLayoutPlain)) {
+            for (features in listOf(plain, unique, full)) {
                 BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
-            } catch (e: IllegalArgumentException) {
-                val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
-                println("Skipping $outFile due to: " + e.message)
             }
         }
     }
 
-    val tbbTypst = TypstBibleTextWriter(TbbTypstStyle)
-    val marksTypst = TypstBibleTextWriter(MarksTypstStyle)
-    for ((writer, layout) in listOf(tbbTypst to tbbLayoutPlain, marksTypst to marksLayoutPlain)) {
-        for (features in listOf(plain, unique, full)) {
-            BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
+    if (Latex in formats) {
+        val tbbLatex = LatexBibleTextWriter()
+        val marksLatex = LatexBibleTextWriter()
+        for ((writer, layout) in listOf(tbbLatex to tbbLayoutPlain, marksLatex to marksLayoutPlain)) {
+            for (features in listOf(plain, unique, full)) {
+                try {
+                    BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
+                } catch (e: IllegalArgumentException) {
+                    val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
+                    println("Skipping $outFile due to: " + e.message)
+                }
+            }
+        }
+    }
+
+    if (Typst in formats) {
+        val tbbTypst = TypstBibleTextWriter(TbbTypstStyle)
+        val marksTypst = TypstBibleTextWriter(MarksTypstStyle)
+        for ((writer, layout) in listOf(tbbTypst to tbbLayoutPlain, marksTypst to marksLayoutPlain)) {
+            for (features in listOf(plain, unique, full)) {
+                BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
+            }
         }
     }
 }

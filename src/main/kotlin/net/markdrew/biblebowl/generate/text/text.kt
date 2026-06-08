@@ -1,9 +1,6 @@
 package net.markdrew.biblebowl.generate.text
 
 import org.intellij.lang.annotations.Language
-import java.io.InputStream
-import java.net.URI
-import kotlin.io.path.toPath
 
 /** Default small-caps replacements: forms of the divine name and "I AM" sayings rendered in small caps. */
 val smallCapsNames = mapOf(
@@ -31,8 +28,3 @@ val divineNames: Set<String> = setOf(
     "(?<=[Tt]he |O )Lord(’s Christ| your God)?", "(Son of the )?Most High( God)?", "(Holy|Chosen) One( of God)?",
     *smallCapsNames.keys.toTypedArray()
 )
-
-internal fun URI.resolveChild(childString: String): URI =
-    toPath().resolve(childString).toUri()
-internal fun URI.open(childString: String): InputStream =
-    resolveChild(childString).toURL().openStream()
