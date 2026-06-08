@@ -44,7 +44,7 @@ class TextWriterFidelityTest : StringSpec({
         underlineUniqueWords = true,
         highlightNames = true,
         highlightNumbers = true,
-        customHighlights = docxFullHighlightPalette(),
+        customHighlights = fullHighlightPalette(),
     )
 
     fun loadStudyData(): StudyData = StudyData.readData(StandardStudySet.JOSHUA_JUDGES_RUTH.set)

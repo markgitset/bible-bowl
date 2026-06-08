@@ -18,10 +18,8 @@ import java.nio.file.Path
 import java.time.LocalDate
 
 fun main() {
-    val data: StudyData = StudyData.readData(StandardStudySet.JOSHUA_JUDGES_RUTH.set, defaultDataPath, defaultRawDataPath)
-//    val data: StudyData = StudyData.readData(StandardStudySet.LIFE_OF_MOSES.set, defaultDataPath, defaultRawDataPath)
-//    val data: StudyData = StudyData.readData(StandardStudySet.ACTS.set, defaultDataPath, defaultRawDataPath)
-    generateBibleTexts(data, LocalDate.of(2026, 3, 28), defaultProductsPath)
+    val data: StudyData = StudyData.readData(StandardStudySet.DEFAULT, defaultDataPath, defaultRawDataPath)
+    generateBibleTexts(data, LocalDate.of(2027, 4, 3), defaultProductsPath)
 }
 
 /**
@@ -84,11 +82,11 @@ object BibleTextPipeline {
  * Standard DOCX palette used for the "full highlighting" variant — divine names yellow, women pink,
  * men blue, places green. Hex values match the historically-shipping DOCX colors.
  */
-fun docxFullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
-    HighlightColor("divineColor", Triple(0xff, 0xff, 0x00)) to divineNames.map { Regex(it) }.toSet(),
-    HighlightColor("womenColor", Triple(0xff, 0x99, 0xff)) to WordList.WOMEN.regexSequence().toSet(),
+fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
     HighlightColor("menColor", Triple(0x99, 0xcc, 0xff)) to WordList.MEN.regexSequence().toSet(),
     HighlightColor("placesColor", Triple(0x99, 0xff, 0x99)) to WordList.PLACES.regexSequence().toSet(),
+    HighlightColor("womenColor", Triple(0xff, 0x99, 0xff)) to WordList.WOMEN.regexSequence().toSet(),
+    HighlightColor("divineColor", Triple(0xff, 0xff, 0x00)) to divineNames.map { Regex(it) }.toSet(),
 ))
 
 /**
@@ -119,7 +117,7 @@ fun generateBibleTexts(
         underlineUniqueWords = true,
         highlightNames = true,
         highlightNumbers = true,
-        customHighlights = docxFullHighlightPalette(),
+        customHighlights = fullHighlightPalette(),
     )
 
     val tbb = DocxBibleTextWriter(TbbDocxStyle)
@@ -133,7 +131,7 @@ fun generateBibleTexts(
     val tbbLatex = LatexBibleTextWriter()
     val marksLatex = LatexBibleTextWriter()
     for ((writer, layout) in listOf(tbbLatex to tbbLayoutPlain, marksLatex to marksLayoutPlain)) {
-        for (features in listOf(/*plain, unique,*/ full)) {
+        for (features in listOf(plain, unique, full)) {
             try {
                 BibleTextPipeline.generate(studyData, layout, features, writer, productsPath)
             } catch (e: IllegalArgumentException) {

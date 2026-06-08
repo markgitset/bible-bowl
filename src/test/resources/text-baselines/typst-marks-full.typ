@@ -22,7 +22,7 @@
     fill: rgb("404040"),
     inset: (x: 3pt, y: 1pt),
     radius: 1pt,
-    text(fill: white, weight: "bold", font: "Libertinus Serif", size: 0.8em)[#n],
+    text(fill: white, weight: "bold", font: "Libertinus Serif")[#n],
 )
 #let chapter-heading(label) = heading(
     level: 1, outlined: false,

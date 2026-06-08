@@ -1,5 +1,8 @@
 package net.markdrew.biblebowl.model
 
+import net.markdrew.biblebowl.model.StandardStudySet.Companion.DEFAULT
+
+
 /**
  * Predefined Bible Bowl study sets, exposed as an enum so the CLI can resolve them by name
  *
@@ -51,7 +54,7 @@ enum class StandardStudySet(val set: StudySet) {
 
     companion object {
         /** Default study set used when the CLI is invoked without a study-set argument */
-        val DEFAULT: StudySet = JOSHUA_JUDGES_RUTH.set
+        val DEFAULT: StudySet = ACTS.set
 
         /**
          * Resolves a user-supplied name to a [StudySet], falling back to [default] when nothing matches.
