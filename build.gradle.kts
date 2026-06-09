@@ -54,6 +54,10 @@ tasks.named<Test>("test") {
     // Forward the snapshot-regeneration flag so TextWriterFidelityTest can overwrite committed
     // baselines when invoked as `./gradlew test -Dregenerate-baseline-texts=true`.
     System.getProperty("regenerate-baseline-texts")?.let { systemProperty("regenerate-baseline-texts", it) }
+    // Kotest runs its specs regardless of Gradle's `--tests` filter, so the filter can match zero
+    // descriptors at the JUnit-Platform level (e.g. `--tests '*TextWriterFidelityTest'` while
+    // regenerating baselines) and fail the build even though the spec ran. Don't treat that as an error.
+    filter { isFailOnNoMatchingTests = false }
     // The fidelity test compares multi-megabyte source files; assertion diffs can blow the
     // default heap. 2GB is comfortable headroom.
     maxHeapSize = "2g"
