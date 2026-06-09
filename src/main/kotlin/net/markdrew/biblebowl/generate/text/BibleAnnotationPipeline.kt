@@ -4,6 +4,7 @@ import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.analysis.NamesSource
 import net.markdrew.biblebowl.analysis.NumbersSource
 import net.markdrew.biblebowl.analysis.OneTimeWordsSource
+import net.markdrew.biblebowl.analysis.RegexCategorySource
 import net.markdrew.biblebowl.analysis.RegexSetSource
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
@@ -51,17 +52,18 @@ object BibleAnnotationPipeline {
         features: FeatureOptions,
         store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     ): AnnotatedDoc<AnalysisUnit> {
-        val regexHighlights = store.get(RegexHighlightSource(features.customHighlights))
+        // Color-free: each range is tagged with its highlight *category* id; writers resolve the color.
+        val regexCategories = store.get(RegexCategorySource("highlights", features.customHighlights.rules))
         val smallCaps = RegexSetSource("small-caps", features.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
         return studyData.toAnnotatedDoc(
             BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
         ).apply {
-            setAnnotations(REGEX, regexHighlights)
+            setAnnotations(REGEX, regexCategories)
             setAnnotations(SMALL_CAPS, store.ranges(smallCaps))
             if (features.underlineUniqueWords) setAnnotations(UNIQUE_WORD, store.ranges(OneTimeWordsSource))
             if (features.highlightNames) {
                 // remove any names that intersect with custom regex ranges
-                setAnnotations(NAME, store.ranges(NamesSource(divineNames)).minusEnclosedBy(regexHighlights))
+                setAnnotations(NAME, store.ranges(NamesSource(divineNames)).minusEnclosedBy(regexCategories))
             }
             if (features.highlightNumbers) setAnnotations(NUMBER, store.ranges(NumbersSource))
         }

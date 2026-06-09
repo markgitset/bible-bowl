@@ -133,8 +133,8 @@ object BibleTextWalker {
             if (features.highlightNames && transition.isBeginning(NAME)) handler.nameBegin()
             if (features.highlightNumbers && transition.isBeginning(NUMBER)) handler.numberBegin()
             if (transition.isBeginning(REGEX)) {
-                val color = transition.beginning.first { it.key == REGEX }.value as HighlightColor
-                handler.regexBegin(color)
+                val category = transition.beginning.first { it.key == REGEX }.value as String
+                handler.regexBegin(category)
             }
             if (transition.isBeginning(SMALL_CAPS)) handler.smallCapsBegin()
 
@@ -166,7 +166,7 @@ object BibleTextWalker {
         val ann = transition.continuing.firstOrNull { it.key in setOf(REGEX, NAME, NUMBER) }
             ?: return HighlightContext.None
         return when (ann.key) {
-            REGEX -> HighlightContext.Regex(ann.value as HighlightColor)
+            REGEX -> HighlightContext.Regex(ann.value as String)
             NAME -> HighlightContext.Name
             NUMBER -> HighlightContext.Number
             else -> HighlightContext.None

@@ -9,7 +9,6 @@ import net.markdrew.biblebowl.generate.text.BibleTextWalker
 import net.markdrew.biblebowl.generate.text.BibleTextWriter
 import net.markdrew.biblebowl.generate.text.Docx
 import net.markdrew.biblebowl.generate.text.FeatureOptions
-import net.markdrew.biblebowl.generate.text.HighlightColor
 import net.markdrew.biblebowl.generate.text.HighlightContext
 import net.markdrew.biblebowl.generate.text.LayoutOptions
 import net.markdrew.biblebowl.generate.text.OutputFormat
@@ -122,7 +121,7 @@ private class DocxHandler(
     private var activeUniqueWord: Boolean = false
     private var activeName: Boolean = false
     private var activeNumber: Boolean = false
-    private var activeRegex: HighlightColor? = null
+    private var activeRegexCategory: String? = null
     private var activeSmallCaps: Boolean = false
 
     /**
@@ -272,8 +271,8 @@ private class DocxHandler(
     override fun nameEnd()         { activeName = false }
     override fun numberBegin()     { activeNumber = true }
     override fun numberEnd()       { activeNumber = false }
-    override fun regexBegin(color: HighlightColor) { activeRegex = color }
-    override fun regexEnd()        { activeRegex = null }
+    override fun regexBegin(category: String) { activeRegexCategory = category }
+    override fun regexEnd()        { activeRegexCategory = null }
     override fun smallCapsBegin()  { activeSmallCaps = true }
     override fun smallCapsEnd()    { activeSmallCaps = false }
 
@@ -288,9 +287,9 @@ private class DocxHandler(
                 shd = CTShd().apply { `val` = STShd.CLEAR; fill = NUMBER_FILL }
             }
         }
-        activeRegex?.let { color ->
+        activeRegexCategory?.let { category ->
             r.rPr = (r.rPr ?: RPr()).apply {
-                shd = CTShd().apply { `val` = STShd.CLEAR; fill = color.toHex() }
+                shd = CTShd().apply { `val` = STShd.CLEAR; fill = features.customHighlights.color(category).toHex() }
             }
         }
         if (activeSmallCaps) {

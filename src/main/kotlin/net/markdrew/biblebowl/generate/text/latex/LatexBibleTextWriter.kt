@@ -155,7 +155,7 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
 //        out.append('}')
         out.append(renderFootnote(verseRef, content))
         when (continuing) {
-            is HighlightContext.Regex -> out.append("""\myhl[${continuing.color.name}]{""")
+            is HighlightContext.Regex -> out.append("""\myhl[${continuing.category}]{""")
             HighlightContext.Name -> out.append("""\myname{""")
             HighlightContext.Number -> out.append("""\mynumber{""")
             HighlightContext.None -> Unit
@@ -168,7 +168,7 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
     override fun nameEnd()         { out.append('}') }
     override fun numberBegin()     { out.append("""\mynumber{""") }
     override fun numberEnd()       { out.append('}') }
-    override fun regexBegin(color: HighlightColor) { out.append("""\myhl[${color.name}]{""") }
+    override fun regexBegin(category: String) { out.append("""\myhl[$category]{""") }
     override fun regexEnd()        { out.append('}') }
     override fun smallCapsBegin() {} // LaTeX uses inline `LORD` substitution in text() instead of the annotation.
     override fun smallCapsEnd()   {}

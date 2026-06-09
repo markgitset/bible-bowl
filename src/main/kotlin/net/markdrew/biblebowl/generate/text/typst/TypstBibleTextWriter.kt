@@ -6,7 +6,6 @@ import net.markdrew.biblebowl.generate.text.BibleTextHandler
 import net.markdrew.biblebowl.generate.text.BibleTextWalker
 import net.markdrew.biblebowl.generate.text.BibleTextWriter
 import net.markdrew.biblebowl.generate.text.FeatureOptions
-import net.markdrew.biblebowl.generate.text.HighlightColor
 import net.markdrew.biblebowl.generate.text.HighlightContext
 import net.markdrew.biblebowl.generate.text.LayoutOptions
 import net.markdrew.biblebowl.generate.text.OutputFormat
@@ -202,7 +201,7 @@ private class TypstHandler(
     override fun nameEnd()         { out.append(']') }
     override fun numberBegin()     { out.append("#mynumber[") }
     override fun numberEnd()       { out.append(']') }
-    override fun regexBegin(color: HighlightColor) { out.append("#myhl(${color.name})[") }
+    override fun regexBegin(category: String) { out.append("#myhl($category)[") }
     override fun regexEnd()        { out.append(']') }
     override fun smallCapsBegin() {} // Typst handles small caps via inline `LORD` substitution in text().
     override fun smallCapsEnd()   {}

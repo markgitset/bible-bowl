@@ -17,8 +17,8 @@ sealed interface HighlightContext {
     /** No REGEX/NAME/NUMBER highlight continues across this transition. */
     data object None : HighlightContext
 
-    /** A REGEX highlight continues, painted with [color]. */
-    data class Regex(val color: HighlightColor) : HighlightContext
+    /** A REGEX highlight continues, tagged with its highlight [category] id. */
+    data class Regex(val category: String) : HighlightContext
 
     /** A NAME highlight continues. */
     data object Name : HighlightContext
@@ -180,8 +180,8 @@ interface BibleTextHandler {
     /** The current number-highlight span is ending. */
     fun numberEnd()
 
-    /** A custom-palette highlight span is beginning, painted with [color]. */
-    fun regexBegin(color: HighlightColor)
+    /** A custom-palette highlight span is beginning, tagged with its highlight [category] id. */
+    fun regexBegin(category: String)
 
     /** The current custom-palette highlight span is ending. */
     fun regexEnd()
