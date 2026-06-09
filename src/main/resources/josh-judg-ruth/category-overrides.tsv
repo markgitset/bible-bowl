@@ -1,0 +1,8 @@
+# Per-occurrence category overrides for Joshua/Judges/Ruth.
+# Columns (tab-separated): verse <TAB> text <TAB> category <TAB> [occurrence#]
+#   category "-" (or "none") excludes the occurrence from every category.
+#   occurrence# (1-based) is only needed when `text` appears more than once in the verse.
+# Anchored by verse+text so it survives ESV re-downloads. The future review TUI edits this file.
+#
+# Zelophehad's daughter Noah is a woman, not the male patriarch the men list would otherwise catch.
+Joshua 17:3	Noah	women
