@@ -33,7 +33,11 @@ fun findListWords(text: String, wordList: WordList): Sequence<Excerpt> =
 
 /** Builds an index of [wordList] entries in [studyData], grouped by lowercased word with the verses each appears in. */
 fun buildWordListIndex(studyData: StudyData, wordList: WordList): List<WordIndexEntry> =
-    findListWords(studyData.text, wordList)
+    buildWordListIndex(studyData, findListWords(studyData.text, wordList).map { it.excerptRange }.toList())
+
+/** Builds a word-list index from precomputed occurrence [ranges] (e.g. from the unified [CategoryAnnotator]). */
+fun buildWordListIndex(studyData: StudyData, ranges: List<IntRange>): List<WordIndexEntry> =
+    ranges.map { studyData.excerpt(it) }
         .groupBy { it.excerptText.lowercase() }
         .map { (key, excerpts) ->
             WordIndexEntry(key, excerpts.map { studyData.verseEnclosing(it.excerptRange) ?: throw Exception() })

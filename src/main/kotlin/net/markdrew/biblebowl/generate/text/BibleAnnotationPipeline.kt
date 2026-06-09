@@ -1,11 +1,13 @@
 package net.markdrew.biblebowl.generate.text
 
 import net.markdrew.biblebowl.analysis.AnnotationStore
+import net.markdrew.biblebowl.analysis.CategoryAnnotator
+import net.markdrew.biblebowl.analysis.CategoryOverrides
 import net.markdrew.biblebowl.analysis.NamesSource
 import net.markdrew.biblebowl.analysis.NumbersSource
 import net.markdrew.biblebowl.analysis.OneTimeWordsSource
-import net.markdrew.biblebowl.analysis.RegexCategorySource
 import net.markdrew.biblebowl.analysis.RegexSetSource
+import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -53,7 +55,15 @@ object BibleAnnotationPipeline {
         store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     ): AnnotatedDoc<AnalysisUnit> {
         // Color-free: each range is tagged with its highlight *category* id; writers resolve the color.
-        val regexCategories = store.get(RegexCategorySource("highlights", features.customHighlights.rules))
+        // The unified annotator applies per-occurrence overrides; keep only categories the palette can
+        // color (an override may reclassify a range to a non-highlighted category or exclude it).
+        val paletteCategories: Set<String> = features.customHighlights.rules.map { it.first }.toSet()
+        val resolved = store.get(
+            CategoryAnnotator("highlights", features.customHighlights.rules, CategoryOverrides.load(studyData.studySet))
+        )
+        val regexCategories = DisjointRangeMap<String>().apply {
+            resolved.forEach { (range, category) -> if (category in paletteCategories) put(range, category) }
+        }
         val smallCaps = RegexSetSource("small-caps", features.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
         return studyData.toAnnotatedDoc(
             BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS

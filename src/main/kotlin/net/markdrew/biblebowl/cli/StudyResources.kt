@@ -94,8 +94,8 @@ fun studyResources(formats: Set<OutputFormat>, testDate: LocalDate): List<StudyR
     add(StudyResource("headings-index", INDICES, "Headings index (PDF)") { d, _, p -> writeHeadingsPdf(d, p) })
     add(StudyResource("headings-text", INDICES, "Headings list (text)") { d, _, p -> writeHeadingsText(d, p) })
     for (spec in WORD_LISTS) {
-        add(StudyResource(spec.slug, INDICES, "${spec.plural} word-list index") { d, _, p ->
-            writeWordListIndex(p, d, spec.wordList, spec.singular, spec.plural)
+        add(StudyResource(spec.slug, INDICES, "${spec.plural} word-list index") { d, store, p ->
+            writeWordListIndex(p, d, spec.wordList, spec.singular, spec.plural, store)
         })
     }
 

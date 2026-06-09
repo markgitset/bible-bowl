@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
+import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
@@ -50,9 +51,14 @@ fun writeWordListIndex(
     wordList: WordList,
     singularIndexType: String,
     pluralIndexType: String = "${singularIndexType}s",
+    store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
 ) {
-    val buildWordListIndex: List<WordIndexEntry> = buildWordListIndex(studyData, wordList)
-    val indexEntries: List<WordIndexEntryC> = buildWordListIndex.map { wordIndexEntry ->
+    // Pull this category's occurrences from the one unified resolution (honors cross-list disambiguation
+    // and per-occurrence overrides), so the index agrees with the highlights.
+    val categoryMap = store.get(WordList.categoryAnnotator(studyData.studySet))
+    val ranges: List<IntRange> = categoryMap.entries.filter { it.value == wordList.token }.map { it.key }
+    val wordListEntries: List<WordIndexEntry> = buildWordListIndex(studyData, ranges)
+    val indexEntries: List<WordIndexEntryC> = wordListEntries.map { wordIndexEntry ->
         WordIndexEntryC(
             wordIndexEntry.key,
             wordIndexEntry.values.groupingBy { it }.eachCount().map { (verseRef, count) ->
@@ -63,5 +69,5 @@ fun writeWordListIndex(
     val indexFile = fileForProduct(studyData, "indices", "index-$pluralIndexType.tex", productsDir)
     writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, indexFile)
     val listFile = fileForProduct(studyData, "lists", "list-$pluralIndexType.txt", productsDir)
-    writeWordListList(buildWordListIndex.asSequence().map { it.key }, listFile)
+    writeWordListList(wordListEntries.asSequence().map { it.key }, listFile)
 }
