@@ -17,6 +17,8 @@
 /data/
 /raw-data/
 /out/
+# Scratch output written by TextWriterFidelityTest on baseline mismatch
+/src/test/resources/text-actuals/
 *~
 .~*#
 *-bak
