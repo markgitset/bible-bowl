@@ -11,8 +11,12 @@ typealias Dictionary = Set<String>
 object DictionaryParser {
     private val classLoader: ClassLoader = DictionaryParser::class.java.classLoader
 
-    /** Builds a [Dictionary] from an in-memory sequence of words, one per element. */
-    fun parse(words: Sequence<String>): Dictionary = words.toHashSet()
+    /**
+     * Builds a [Dictionary] from a sequence of lines, one word per line. Blank lines and `#` comment
+     * lines are skipped, and surrounding whitespace is trimmed.
+     */
+    fun parse(words: Sequence<String>): Dictionary =
+        words.map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }.toHashSet()
 
     /** Reads one word per line from [reader] into a [Dictionary]; closes the reader when done. */
     fun parse(reader: Reader): Dictionary = reader.useLines { parse(it) }

@@ -1,5 +1,7 @@
 package net.markdrew.biblebowl.analysis
 
+import net.markdrew.biblebowl.model.StudySet
+
 /**
  * Curated word categories backed by per-category resource files (animals, foods, body parts, …)
  *
@@ -18,12 +20,16 @@ enum class WordList(private val areNames: Boolean = false) {
     MEN(areNames = true),
     WOMEN(areNames = true),
     PLACES(areNames = true),
+    PEOPLE_GROUPS(areNames = true),
     ANGELS_DEMONS(areNames = true),
     ;
 
+    /** Stable kebab-case id (e.g. `body-parts`), used as the resource filename stem and category id. */
+    val token: String = name.lowercase().replace('_', '-')
+
     /** Words in this category, lazily loaded from resources */
     val dictionary: Dictionary by lazy {
-        DictionaryParser.parse("word-lists/${name.lowercase().replace('_', '-')}.txt")
+        DictionaryParser.parse("word-lists/$token.txt")
     }
 
     private fun wordToRegex(word: String, caseSensitive: Boolean = false, plural: Boolean = true): Regex {
@@ -38,4 +44,20 @@ enum class WordList(private val areNames: Boolean = false) {
      */
     fun regexSequence(): Sequence<Regex> =
         dictionary.asSequence().map { wordToRegex(it, caseSensitive = areNames, plural = !areNames) }
+
+    companion object {
+        /**
+         * A single [CategoryAnnotator] over every word-list category for [studySet], with that set's
+         * per-occurrence overrides applied. One shared resolution that all word-list indices read, so a
+         * term in two lists (or an override) lands in exactly one category everywhere.
+         */
+        fun categoryAnnotator(studySet: StudySet): CategoryAnnotator = CategoryAnnotator(
+            name = "wordlist-categories",
+            categories = entries.map { it.token to it.regexSequence().toSet() },
+            overrides = CategoryOverrides.load(studySet),
+        )
+
+        /** Looks up the category by its [token], or null if none matches. */
+        fun byToken(token: String): WordList? = entries.firstOrNull { it.token == token }
+    }
 }

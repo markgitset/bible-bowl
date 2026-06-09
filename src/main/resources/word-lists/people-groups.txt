@@ -1,0 +1,2 @@
+# People groups / nations / tribes (e.g. Amorites, Canaanites). One entry per line; plain names or regexes.
+# Populate per study set; cross-list disambiguation lives in <simpleName>/category-overrides.tsv.
