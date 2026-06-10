@@ -43,6 +43,7 @@ dependencies {
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
     implementation("com.github.ajalt.clikt:clikt:5.1.0")
+    implementation("com.googlecode.lanterna:lanterna:3.1.2") // full-screen TUI for the annotation validator
     testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.9.1")
     testImplementation("io.kotest:kotest-framework-datatest:5.9.1")

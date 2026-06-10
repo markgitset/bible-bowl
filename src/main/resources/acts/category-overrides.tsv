@@ -1,0 +1,4 @@
+# Per-occurrence category overrides. Columns: verse <TAB> text <TAB> category <TAB> [occurrence#]
+# category "-" excludes the occurrence; occurrence# (1-based) only when text repeats in the verse.
+Acts 17:26	face	-
+Acts 27:15	face	-

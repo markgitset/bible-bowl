@@ -12,7 +12,7 @@ import net.markdrew.biblebowl.model.StudySet
  *
  * @param areNames true if entries are proper names (case-sensitive, singular only)
  */
-enum class WordList(private val areNames: Boolean = false) {
+enum class WordList(val areNames: Boolean = false) {
     ANIMALS,
     BODY_PARTS,
     COLORS,
@@ -22,6 +22,7 @@ enum class WordList(private val areNames: Boolean = false) {
     PLACES(areNames = true),
     PEOPLE_GROUPS(areNames = true),
     ANGELS_DEMONS(areNames = true),
+    DIVINE(areNames = true),
     ;
 
     /** Stable kebab-case id (e.g. `body-parts`), used as the resource filename stem and category id. */

@@ -49,3 +49,6 @@ swine
 viper
 whale
 wolf
+beasts
+birds
+oxen

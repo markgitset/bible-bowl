@@ -108,7 +108,7 @@ fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
     HighlightColor("men", Triple(0x99, 0xcc, 0xff)) to WordList.MEN.regexSequence().toSet(),
     HighlightColor("places", Triple(0x99, 0xff, 0x99)) to WordList.PLACES.regexSequence().toSet(),
     HighlightColor("women", Triple(0xff, 0x99, 0xff)) to WordList.WOMEN.regexSequence().toSet(),
-    HighlightColor("divine", Triple(0xff, 0xff, 0x00)) to divineNames.map { Regex(it) }.toSet(),
+    HighlightColor("divine", Triple(0xff, 0xff, 0x00)) to WordList.DIVINE.regexSequence().toSet(),
 ))
 
 /**

@@ -17,11 +17,12 @@ private val log: KLogger = KotlinLogging.logger {}
  *  1. **Override wins** — a [CategoryOverride] reclassifies the occurrence, excludes it (category `-`),
  *     or adds one that no list matched.
  *  2. else the **single** matching category.
- *  3. else (a term in more than one list) the last category in [categories] order wins, and the
- *     ambiguity is logged so a human can add an override.
+ *  3. else (a term in more than one list) the higher-precedence category wins per [CategoryPrecedence],
+ *     and the ambiguity is logged so a human can add an override.
  *
- * Overlapping (not identical) matches are deconflicted by length — the longer match wins, ties broken by
- * [categories] order. The override file content is part of [defDigest], so edits invalidate the cache.
+ * Overlapping (not identical) matches are deconflicted by length — the longer match wins, equal-length
+ * ties broken by [CategoryPrecedence]. The override file content is part of [defDigest], so edits
+ * invalidate the cache.
  */
 class CategoryAnnotator(
     override val name: String,
@@ -45,8 +46,10 @@ class CategoryAnnotator(
                 val longestOverlap = matches.intersectedBy(range).maxByOrNull { it.key.length() }
                 when {
                     longestOverlap == null -> matches[range] = category
-                    longestOverlap.key.length() > range.length() -> Unit // a longer match already covers this
-                    else -> matches.putForcefully(range, category) // equal/longer: this category wins
+                    range.length() > longestOverlap.key.length() -> matches.putForcefully(range, category) // longer wins
+                    range.length() < longestOverlap.key.length() -> Unit // a longer match already covers this
+                    // equal length: the higher-precedence category wins (deterministic, order-independent)
+                    CategoryPrecedence.wins(category, longestOverlap.value) -> matches.putForcefully(range, category)
                 }
             }
         }

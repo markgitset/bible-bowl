@@ -17,10 +17,21 @@ class CategoryAnnotatorTest : StringSpec({
         map.valueContaining(0) shouldBe "men"
     }
 
-    "a term in two lists resolves to the later category by precedence" {
+    "a term in two lists resolves by CategoryPrecedence regardless of list order" {
         val data = singleVerseStudyData("Noah")
-        val map = CategoryAnnotator("t", listOf(cat("men", "Noah"), cat("women", "Noah"))).compute(data)
-        map.valueContaining(0) shouldBe "women"
+        // women outranks men; places outranks men — and the result is order-independent
+        CategoryAnnotator("t", listOf(cat("men", "Noah"), cat("women", "Noah"))).compute(data)
+            .valueContaining(0) shouldBe "women"
+        CategoryAnnotator("t", listOf(cat("places", "Noah"), cat("men", "Noah"))).compute(data)
+            .valueContaining(0) shouldBe "places"
+    }
+
+    "a longer match wins over a shorter overlapping one" {
+        val data = singleVerseStudyData("by the Red Sea today")
+        val map = CategoryAnnotator("t", listOf(cat("places", "Sea"), cat("places", "Red Sea"))).compute(data)
+        val seaPos = data.text.indexOf("Sea")
+        val redSea = data.text.indexOf("Red Sea")
+        map.keyContaining(seaPos) shouldBe redSea..(redSea + "Red Sea".length - 1)
     }
 
     "an override reclassifies the occurrence, beating precedence" {

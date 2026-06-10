@@ -1,0 +1,49 @@
+# Divine-name patterns (God, Jesus, Holy Spirit, …). Entries are regexes, wrapped in \b…\b and matched
+# case-sensitively like the other proper-name lists. Used for divine highlighting, the names exclusion,
+# and validation. Per-occurrence exceptions go in <simpleName>/category-overrides.tsv.
+(?:L(?:ORD|ord),? (?:your |the )?)?God(?: of Israel)?
+(Lord )?Jesus( Christ)?
+Christ( of God| the Lord)?
+Holy Spirit
+Immanuel
+(?<!(go to my father, and I will say to him|son said to him|said to his father), [‘“])Father(?! Abraham)
+Spirit of God
+Son of God
+Son of Man
+Son of David
+Lord of the harvest
+Spirit of your Father
+(?<![‘“])Son
+God Almighty
+angel of the LORD
+Spirit( of the Lord)?
+(?<=[Tt]he |O )Lord(’s Christ| your God)?
+(Son of the )?Most High( God)?
+(Holy|Chosen) One( of God)?
+GOD
+LORD
+I AM
+I AM WHO I AM
+I am what I am
+I will be what I will be
+Jesus
+God
+Father
+Lord
+Lord Jesus
+Spirit
+Jesus (?:Christ )?of Nazareth
+Holy One
+Christ
+Jesus Christ
+(?:Holy and )?Righteous One
+Author
+Lord God
+Anointed
+Spirit of the Lord
+Savior
+Most High
+Lord Jesus Christ
+Son
+Most High God
+God’s

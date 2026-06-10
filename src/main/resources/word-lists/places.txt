@@ -421,3 +421,99 @@ the camp of (?:Israel|Reuben|Simeon|Levi|Judah|Dan|Naphtali|Gad|Asher|Issachar|Z
 (?<!of the )Avvim
 Janoah
 Naarah
+Judea
+Samaria
+Olivet
+Field of Blood
+Mesopotamia
+Cappadocia
+Pontus
+Asia
+Phrygia
+Pamphylia
+Libya
+Cyrene
+Rome
+Hades
+Beautiful Gate
+Solomon’s
+Cyprus
+Solomon’s Portico
+Antioch
+Cilicia
+Haran
+Shechem
+Midian
+Mount Sinai
+Red Sea
+Babylon
+Heaven
+Azotus
+Caesarea
+Damascus
+street called Straight
+Tarsus
+Lydda
+Sharon
+Phoenicia
+Seleucia
+Salamis
+Paphos
+Perga
+Pisidia
+Iconium
+Lystra
+Derbe
+Lycaonia
+Attalia
+Galatia
+Mysia
+Bithynia
+Troas
+Macedonia
+Samothrace
+Neapolis
+Philippi
+Thyatira
+Amphipolis
+Apollonia
+Thessalonica
+Berea
+Athens
+Areopagus
+Corinth
+Italy
+Achaia
+Cenchreae
+Ephesus
+Alexandria
+hall of Tyrannus
+Greece
+Assos
+Mitylene
+Chios
+Samos
+Miletus
+Cos
+Rhodes
+Patara
+Ptolemais
+Antipatris
+Adramyttium
+Myra
+Lycia
+Cnidus
+Crete
+Salmone
+Fair Havens
+Lasea
+Phoenix
+Cauda
+Syrtis
+Adriatic Sea
+Malta
+Syracuse
+Rhegium
+Puteoli
+Forum of Appius
+Three Taverns

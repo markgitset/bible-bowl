@@ -14,10 +14,14 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.split
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.mordant.input.interactiveMultiSelectList
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.analysis.AnnotationStore
+import net.markdrew.biblebowl.analysis.WordList
+import net.markdrew.biblebowl.validate.AnnotationValidator
+import net.markdrew.biblebowl.validate.ValidationTui
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
@@ -69,6 +73,21 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .help("Recompute and overwrite cached name/number/highlight annotations, ignoring any cache " +
             "(default: false)")
 
+    private val validate: Boolean by option("--validate")
+        .flag(default = false)
+        .help("Launch the interactive annotation validator for the study set instead of generating")
+
+    private val validateCategories: List<String> by option("--categories", "-c")
+        .split(",")
+        .default(emptyList())
+        .help("With --validate, limit to these category tokens (e.g. men,places); default: all")
+
+    private val sourceDir: Path by option("--source-dir")
+        .convert { Path(it) }
+        .default(Path("src/main/resources"))
+        .help("With --validate, the resources root whose word-lists/overrides are edited " +
+            "(default: src/main/resources)")
+
     private val resources: List<String> by option("--resource", "-r")
         .multiple()
         .help("Resource(s) to generate; repeatable. Each value is a category or a resource slug " +
@@ -107,6 +126,11 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val started = TimeSource.Monotonic.markNow()
         print(BANNER)
 
+        if (validate) {
+            runValidator()
+            return
+        }
+
         val formats: Set<OutputFormat> =
             if (textFormats.isEmpty()) defaultTextFormats
             else textFormats.toSet()
@@ -132,20 +156,8 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             return
         }
 
-        val studySet: StudySet = studySetName?.let { name ->
-            StandardStudySet.parseOrNull(name) ?: throw UsageError("unrecognized study set: $name")
-        } ?: StandardStudySet.DEFAULT
-        val studyData = try {
-            StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
-        } catch (e: NoSuchFileException) {
-            echo("Data missing: ${e.message}")
-            echo("Downloading and indexing the study set for ${studySet.name} (forceDownload=$forceDownload)...")
-            val indexer = EsvIndexer(studySet)
-            val chapterPassages: Sequence<Passage> = EsvClient(rawDataDir).bookByChapters(studySet, forceDownload)
-            indexer.indexBook(chapterPassages).also {
-                it.writeData(dataDir)
-            }
-        }
+        val studySet: StudySet = resolveStudySet()
+        val studyData = loadStudyData(studySet)
 
         val annotationStore = AnnotationStore(
             studyData,
@@ -159,6 +171,36 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         }
 
         echo("Generation complete. Output in $productsDir (took ${started.elapsedNow()})")
+    }
+
+    private fun resolveStudySet(): StudySet = studySetName?.let { name ->
+        StandardStudySet.parseOrNull(name) ?: throw UsageError("unrecognized study set: $name")
+    } ?: StandardStudySet.DEFAULT
+
+    private fun loadStudyData(studySet: StudySet): StudyData = try {
+        StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
+    } catch (e: NoSuchFileException) {
+        echo("Data missing: ${e.message}")
+        echo("Downloading and indexing the study set for ${studySet.name} (forceDownload=$forceDownload)...")
+        val indexer = EsvIndexer(studySet)
+        val chapterPassages: Sequence<Passage> = EsvClient(rawDataDir).bookByChapters(studySet, forceDownload)
+        indexer.indexBook(chapterPassages).also { it.writeData(dataDir) }
+    }
+
+    /** Loads the study set and launches the interactive annotation validator. */
+    private fun runValidator() {
+        if (!terminal.terminalInfo.inputInteractive) {
+            throw UsageError("--validate requires an interactive terminal")
+        }
+        val categories: Set<WordList> =
+            if (validateCategories.isEmpty()) WordList.entries.toSet()
+            else validateCategories.map { token ->
+                WordList.byToken(token) ?: throw UsageError(
+                    "unknown category '$token'; choose from ${WordList.entries.joinToString { it.token }}"
+                )
+            }.toSet()
+        val studyData = loadStudyData(resolveStudySet())
+        AnnotationValidator(studyData, categories, sourceDir).let { ValidationTui(it).run() }
     }
 
     /** Prints the available resources grouped by category, used by `--list`. */

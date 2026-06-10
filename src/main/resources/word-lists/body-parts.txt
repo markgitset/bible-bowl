@@ -54,3 +54,14 @@ thigh
 toe
 tongue
 womb
+hearts
+tongues
+hands
+face
+ears
+knees
+eyes
+heads
+skin
+arms
+head

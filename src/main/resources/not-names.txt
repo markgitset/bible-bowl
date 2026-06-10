@@ -1115,7 +1115,6 @@ adrenocortical
 adrenocorticotropic
 adrenosterone
 adrenotrophin
-adriatic
 adrift
 adroit
 adroitly
@@ -37948,7 +37947,6 @@ medecin
 medecine
 medeival
 medendo
-medes
 media
 mediacy
 medial
