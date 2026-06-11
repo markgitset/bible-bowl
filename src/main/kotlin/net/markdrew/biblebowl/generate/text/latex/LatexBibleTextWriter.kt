@@ -293,7 +293,7 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
         // Built-in fallback colors — pinned to historical preamble values
         // (rgb 1.0,1.0,0.4 → 255,255,102; rgb 0.8,0.9,1.0 → 204,230,255; RGB 247,191,136 unchanged).
         private val BUILTIN_DIVINE = HighlightColor("divineColor", Triple(255, 255, 102))
-        private val BUILTIN_NAMES = HighlightColor("namesColor", Triple(204, 230, 255))
+        private val BUILTIN_NAMES = HighlightColor("namesColor", Triple(204, 153, 255)) // light purple
         private val BUILTIN_NUMBERS = HighlightColor("numsColor", Triple(247, 191, 136))
     }
 }

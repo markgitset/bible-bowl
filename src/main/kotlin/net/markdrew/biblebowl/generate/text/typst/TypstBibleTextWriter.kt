@@ -247,9 +247,9 @@ private class TypstHandler(
 
     companion object {
         // Built-in highlight colors — matching DOCX historical values.
-        private const val NAMES_R = 204
-        private const val NAMES_G = 204
-        private const val NAMES_B = 204
+        private const val NAMES_R = 204 // light purple
+        private const val NAMES_G = 153
+        private const val NAMES_B = 255
         private const val NUMBERS_R = 255
         private const val NUMBERS_G = 182
         private const val NUMBERS_B = 108

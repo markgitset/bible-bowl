@@ -518,7 +518,7 @@ private class DocxHandler(
 
     companion object {
         private const val NUMBER_FILL: String = "ffb66c"
-        private const val NAME_FILL: String = "cccccc"
+        private const val NAME_FILL: String = "cc99ff" // light purple
 
         private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu")
 
