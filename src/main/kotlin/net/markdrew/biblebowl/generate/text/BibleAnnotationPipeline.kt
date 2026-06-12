@@ -1,13 +1,11 @@
 package net.markdrew.biblebowl.generate.text
 
 import net.markdrew.biblebowl.analysis.AnnotationStore
-import net.markdrew.biblebowl.analysis.CategoryAnnotator
-import net.markdrew.biblebowl.analysis.CategoryOverrides
-import net.markdrew.biblebowl.analysis.NamesSource
-import net.markdrew.biblebowl.analysis.NumbersSource
 import net.markdrew.biblebowl.analysis.OneTimeWordsSource
 import net.markdrew.biblebowl.analysis.RegexSetSource
+import net.markdrew.biblebowl.analysis.WordList
 import net.markdrew.chupacabra.core.DisjointRangeMap
+import net.markdrew.chupacabra.core.DisjointRangeSet
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.AnalysisUnit.BOOK
 import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
@@ -54,28 +52,22 @@ object BibleAnnotationPipeline {
         features: FeatureOptions,
         store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     ): AnnotatedDoc<AnalysisUnit> {
-        // Color-free: each range is tagged with its highlight *category* id; writers resolve the color.
-        // The unified annotator applies per-occurrence overrides; keep only categories the palette can
-        // color (an override may reclassify a range to a non-highlighted category or exclude it).
+        // One unified resolution over every category (word-lists incl. `other`/`numbers`, + overrides).
+        // Each range is tagged with its category id; writers resolve the color. The palette categories
+        // are the colored "custom highlights"; `other` and `numbers` drive the name/number layers.
         val paletteCategories: Set<String> = features.customHighlights.rules.map { it.first }.toSet()
-        val resolved = store.get(
-            CategoryAnnotator("highlights", features.customHighlights.rules, CategoryOverrides.load(studyData.studySet))
-        )
-        val regexCategories = DisjointRangeMap<String>().apply {
-            resolved.forEach { (range, category) -> if (category in paletteCategories) put(range, category) }
-        }
+        val resolved = store.get(WordList.categoryAnnotator(studyData.studySet))
+        fun rangesWhere(predicate: (String) -> Boolean): DisjointRangeMap<String> =
+            DisjointRangeMap<String>().apply { resolved.forEach { (range, category) -> if (predicate(category)) put(range, category) } }
         val smallCaps = RegexSetSource("small-caps", features.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
         return studyData.toAnnotatedDoc(
             BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
         ).apply {
-            setAnnotations(REGEX, regexCategories)
+            setAnnotations(REGEX, rangesWhere { it in paletteCategories })
             setAnnotations(SMALL_CAPS, store.ranges(smallCaps))
             if (features.underlineUniqueWords) setAnnotations(UNIQUE_WORD, store.ranges(OneTimeWordsSource))
-            if (features.highlightNames) {
-                // remove any names that intersect with custom regex ranges
-                setAnnotations(NAME, store.ranges(NamesSource(divineNames)).minusEnclosedBy(regexCategories))
-            }
-            if (features.highlightNumbers) setAnnotations(NUMBER, store.ranges(NumbersSource))
+            if (features.highlightNames) setAnnotations(NAME, DisjointRangeSet(rangesWhere { it == WordList.OTHER.token }.keys))
+            if (features.highlightNumbers) setAnnotations(NUMBER, DisjointRangeSet(rangesWhere { it == WordList.NUMBERS.token }.keys))
         }
     }
 }

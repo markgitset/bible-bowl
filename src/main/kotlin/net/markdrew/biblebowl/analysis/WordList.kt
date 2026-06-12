@@ -11,17 +11,21 @@ import net.markdrew.biblebowl.model.StudySet
  * matched case-insensitively and tolerate a trailing "s".
  *
  * @param areNames true if entries are proper names (case-sensitive, singular only)
+ * @param rawRegex true if entries are full regexes used verbatim (no `\b`-wrap, no plural, case-insensitive),
+ *   for categories like [NUMBERS] whose patterns manage their own boundaries
  */
-enum class WordList(val areNames: Boolean = false) {
+enum class WordList(val areNames: Boolean = false, val rawRegex: Boolean = false) {
     ANIMALS,
     BODY_PARTS,
     COLORS,
     FOODS,
+    NUMBERS(rawRegex = true),
     MEN(areNames = true),
     WOMEN(areNames = true),
     PLACES(areNames = true),
     PEOPLE_GROUPS(areNames = true),
     ANGELS_DEMONS(areNames = true),
+    OTHER(areNames = true),
     DIVINE(areNames = true),
     ;
 
@@ -40,11 +44,12 @@ enum class WordList(val areNames: Boolean = false) {
     }
 
     /**
-     * Returns one whole-word [Regex] per entry in [dictionary], using case-sensitivity and pluralization
-     * rules appropriate to this category.
+     * Returns one [Regex] per entry in [dictionary]. [rawRegex] categories use the entry verbatim
+     * (case-insensitive); others wrap it in `\b…\b` with case/plural rules appropriate to the category.
      */
-    fun regexSequence(): Sequence<Regex> =
-        dictionary.asSequence().map { wordToRegex(it, caseSensitive = areNames, plural = !areNames) }
+    fun regexSequence(): Sequence<Regex> = dictionary.asSequence().map {
+        if (rawRegex) Regex(it, RegexOption.IGNORE_CASE) else wordToRegex(it, caseSensitive = areNames, plural = !areNames)
+    }
 
     companion object {
         /**

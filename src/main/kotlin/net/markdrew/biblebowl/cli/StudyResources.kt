@@ -1,8 +1,6 @@
 package net.markdrew.biblebowl.cli
 
 import net.markdrew.biblebowl.analysis.AnnotationStore
-import net.markdrew.biblebowl.analysis.NamesSource
-import net.markdrew.biblebowl.analysis.NumbersSource
 import net.markdrew.biblebowl.analysis.OneTimeWordsSource
 import net.markdrew.biblebowl.analysis.WordList
 import net.markdrew.biblebowl.cli.ResourceCategory.FLASHCARDS
@@ -49,6 +47,15 @@ class StudyResource(
     val generate: (StudyData, AnnotationStore, Path) -> Unit,
 )
 
+/**
+ * Ranges assigned to [wordList] in the one unified word-list resolution for [data] (overrides + precedence
+ * applied), in ascending offset order. Names and numbers are now ordinary categories, so their indices read
+ * from here exactly like the other word-list indices.
+ */
+private fun categoryRanges(data: StudyData, store: AnnotationStore, wordList: WordList): List<IntRange> =
+    store.get(WordList.categoryAnnotator(data.studySet))
+        .filterValues { it == wordList.token }.keys.toList()
+
 /** A category-specific word-list index: its [wordList] plus the singular/plural labels the index uses. */
 private class WordListSpec(val wordList: WordList, val slug: String, val singular: String, val plural: String)
 
@@ -85,10 +92,10 @@ fun studyResources(formats: Set<OutputFormat>, testDate: LocalDate): List<StudyR
     })
     add(StudyResource("full-index", INDICES, "Full word index") { d, _, p -> writeFullIndex(d, productsDir = p) })
     add(StudyResource("numbers-index", INDICES, "Numbers index") { d, store, p ->
-        writeNumbersIndex(d, productsDir = p, numberRanges = store.rangeList(NumbersSource))
+        writeNumbersIndex(d, productsDir = p, numberRanges = categoryRanges(d, store, WordList.NUMBERS))
     })
     add(StudyResource("names-index", INDICES, "Names index") { d, store, p ->
-        writeNamesIndex(d, p, store.rangeList(NamesSource()))
+        writeNamesIndex(d, p, categoryRanges(d, store, WordList.OTHER))
     })
     add(StudyResource("phrases-index", INDICES, "Non-local phrases index") { d, _, p -> writeNonLocalPhrasesIndex(d, p) })
     add(StudyResource("headings-index", INDICES, "Headings index (PDF)") { d, _, p -> writeHeadingsPdf(d, p) })

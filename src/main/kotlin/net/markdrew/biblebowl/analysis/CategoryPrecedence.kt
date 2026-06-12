@@ -12,10 +12,10 @@ package net.markdrew.biblebowl.analysis
  */
 object CategoryPrecedence {
 
-    /** Highest precedence first. */
+    /** Highest precedence first; `other` (the catch-all name list) is lowest so specific lists win. */
     val order: List<String> = listOf(
         "divine", "women", "places", "men", "people-groups", "angels-demons",
-        "animals", "body-parts", "colors", "foods",
+        "numbers", "animals", "body-parts", "colors", "foods", "other",
     )
 
     /** Lower value = higher precedence; categories not in [order] rank last. */

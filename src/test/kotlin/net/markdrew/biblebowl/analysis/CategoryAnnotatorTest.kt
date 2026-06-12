@@ -26,6 +26,15 @@ class CategoryAnnotatorTest : StringSpec({
             .valueContaining(0) shouldBe "places"
     }
 
+    "the catch-all 'other' loses to any specific list on a tie" {
+        val data = singleVerseStudyData("Joshua")
+        // Names & numbers are ordinary categories now; 'other' is seeded lowest so a specific list wins.
+        CategoryAnnotator("t", listOf(cat("other", "Joshua"), cat("men", "Joshua"))).compute(data)
+            .valueContaining(0) shouldBe "men"
+        CategoryAnnotator("t", listOf(cat("men", "Joshua"), cat("other", "Joshua"))).compute(data)
+            .valueContaining(0) shouldBe "men"
+    }
+
     "a longer match wins over a shorter overlapping one" {
         val data = singleVerseStudyData("by the Red Sea today")
         val map = CategoryAnnotator("t", listOf(cat("places", "Sea"), cat("places", "Red Sea"))).compute(data)
