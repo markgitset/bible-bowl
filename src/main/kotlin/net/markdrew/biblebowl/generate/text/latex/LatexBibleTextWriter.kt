@@ -149,25 +149,18 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
         // Close the currently-active TikZ highlight (if any) before \footnote so that TeX grouping
         // doesn't trap the footnote inside. Reopen the same highlight after the footnote.
         when (continuing) {
-            is HighlightContext.Regex, HighlightContext.Name, HighlightContext.Number -> out.append('}')
+            is HighlightContext.Regex -> out.append('}')
             HighlightContext.None -> Unit
         }
-//        out.append('}')
         out.append(renderFootnote(verseRef, content))
         when (continuing) {
             is HighlightContext.Regex -> out.append("""\myhl[${continuing.category}]{""")
-            HighlightContext.Name -> out.append("""\myname{""")
-            HighlightContext.Number -> out.append("""\mynumber{""")
             HighlightContext.None -> Unit
         }
     }
 
     override fun uniqueWordBegin() { out.append("""{\uline{""") }
     override fun uniqueWordEnd()   { out.append("}}") }
-    override fun nameBegin()       { out.append("""\myname{""") }
-    override fun nameEnd()         { out.append('}') }
-    override fun numberBegin()     { out.append("""\mynumber{""") }
-    override fun numberEnd()       { out.append('}') }
     override fun regexBegin(category: String) { out.append("""\myhl[$category]{""") }
     override fun regexEnd()        { out.append('}') }
     override fun smallCapsBegin() {} // LaTeX uses inline `LORD` substitution in text() instead of the annotation.
@@ -239,12 +232,6 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
                     ]{#2};\phantom{#2}%
                 }
 
-                % custom command for highlighting numbers
-                \newcommand\mynumber[2][]{\myhl[numsColor]{#2}}
-
-                % custom command for highlighting names
-                \newcommand\myname[2][]{\myhl[namesColor]{#2}}
-
                 % custom command for chapter titles
                 % Use \mychapter{1} for "CHAPTER 1" OR
                 % use \mychapter[EXODUS]{1} for "EXODUS 1"
@@ -271,8 +258,8 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
     }
 
     /**
-     * Emits `\definecolor` for every palette entry, then fills in built-in fallbacks
-     * (`divineColor`, `namesColor`, `numsColor`) for any name not supplied by the palette.
+     * Emits `\definecolor` for every palette entry, then fills in the `divineColor` fallback used as the
+     * default fill of `\myhl` for any name not supplied by the palette.
      */
     private fun emitColorDefinitions(out: Appendable, palette: HighlightPalette) {
         val emitted = mutableSetOf<String>()
@@ -280,8 +267,6 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
             if (emitted.add(color.name)) emitDefineColor(out, color)
         }
         if (emitted.add("divineColor")) emitDefineColor(out, BUILTIN_DIVINE)
-        if (emitted.add("namesColor")) emitDefineColor(out, BUILTIN_NAMES)
-        if (emitted.add("numsColor")) emitDefineColor(out, BUILTIN_NUMBERS)
     }
 
     private fun emitDefineColor(out: Appendable, color: HighlightColor) {
@@ -290,10 +275,8 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
     }
 
     companion object {
-        // Built-in fallback colors — pinned to historical preamble values
-        // (rgb 1.0,1.0,0.4 → 255,255,102; rgb 0.8,0.9,1.0 → 204,230,255; RGB 247,191,136 unchanged).
+        // Built-in fallback color — the default fill of `\myhl`, pinned to the historical preamble value
+        // (rgb 1.0,1.0,0.4 → 255,255,102). Names and numbers now come from the palette (`other`/`numbers`).
         private val BUILTIN_DIVINE = HighlightColor("divineColor", Triple(255, 255, 102))
-        private val BUILTIN_NAMES = HighlightColor("namesColor", Triple(204, 153, 255)) // light purple
-        private val BUILTIN_NUMBERS = HighlightColor("numsColor", Triple(247, 191, 136))
     }
 }

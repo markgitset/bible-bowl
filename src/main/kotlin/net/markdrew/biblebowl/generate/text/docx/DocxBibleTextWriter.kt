@@ -119,8 +119,6 @@ private class DocxHandler(
 
     // Active highlights for the upcoming text() run. Set by *Begin events, cleared by *End.
     private var activeUniqueWord: Boolean = false
-    private var activeName: Boolean = false
-    private var activeNumber: Boolean = false
     private var activeRegexCategory: String? = null
     private var activeSmallCaps: Boolean = false
 
@@ -267,10 +265,6 @@ private class DocxHandler(
 
     override fun uniqueWordBegin() { activeUniqueWord = true }
     override fun uniqueWordEnd()   { activeUniqueWord = false }
-    override fun nameBegin()       { activeName = true }
-    override fun nameEnd()         { activeName = false }
-    override fun numberBegin()     { activeNumber = true }
-    override fun numberEnd()       { activeNumber = false }
     override fun regexBegin(category: String) { activeRegexCategory = category }
     override fun regexEnd()        { activeRegexCategory = null }
     override fun smallCapsBegin()  { activeSmallCaps = true }
@@ -282,11 +276,6 @@ private class DocxHandler(
         if (activeUniqueWord) {
             r.rPr = (r.rPr ?: RPr()).apply { u = U().apply { `val` = UnderlineEnumeration.SINGLE } }
         }
-        if (activeNumber) {
-            r.rPr = (r.rPr ?: RPr()).apply {
-                shd = CTShd().apply { `val` = STShd.CLEAR; fill = NUMBER_FILL }
-            }
-        }
         activeRegexCategory?.let { category ->
             r.rPr = (r.rPr ?: RPr()).apply {
                 shd = CTShd().apply { `val` = STShd.CLEAR; fill = features.customHighlights.color(category).toHex() }
@@ -294,11 +283,6 @@ private class DocxHandler(
         }
         if (activeSmallCaps) {
             r.rPr = (r.rPr ?: RPr()).apply { smallCaps = wmlBoolean(true) }
-        }
-        if (activeName) {
-            r.rPr = (r.rPr ?: RPr()).apply {
-                shd = CTShd().apply { `val` = STShd.CLEAR; fill = NAME_FILL }
-            }
         }
         finishR(text)
     }
@@ -517,9 +501,6 @@ private class DocxHandler(
     }
 
     companion object {
-        private const val NUMBER_FILL: String = "ffb66c"
-        private const val NAME_FILL: String = "cc99ff" // light purple
-
         private val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu")
 
         private fun stylesPartFromTemplate(templateUri: URI, mappings: Map<String, String>): StyleDefinitionsPart =

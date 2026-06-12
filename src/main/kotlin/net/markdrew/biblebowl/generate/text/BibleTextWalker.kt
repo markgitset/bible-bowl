@@ -6,8 +6,6 @@ import net.markdrew.biblebowl.model.AnalysisUnit.CHAPTER
 import net.markdrew.biblebowl.model.AnalysisUnit.FOOTNOTE
 import net.markdrew.biblebowl.model.AnalysisUnit.HEADING
 import net.markdrew.biblebowl.model.AnalysisUnit.LEADING_FOOTNOTE
-import net.markdrew.biblebowl.model.AnalysisUnit.NAME
-import net.markdrew.biblebowl.model.AnalysisUnit.NUMBER
 import net.markdrew.biblebowl.model.AnalysisUnit.PARAGRAPH
 import net.markdrew.biblebowl.model.AnalysisUnit.POETRY
 import net.markdrew.biblebowl.model.AnalysisUnit.REGEX
@@ -26,11 +24,11 @@ import net.markdrew.biblebowl.model.VerseRef
  *
  * Responsibilities centralized here so handlers don't reimplement them:
  * - Verse-ref lookup for footnote anchor positions (with `±1` fallback at verse boundaries).
- * - Packaging a continuing REGEX/NAME/NUMBER annotation as a [HighlightContext] for [BibleTextHandler.trailingFootnote].
+ * - Packaging a continuing REGEX annotation as a [HighlightContext] for [BibleTextHandler.trailingFootnote].
  * - Reading the PARAGRAPH annotation value as the poetry indent level.
  * - Computing `isFirstVerseOfChapter`.
  * - Skipping iterations that fall outside any paragraph (matches the previous per-writer guard).
- * - Honoring [FeatureOptions] flag guards on highlight events.
+ * - Honoring the [FeatureOptions.underlineUniqueWords] guard on unique-word events.
  */
 object BibleTextWalker {
 
@@ -48,8 +46,6 @@ object BibleTextWalker {
             // 1. Close ended highlights
             if (features.underlineUniqueWords && transition.isEnded(UNIQUE_WORD)) handler.uniqueWordEnd()
             if (transition.isEnded(REGEX)) handler.regexEnd()
-            if (features.highlightNames && transition.isEnded(NAME)) handler.nameEnd()
-            if (features.highlightNumbers && transition.isEnded(NUMBER)) handler.numberEnd()
             if (transition.isEnded(SMALL_CAPS)) handler.smallCapsEnd()
 
             // 8. Trailing footnote. The continuing-highlight context lets LaTeX handlers do their
@@ -130,8 +126,6 @@ object BibleTextWalker {
 
             // 6. Open new highlights
             if (features.underlineUniqueWords && transition.isBeginning(UNIQUE_WORD)) handler.uniqueWordBegin()
-            if (features.highlightNames && transition.isBeginning(NAME)) handler.nameBegin()
-            if (features.highlightNumbers && transition.isBeginning(NUMBER)) handler.numberBegin()
             if (transition.isBeginning(REGEX)) {
                 val category = transition.beginning.first { it.key == REGEX }.value as String
                 handler.regexBegin(category)
@@ -158,18 +152,12 @@ object BibleTextWalker {
     }
 
     /**
-     * Returns the single REGEX / NAME / NUMBER annotation that continues across this transition,
-     * packaged as a [HighlightContext]. Assumes at most one such annotation is active (the
-     * deconfliction logic in `BibleAnnotationPipeline` enforces this).
+     * Returns the REGEX annotation that continues across this transition, packaged as a
+     * [HighlightContext]. Assumes at most one such annotation is active (the deconfliction logic in
+     * `BibleAnnotationPipeline` enforces this).
      */
     private fun continuingHighlightContext(transition: StateTransition<AnalysisUnit>): HighlightContext {
-        val ann = transition.continuing.firstOrNull { it.key in setOf(REGEX, NAME, NUMBER) }
-            ?: return HighlightContext.None
-        return when (ann.key) {
-            REGEX -> HighlightContext.Regex(ann.value as String)
-            NAME -> HighlightContext.Name
-            NUMBER -> HighlightContext.Number
-            else -> HighlightContext.None
-        }
+        val ann = transition.continuing.firstOrNull { it.key == REGEX } ?: return HighlightContext.None
+        return HighlightContext.Regex(ann.value as String)
     }
 }

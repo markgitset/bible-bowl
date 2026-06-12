@@ -42,8 +42,6 @@ class TextWriterFidelityTest : StringSpec({
     )
     val features = FeatureOptions(
         underlineUniqueWords = true,
-        highlightNames = true,
-        highlightNumbers = true,
         customHighlights = fullHighlightPalette(),
     )
 

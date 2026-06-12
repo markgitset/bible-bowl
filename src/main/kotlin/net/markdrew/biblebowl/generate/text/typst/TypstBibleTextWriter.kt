@@ -73,14 +73,13 @@ private class TypstHandler(
             #set par(justify: $justify)
             #show footnote.entry: set text(size: ${style.footnoteFontSize}pt)
 
-            // Built-in highlight colors (matching DOCX)
-            #let namesColor  = rgb($NAMES_R, $NAMES_G, $NAMES_B)
-            #let numsColor   = rgb($NUMBERS_R, $NUMBERS_G, $NUMBERS_B)
+            // Built-in highlight color — the default fill for divine names (matching DOCX)
             #let divineColor = rgb($DIVINE_R, $DIVINE_G, $DIVINE_B)
         """.trimIndent())
 
-        // Palette-supplied colors (dedup against built-ins by name)
-        val seen = mutableSetOf("namesColor", "numsColor", "divineColor")
+        // Palette-supplied colors (dedup against built-ins by name). Names (`other`) and numbers
+        // (`numbers`) are ordinary palette entries now and emit their colors through this loop.
+        val seen = mutableSetOf("divineColor")
         for ((color, _) in features.customHighlights.entries) {
             if (seen.add(color.name)) {
                 val (r, g, b) = color.rgb
@@ -90,8 +89,6 @@ private class TypstHandler(
 
         out.appendLine("""
             #let myhl(color, body) = highlight(fill: color, body)
-            #let myname(body)   = myhl(namesColor,  body)
-            #let mynumber(body) = myhl(numsColor,   body)
             #let versenum(n) = box(
                 fill: rgb("404040"),
                 inset: (x: 3pt, y: 1pt),
@@ -197,10 +194,6 @@ private class TypstHandler(
 
     override fun uniqueWordBegin() { out.append("#underline[") }
     override fun uniqueWordEnd()   { out.append(']') }
-    override fun nameBegin()       { out.append("#myname[") }
-    override fun nameEnd()         { out.append(']') }
-    override fun numberBegin()     { out.append("#mynumber[") }
-    override fun numberEnd()       { out.append(']') }
     override fun regexBegin(category: String) { out.append("#myhl($category)[") }
     override fun regexEnd()        { out.append(']') }
     override fun smallCapsBegin() {} // Typst handles small caps via inline `LORD` substitution in text().
@@ -246,13 +239,8 @@ private class TypstHandler(
             .replace("#", "\\#")
 
     companion object {
-        // Built-in highlight colors — matching DOCX historical values.
-        private const val NAMES_R = 204 // light purple
-        private const val NAMES_G = 153
-        private const val NAMES_B = 255
-        private const val NUMBERS_R = 255
-        private const val NUMBERS_G = 182
-        private const val NUMBERS_B = 108
+        // Built-in divine highlight color — matching DOCX historical value. Names and numbers come from
+        // the palette now (the `other` and `numbers` categories).
         private const val DIVINE_R = 255
         private const val DIVINE_G = 255
         private const val DIVINE_B = 0

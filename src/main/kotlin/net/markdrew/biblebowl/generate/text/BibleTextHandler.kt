@@ -14,17 +14,11 @@ import net.markdrew.biblebowl.model.VerseRef
  * footnote constructs nest cleanly.
  */
 sealed interface HighlightContext {
-    /** No REGEX/NAME/NUMBER highlight continues across this transition. */
+    /** No REGEX highlight continues across this transition. */
     data object None : HighlightContext
 
     /** A REGEX highlight continues, tagged with its highlight [category] id. */
     data class Regex(val category: String) : HighlightContext
-
-    /** A NAME highlight continues. */
-    data object Name : HighlightContext
-
-    /** A NUMBER highlight continues. */
-    data object Number : HighlightContext
 }
 
 /**
@@ -42,18 +36,18 @@ sealed interface HighlightContext {
  *
  * ## Method ordering contract
  *
- * Within one transition boundary, the walker invokes methods in this exact order. Some methods
- * are gated on flags ([FeatureOptions.underlineUniqueWords], [FeatureOptions.highlightNames],
- * [FeatureOptions.highlightNumbers]) — those gates live in the walker, not in handlers.
+ * Within one transition boundary, the walker invokes methods in this exact order. The unique-word
+ * methods are gated on [FeatureOptions.underlineUniqueWords] — that gate lives in the walker, not in
+ * handlers.
  *
- *  1. [uniqueWordEnd], [regexEnd], [nameEnd], [numberEnd], [smallCapsEnd]
+ *  1. [uniqueWordEnd], [regexEnd], [smallCapsEnd]
  *  2. [trailingFootnote]
  *  3. [paragraphEnd], [poetryEnd], [chapterEnd]
  *  4. (the walker skips the rest of the iteration if we're not inside a paragraph)
  *  5. [bookBegin], [chapterBegin], [headingBegin]
  *  6. [paragraphBegin], [verseBegin]
  *  7. [leadingFootnote]
- *  8. [uniqueWordBegin], [nameBegin], [numberBegin], [regexBegin], [smallCapsBegin]
+ *  8. [uniqueWordBegin], [regexBegin], [smallCapsBegin]
  *  9. [text]
  *
  * [documentBegin] fires once before the loop; [documentEnd] fires once after. They are not
@@ -156,9 +150,9 @@ interface BibleTextHandler {
     /**
      * A trailing footnote (zero-width, *follows* the just-emitted text run).
      *
-     * @param continuing the REGEX/NAME/NUMBER highlight (if any) that's still active across this
-     *   transition. The LaTeX writer uses this to close-emit-reopen the group around `\footnote`;
-     *   DOCX and Typst writers ignore the parameter.
+     * @param continuing the REGEX highlight (if any) that's still active across this transition. The
+     *   LaTeX writer uses this to close-emit-reopen the group around `\footnote`; DOCX and Typst
+     *   writers ignore the parameter.
      */
     fun trailingFootnote(verseRef: VerseRef, content: String, continuing: HighlightContext)
 
@@ -167,18 +161,6 @@ interface BibleTextHandler {
 
     /** The current unique-word underline span is ending. */
     fun uniqueWordEnd()
-
-    /** A name-highlight span is beginning. */
-    fun nameBegin()
-
-    /** The current name-highlight span is ending. */
-    fun nameEnd()
-
-    /** A number-highlight span is beginning. */
-    fun numberBegin()
-
-    /** The current number-highlight span is ending. */
-    fun numberEnd()
 
     /** A custom-palette highlight span is beginning, tagged with its highlight [category] id. */
     fun regexBegin(category: String)

@@ -93,16 +93,17 @@ object BibleTextPipeline {
 
     /** Filename suffix derived from feature toggles + font size, used to disambiguate variant outputs. */
     fun fileNameSuffix(layout: LayoutOptions, features: FeatureOptions): String =
-        (if (features.highlightNames) "names-" else "") +
-            (if (features.highlightNumbers) "nums-" else "") +
+        (if (features.customHighlights.entries.isNotEmpty()) "highlight-" else "") +
             (if (features.underlineUniqueWords) "unique-" else "") +
             (if (layout.chapterBreaksPage) "breaks-" else "") +
             "${layout.fontSize}pt"
 }
 
 /**
- * Standard DOCX palette used for the "full highlighting" variant — divine names yellow, women pink,
- * men blue, places green. Hex values match the historically-shipping DOCX colors.
+ * Standard palette used for the "full highlighting" variant — divine names yellow, women pink, men blue,
+ * places green, people-groups gray, proper names (`other`) purple, numbers orange. Hex values match the
+ * historically-shipping DOCX colors. Names and numbers are ordinary palette entries: nothing is detected
+ * by heuristic — a span highlights only because its category resolves through [WordList.categoryAnnotator].
  */
 fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
     HighlightColor("men", Triple(0x99, 0xcc, 0xff)) to WordList.MEN.regexSequence().toSet(),
@@ -110,6 +111,8 @@ fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
     HighlightColor("women", Triple(0xff, 0x99, 0xff)) to WordList.WOMEN.regexSequence().toSet(),
     HighlightColor("people-groups", Triple(0xcc, 0xcc, 0xcc)) to WordList.PEOPLE_GROUPS.regexSequence().toSet(),
     HighlightColor("divine", Triple(0xff, 0xff, 0x00)) to WordList.DIVINE.regexSequence().toSet(),
+    HighlightColor("numbers", Triple(0xff, 0xb6, 0x6c)) to WordList.NUMBERS.regexSequence().toSet(),
+    HighlightColor("other", Triple(0xcc, 0x99, 0xff)) to WordList.OTHER.regexSequence().toSet(),
 ))
 
 /**
@@ -141,8 +144,6 @@ fun generateBibleTexts(
     val unique = FeatureOptions(underlineUniqueWords = true)
     val full = FeatureOptions(
         underlineUniqueWords = true,
-        highlightNames = true,
-        highlightNumbers = true,
         customHighlights = fullHighlightPalette(),
     )
 

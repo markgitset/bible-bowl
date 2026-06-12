@@ -19,8 +19,6 @@ enum class AnalysisUnit {
     LEADING_FOOTNOTE,
     POETRY,
     UNIQUE_WORD,
-    NAME,
-    NUMBER,
     REGEX,
     SMALL_CAPS,
     STUDY_SET,
