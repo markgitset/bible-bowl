@@ -16,7 +16,7 @@
 #let people-groups = rgb(204, 204, 204)
 #let divine = rgb(255, 255, 0)
 #let numbers = rgb(255, 182, 108)
-#let other = rgb(204, 153, 255)
+#let other = rgb(46, 230, 217)
 #let myhl(color, body) = highlight(fill: color, body)
 #let versenum(n) = box(
     fill: rgb("404040"),

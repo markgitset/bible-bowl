@@ -112,7 +112,7 @@ fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
     HighlightColor("people-groups", Triple(0xcc, 0xcc, 0xcc)) to WordList.PEOPLE_GROUPS.regexSequence().toSet(),
     HighlightColor("divine", Triple(0xff, 0xff, 0x00)) to WordList.DIVINE.regexSequence().toSet(),
     HighlightColor("numbers", Triple(0xff, 0xb6, 0x6c)) to WordList.NUMBERS.regexSequence().toSet(),
-    HighlightColor("other", Triple(0xcc, 0x99, 0xff)) to WordList.OTHER.regexSequence().toSet(),
+    HighlightColor("other", Triple(0x2e, 0xe6, 0xd9)) to WordList.OTHER.regexSequence().toSet(),
 ))
 
 /**
