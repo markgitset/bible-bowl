@@ -49,8 +49,13 @@ object WritePolicy {
                 .thenBy { it.key?.let { c -> CategoryPrecedence.rank(c.token) } ?: Int.MAX_VALUE }
         ).first().key
 
+        // The form already resolves to the majority category (e.g. a number matched by the numbers
+        // patterns, or a term already covered) — so a literal entry would be redundant. Uniform across
+        // categories; no rawRegex-specific branch.
+        val alreadyResolved = decisions.filter { it.category == majority }.all { it.candidate.proposed == majority }
         val listAdds = buildList {
-            if (majority != null && majority !in currentListCategories) add(majority to listEntry)
+            if (majority != null && majority !in currentListCategories && !alreadyResolved)
+                add(majority to listEntry)
         }
         val listRemoves = currentListCategories.filter { it != majority }.map { it to listEntry }
         val overrides = decisions.filter { it.category != majority }.map { override(studyData, it) }
