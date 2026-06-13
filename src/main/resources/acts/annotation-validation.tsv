@@ -1,4 +1,7 @@
 # Reviewed surface forms (text <TAB> verdict). A form is pending iff absent.
+120	numbers
+276	numbers
+450	numbers
 A	none
 Aaron	men
 About	none
@@ -69,6 +72,7 @@ Bithynia	places
 Blastus	men
 Blood	none
 Book	none
+Book of Psalms	other
 Bread	foods
 Brother	none
 Brothers	none
@@ -481,11 +485,24 @@ bread	foods
 children of Israel	people-groups
 ear	body-parts
 ears	body-parts
+eight	numbers
+eighth	numbers
+eleven	numbers
 eyes	body-parts
 face	split:body-parts
 feet	body-parts
+fifteen	numbers
+fifty thousand	numbers
+first	numbers
+five	numbers
+five thousand	numbers
 flock	animals
 foot	body-parts
+forty	numbers
+four	numbers
+four hundred	numbers
+four thousand	numbers
+fourteenth	numbers
 grain	foods
 hair	body-parts
 hall of Tyrannus	places
@@ -500,17 +517,34 @@ knees	body-parts
 lamb	animals
 mouth	body-parts
 neck	body-parts
+ninth	numbers
+one	none
 oxen	animals
 people of Israel	people-groups
 peoples of Israel	people-groups
 purple	colors
+second	numbers
+seven	numbers
+seventy	numbers
+seventy-five	numbers
 sheep	animals
+six	numbers
+sixth	numbers
 skin	body-parts
 street called Straight	places
 synagogue of the Freedmen	people-groups
 teeth	body-parts
+ten	numbers
+third	numbers
+thousands	numbers
+three	numbers
+three thousand	numbers
 tongue	body-parts
 tongues	body-parts
+twelve	numbers
+twenty	numbers
+two	numbers
+two hundred	numbers
 viper	animals
 wheat	foods
 white	colors
