@@ -38,7 +38,11 @@ class ValidationTui(private val validator: AnnotationValidator) {
         screen.startScreen()
         try {
             var skippedInARow = 0
-            loop@ while (queue.isNotEmpty()) {
+            loop@ while (true) {
+                if (queue.isEmpty()) {
+                    if (!idleHome()) break@loop // nothing pending: search to edit/add, or quit
+                    continue@loop
+                }
                 when (handleGroup(queue.first())) {
                     Outcome.QUIT -> break@loop
                     Outcome.DECIDED -> { queue.removeFirst(); skippedInARow = 0 }
@@ -49,19 +53,47 @@ class ValidationTui(private val validator: AnnotationValidator) {
                             break@loop
                         }
                     }
-                    Outcome.UNDO -> if (undoStack.isEmpty()) message("Nothing to undo.") else {
-                        val (group, entry) = undoStack.removeLast()
-                        validator.undo(entry)
-                        queue.remove(group)   // in case it was a deferred (skipped) group
-                        queue.addFirst(group) // bring it back to re-decide
-                        skippedInARow = 0
-                    }
+                    Outcome.UNDO -> { doUndo(); skippedInARow = 0 }
                 }
             }
-            if (queue.isEmpty()) message("All done — nothing left to validate.")
         } finally {
             screen.stopScreen()
         }
+    }
+
+    /** Reverses the last decision, bringing its group back to the front of the queue. */
+    private fun doUndo() {
+        if (undoStack.isEmpty()) { message("Nothing to undo."); return }
+        val (group, entry) = undoStack.removeLast()
+        validator.undo(entry)
+        queue.remove(group)   // in case it was a deferred (skipped) group
+        queue.addFirst(group) // bring it back to re-decide
+    }
+
+    // ---- idle home -----------------------------------------------------------------------------
+
+    /** Shown when nothing is pending: search to edit/add, undo, or quit. Returns false to quit. */
+    private fun idleHome(): Boolean {
+        while (true) {
+            renderIdle()
+            val key = screen.readInput()
+            when (key.character) {
+                'q' -> return false
+                '/' -> { searchAndSplice(); if (queue.isNotEmpty()) return true }
+                'u' -> { doUndo(); if (queue.isNotEmpty()) return true }
+                '+' -> zoom = zoom.zoomIn()
+                '-' -> zoom = zoom.zoomOut()
+                else -> if (key.keyType == KeyType.Escape) return false
+            }
+        }
+    }
+
+    private fun renderIdle() {
+        val g = newScreen()
+        g.put(2, 1, "Nothing pending — all reviewed.", TextColor.ANSI.GREEN_BRIGHT)
+        g.put(2, 3, "[/]search to edit an existing entity or add a new one", TextColor.ANSI.WHITE)
+        g.put(2, 4, "[u]ndo last decision    +/- context    [q]uit", TextColor.ANSI.WHITE)
+        screen.refresh()
     }
 
     // ---- group view ----------------------------------------------------------------------------
