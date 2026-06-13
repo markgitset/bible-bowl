@@ -11,15 +11,18 @@ import net.markdrew.biblebowl.model.StudySet
  * matched case-insensitively and tolerate a trailing "s".
  *
  * @param areNames true if entries are proper names (case-sensitive, singular only)
- * @param rawRegex true if entries are full regexes used verbatim (no `\b`-wrap, no plural, case-insensitive),
- *   for categories like [NUMBERS] whose patterns manage their own boundaries
  */
-enum class WordList(val areNames: Boolean = false, val rawRegex: Boolean = false) {
+enum class WordList(val areNames: Boolean = false) {
     ANIMALS,
     BODY_PARTS,
     COLORS,
     FOODS,
-    NUMBERS(rawRegex = true),
+    NUMBERS {
+        /** Numbers are compositional, so the patterns live in [FindNumbers] — the single source. */
+        override fun regexSequence(): Sequence<Regex> =
+            sequenceOf(FRACTIONS, ORDINALS, MULTI_NUMBER_PATTERN, NUMERAL_PATTERN)
+                .map { Regex(it, RegexOption.IGNORE_CASE) }
+    },
     MEN(areNames = true),
     WOMEN(areNames = true),
     PLACES(areNames = true),
@@ -44,11 +47,11 @@ enum class WordList(val areNames: Boolean = false, val rawRegex: Boolean = false
     }
 
     /**
-     * Returns one [Regex] per entry in [dictionary]. [rawRegex] categories use the entry verbatim
-     * (case-insensitive); others wrap it in `\b…\b` with case/plural rules appropriate to the category.
+     * Returns one [Regex] per entry in [dictionary], each wrapped in `\b…\b` with case/plural rules
+     * appropriate to the category. [NUMBERS] overrides this to source compositional patterns from code.
      */
-    fun regexSequence(): Sequence<Regex> = dictionary.asSequence().map {
-        if (rawRegex) Regex(it, RegexOption.IGNORE_CASE) else wordToRegex(it, caseSensitive = areNames, plural = !areNames)
+    open fun regexSequence(): Sequence<Regex> = dictionary.asSequence().map {
+        wordToRegex(it, caseSensitive = areNames, plural = !areNames)
     }
 
     companion object {

@@ -50,11 +50,11 @@ object WritePolicy {
         ).first().key
 
         // The form already resolves to the majority category (e.g. a number matched by the numbers
-        // patterns, or a term already covered) — so a literal entry would be redundant. Uniform across
-        // categories; no rawRegex-specific branch.
+        // patterns, or a term already covered) — so a literal entry would be redundant.
         val alreadyResolved = decisions.filter { it.category == majority }.all { it.candidate.proposed == majority }
         val listAdds = buildList {
-            if (majority != null && majority !in currentListCategories && !alreadyResolved)
+            // NUMBERS is pattern-defined in FindNumbers, not a list — never write a literal to it.
+            if (majority != null && majority != WordList.NUMBERS && majority !in currentListCategories && !alreadyResolved)
                 add(majority to listEntry)
         }
         val listRemoves = currentListCategories.filter { it != majority }.map { it to listEntry }

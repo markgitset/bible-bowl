@@ -4,15 +4,10 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Guards that the `numbers` category list ([WordList.NUMBERS], from word-lists/numbers.txt) stays in sync
- * with the readable, composable number patterns in [FindNumbers]. If the consts change, re-mirror them
- * into numbers.txt rather than letting the two drift.
+ * Checks the [WordList.NUMBERS] category, whose patterns are sourced directly from [FindNumbers] (the
+ * single source — there is no numbers.txt mirror).
  */
-class NumbersTxtSyncTest : StringSpec({
-
-    "numbers.txt mirrors the FindNumbers patterns exactly" {
-        WordList.NUMBERS.dictionary shouldBe setOf(FRACTIONS, ORDINALS, MULTI_NUMBER_PATTERN, NUMERAL_PATTERN)
-    }
+class NumbersCategoryTest : StringSpec({
 
     "WordList.NUMBERS matches numerals and spelled-out numbers" {
         val regexes = WordList.NUMBERS.regexSequence().toList()
