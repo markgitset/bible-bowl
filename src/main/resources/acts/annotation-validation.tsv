@@ -42,7 +42,7 @@ As	none
 Asia	places
 Asians	people-groups
 Asiarchs	people-groups
-Assassins	none
+Assassins	other
 Assos	places
 At	none
 Athenians	people-groups
@@ -150,7 +150,7 @@ Field of Blood	places
 For	none
 Forum	places
 Forum of Appius	places
-Four	none
+Four	numbers
 Freedmen	people-groups
 From	none
 Gaius	men
@@ -225,7 +225,7 @@ Joppa	places
 Joseph	men
 Joseph’s	men
 Joshua	men
-Judaism	none
+Judaism	other
 Judas	men
 Judea	places
 Julius	men
@@ -308,7 +308,7 @@ Pamphylia	places
 Paphos	places
 Parmenas	men
 Parthians	people-groups
-Passover	none
+Passover	other
 Patara	places
 Paul	men
 Paulus	men
@@ -362,7 +362,7 @@ Romans	people-groups
 Rome	places
 Rulers	none
 Running	none
-Sabbath	none
+Sabbath	other
 Sadducees	people-groups
 Salamis	places
 Salmone	places
@@ -386,7 +386,7 @@ Seleucia	places
 Send	none
 Sergius	men
 Set	none
-Seven	none
+Seven	numbers
 Sharon	places
 She	none
 Shechem	places

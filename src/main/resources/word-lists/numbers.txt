@@ -38,3 +38,5 @@ fourteenth
 twenty
 fifteen
 276
+Four
+Seven
