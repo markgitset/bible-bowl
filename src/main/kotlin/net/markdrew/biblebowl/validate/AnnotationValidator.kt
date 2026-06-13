@@ -32,7 +32,7 @@ class AnnotationValidator(
 
     /** Pending candidate groups (already-reviewed forms skipped), in reading order. */
     fun pendingGroups(): List<CandidateGroup> =
-        CandidateScanner.scan(studyData, selectedCategories, resolved, state.doneForms)
+        CandidateScanner.scan(studyData, selectedCategories, resolved, state::verdictOf)
 
     /** Word occurrences matching [query] for the add-missed `/` flow. */
     fun search(query: String, asRegex: Boolean): List<CandidateGroup> =

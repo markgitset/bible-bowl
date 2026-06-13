@@ -15,12 +15,16 @@ import net.markdrew.chupacabra.core.DisjointRangeMap
  */
 object CandidateScanner {
 
-    /** Groups pending candidate occurrences for [selectedCategories], skipping already-[doneForms]. */
+    /**
+     * Groups pending candidate occurrences for [selectedCategories]. A form is skipped only when its
+     * recorded verdict (from [verdictOf]) still matches the current resolution; a form whose verdict no
+     * longer agrees with the lists/overrides re-surfaces as drift (see [isConsistent]).
+     */
     fun scan(
         studyData: StudyData,
         selectedCategories: Set<WordList>,
         resolvedCategories: DisjointRangeMap<String>,
-        doneForms: Set<String> = emptySet(),
+        verdictOf: (String) -> String? = { null },
     ): List<CandidateGroup> {
         val candidates = mutableListOf<Candidate>()
 
@@ -39,7 +43,7 @@ object CandidateScanner {
             }
         }
 
-        return group(candidates, doneForms)
+        return group(candidates, verdictOf)
     }
 
     /**
@@ -57,7 +61,7 @@ object CandidateScanner {
         val candidates = studyData.words
             .filter { regex.containsMatchIn(studyData.text.substring(it)) }
             .map { candidate(studyData, it, WordList.byToken(resolvedCategories.valueEnclosing(it) ?: "")) }
-        return group(candidates, doneForms = emptySet())
+        return group(candidates)
     }
 
     /**
@@ -80,10 +84,22 @@ object CandidateScanner {
     private fun candidate(studyData: StudyData, range: IntRange, proposed: WordList?): Candidate =
         Candidate(range, studyData.text.substring(range), proposed)
 
-    private fun group(candidates: List<Candidate>, doneForms: Set<String>): List<CandidateGroup> =
+    private fun group(candidates: List<Candidate>, verdictOf: (String) -> String? = { null }): List<CandidateGroup> =
         candidates.distinctBy { it.range }
             .groupBy { it.text }
-            .filterKeys { it !in doneForms }
             .map { (text, occ) -> CandidateGroup(text, occ.sortedBy { it.range.first }) }
+            .filter { g -> verdictOf(g.text).let { v -> v == null || !isConsistent(v, g) } }
             .sortedBy { it.occurrences.first().range.first }
+
+    /**
+     * Whether [group]'s current resolution already matches its recorded [verdict] — if so it stays done;
+     * otherwise it has drifted and is re-surfaced. `split:` verdicts can't be checked from the TSV (no
+     * per-occurrence detail), so they're treated as consistent.
+     */
+    private fun isConsistent(verdict: String, group: CandidateGroup): Boolean {
+        if (verdict.startsWith("split:")) return true
+        val resolved: Set<String?> = group.occurrences.map { it.proposed?.token }.toSet()
+        return if (verdict == "none") resolved == setOf<String?>(null) // nothing categorized
+        else resolved == setOf<String?>(verdict)                       // every occurrence is exactly this category
+    }
 }

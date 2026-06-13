@@ -21,6 +21,9 @@ class ValidationState private constructor(
 
     fun isDone(text: String): Boolean = text in verdicts
 
+    /** The recorded verdict for [text] (a category token, `none`, or `split:<majority>`), or null if pending. */
+    fun verdictOf(text: String): String? = verdicts[text]
+
     /** Records [text] as reviewed with [verdict] and flushes to disk. */
     fun record(text: String, verdict: String) {
         verdicts[text] = verdict

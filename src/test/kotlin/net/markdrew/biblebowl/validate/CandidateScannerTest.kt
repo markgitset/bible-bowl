@@ -20,9 +20,31 @@ class CandidateScannerTest : StringSpec({
         byText.getValue("Egypt").proposed shouldBe null          // capitalized but no category yet
     }
 
-    "skips forms already marked done" {
-        val groups = CandidateScanner.scan(data, setOf(WordList.MEN), resolved, doneForms = setOf("Moses"))
+    "skips a done form whose verdict still matches the current resolution" {
+        val groups = CandidateScanner.scan(data, setOf(WordList.MEN), resolved,
+            verdictOf = { if (it == "Moses") "men" else null })
         groups.map { it.text } shouldContainExactly listOf("Egypt")
+    }
+
+    "re-surfaces a done form whose verdict no longer matches the resolution (drift)" {
+        // recorded as women, but resolves to men -> drift, must re-appear
+        val groups = CandidateScanner.scan(data, setOf(WordList.MEN), resolved,
+            verdictOf = { if (it == "Moses") "women" else null })
+        groups.map { it.text } shouldContainExactly listOf("Moses", "Egypt")
+    }
+
+    "re-surfaces a 'none' verdict whose form is now categorized (drift)" {
+        // marked none, but resolves to men -> drift
+        val groups = CandidateScanner.scan(data, setOf(WordList.MEN), resolved,
+            verdictOf = { if (it == "Moses") "none" else null })
+        groups.map { it.text } shouldContainExactly listOf("Moses", "Egypt")
+    }
+
+    "keeps a 'none' verdict consistent when the form is uncategorized" {
+        // "Egypt" is uncategorized; a none verdict matches -> stays done
+        val groups = CandidateScanner.scan(data, setOf(WordList.MEN), resolved,
+            verdictOf = { if (it == "Egypt") "none" else null })
+        groups.map { it.text } shouldContainExactly listOf("Moses")
     }
 
     "search collects word occurrences matching the query" {
