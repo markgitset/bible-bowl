@@ -10,8 +10,8 @@ import net.markdrew.biblebowl.analysis.WordList
 /** Single-key category bindings (lowercase for proper-name lists, uppercase for common-word lists). */
 private val CATEGORY_KEY: Map<WordList, Char> = mapOf(
     WordList.MEN to 'm', WordList.WOMEN to 'w', WordList.PLACES to 'p', WordList.PEOPLE_GROUPS to 'g',
-    WordList.DIVINE to 'd', WordList.ANGELS_DEMONS to 'n', WordList.OTHER to 'o', WordList.ANIMALS to 'A',
-    WordList.FOODS to 'F', WordList.BODY_PARTS to 'B', WordList.COLORS to 'C', WordList.NUMBERS to 'N',
+    WordList.DIVINE to 'd', WordList.ANGELS_DEMONS to 'N', WordList.OTHER to 'o', WordList.ANIMALS to 'A',
+    WordList.FOODS to 'F', WordList.BODY_PARTS to 'B', WordList.COLORS to 'C', WordList.NUMBERS to 'n',
 )
 private val KEY_CATEGORY: Map<Char, WordList> = CATEGORY_KEY.entries.associate { (k, v) -> v to k }
 
