@@ -300,7 +300,7 @@ O	none
 Of	none
 Olivet	places
 On	none
-One	none
+One	split:divine
 Or	none
 Others	none
 Our	none
@@ -476,6 +476,9 @@ You	none
 Your	none
 Zealot	men
 Zeus	angels-demons
+abandoned	none
+alone	none
+anyone	none
 arm	body-parts
 arms	body-parts
 bear	none
@@ -483,11 +486,15 @@ beasts	animals
 birds	animals
 bread	foods
 children of Israel	people-groups
+cornerstone	none
+done	none
 ear	body-parts
 ears	body-parts
 eight	numbers
 eighth	numbers
 eleven	numbers
+everyone	none
+everyone’s	none
 eyes	body-parts
 face	split:body-parts
 feet	body-parts
@@ -503,6 +510,7 @@ four	numbers
 four hundred	numbers
 four thousand	numbers
 fourteenth	numbers
+gone	none
 grain	foods
 hair	body-parts
 hall of Tyrannus	places
@@ -513,25 +521,42 @@ heads	body-parts
 heart	body-parts
 hearts	body-parts
 house of Israel	people-groups
+imprisoned	none
 knees	body-parts
 lamb	animals
+lord	none
+money	none
+motioned	none
 mouth	body-parts
 neck	body-parts
 ninth	numbers
-one	none
+none	none
+one	split:none
+one’s	none
 oxen	animals
 people of Israel	people-groups
 peoples of Israel	people-groups
+petitioned	none
+poisoned	none
+prisoner	none
+prisoners	none
 purple	colors
+questioned	none
+reasoned	none
 second	numbers
 seven	numbers
 seventy	numbers
 seventy-five	numbers
 sheep	animals
+shone	none
 six	numbers
 sixth	numbers
 skin	body-parts
+someone	none
+stone	none
+stoned	none
 street called Straight	places
+summoned	none
 synagogue of the Freedmen	people-groups
 teeth	body-parts
 ten	numbers
@@ -539,6 +564,7 @@ third	numbers
 thousands	numbers
 three	numbers
 three thousand	numbers
+throne	none
 tongue	body-parts
 tongues	body-parts
 twelve	numbers

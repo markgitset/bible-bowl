@@ -2,3 +2,12 @@
 # category "-" excludes the occurrence; occurrence# (1-based) only when text repeats in the verse.
 Acts 17:26	face	-
 Acts 27:15	face	-
+Acts 2:1	one	-
+Acts 22:19	one	-	1
+Acts 10:43	bear	-
+Acts 22:5	bear	-
+Acts 17:26	one	numbers
+Acts 21:7	one	numbers
+Acts 21:8	one	numbers
+Acts 28:25	one	numbers
+Acts 16:14	One	-
