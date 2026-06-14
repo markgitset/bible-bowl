@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.validate
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import net.markdrew.biblebowl.analysis.WordList
 import net.markdrew.biblebowl.analysis.singleVerseStudyData
@@ -48,6 +49,21 @@ class WritePolicyTest : StringSpec({
         plan.overrides.single().text shouldBe "Noah"
         plan.overrides.single().occurrence shouldBe 2 // the 2nd "Noah" in the verse
         plan.verdict shouldBe "split:men"
+    }
+
+    "marking a regex-matched form 'none' writes an exclusion override, not just a verdict" {
+        // "bear" resolves to animals via a regex entry, so it's not a literal list member -> nothing to
+        // remove. The exclusion must be enforced per-occurrence or the verdict re-surfaces as drift.
+        val data = singleVerseStudyData("a bear")
+        val occ = Candidate(2..5, "bear", WordList.ANIMALS)
+        val plan = WritePolicy.plan(data, listOf(OccurrenceDecision(occ, null)),
+            currentListCategories = emptyList(), listEntry = "bear")
+        plan.listAdds.shouldBeEmpty()
+        plan.listRemoves.shouldBeEmpty()
+        plan.overrides shouldHaveSize 1
+        plan.overrides.single().category shouldBe null // exclusion ("-")
+        plan.overrides.single().text shouldBe "bear"
+        plan.verdict shouldBe "none"
     }
 
     "reassigning a whole group to another category moves it (add new, remove old)" {

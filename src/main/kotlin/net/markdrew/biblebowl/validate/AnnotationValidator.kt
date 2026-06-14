@@ -26,7 +26,7 @@ class AnnotationValidator(
 
     /** Session-initial unified resolution, used to pre-annotate candidates. */
     private val resolved: DisjointRangeMap<String> =
-        AnnotationStore(studyData, cacheDir = null).get(WordList.categoryAnnotator(studyData.studySet))
+        AnnotationStore(studyData, cacheDir = null).get(WordList.categoryAnnotator(studyData.studySet, sourceDir))
 
     val contextRenderer = ContextRenderer(studyData)
 

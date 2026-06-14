@@ -58,11 +58,22 @@ object WritePolicy {
                 add(majority to listEntry)
         }
         val listRemoves = currentListCategories.filter { it != majority }.map { it to listEntry }
-        val overrides = decisions.filter { it.category != majority }.map { override(studyData, it) }
+        val overrides = decisions.filter { needsOverride(it, majority, currentListCategories) }.map { override(studyData, it) }
 
         val verdict = if (counts.size == 1) (majority?.token ?: "none") else "split:${majority?.token ?: "none"}"
         return WritePlan(listAdds, listRemoves, overrides, verdict)
     }
+
+    /**
+     * Whether occurrence [d] needs a per-occurrence override rather than relying on the form's single list
+     * membership. True when it disagrees with the [majority], or when it's an exclusion (`none`) of an
+     * occurrence still matched by a regex/pattern that removing a literal list entry can't clear — e.g. a
+     * number, or a regex word-list entry like `bear` in animals.txt. Without this, a "none" verdict on such
+     * a form is never enforced and re-surfaces as drift.
+     */
+    private fun needsOverride(d: OccurrenceDecision, majority: WordList?, currentListCategories: List<WordList>): Boolean =
+        d.category != majority ||
+            (d.category == null && d.candidate.proposed != null && d.candidate.proposed !in currentListCategories)
 
     private fun override(studyData: StudyData, d: OccurrenceDecision): CategoryOverride {
         val verse: VerseRef = studyData.verseEnclosing(d.candidate.range)

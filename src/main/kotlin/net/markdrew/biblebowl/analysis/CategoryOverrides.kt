@@ -5,6 +5,8 @@ import mu.KotlinLogging
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.biblebowl.model.VerseRef
+import java.nio.file.Files
+import java.nio.file.Path
 
 private val log: KLogger = KotlinLogging.logger {}
 
@@ -40,16 +42,25 @@ data class ResolvedOverride(val range: IntRange, val category: String?)
  */
 object CategoryOverrides {
 
-    /** Returns the raw overrides for [studySet], or an empty list when no override file is bundled. */
-    fun load(studySet: StudySet): List<CategoryOverride> {
-        val resourceName = "/${studySet.simpleName}/category-overrides.tsv"
-        val stream = CategoryOverrides::class.java.getResourceAsStream(resourceName) ?: return emptyList()
-        return stream.bufferedReader().useLines { lines ->
-            lines.map { it.trim() }
-                .filter { it.isNotEmpty() && !it.startsWith("#") }
-                .map { parseLine(it) }
-                .toList()
+    /**
+     * Returns the raw overrides for [studySet], or an empty list when no override file is present.
+     *
+     * When [sourceDir] is given (the validator), reads the editable file from
+     * `<sourceDir>/<simpleName>/category-overrides.tsv` so freshly-written edits are seen; otherwise reads
+     * the bundled classpath resource (the generate path).
+     */
+    fun load(studySet: StudySet, sourceDir: Path? = null): List<CategoryOverride> {
+        val lines: List<String> = if (sourceDir != null) {
+            val file = sourceDir.resolve(studySet.simpleName).resolve("category-overrides.tsv")
+            if (!Files.exists(file)) return emptyList() else Files.readAllLines(file)
+        } else {
+            val resourceName = "/${studySet.simpleName}/category-overrides.tsv"
+            val stream = CategoryOverrides::class.java.getResourceAsStream(resourceName) ?: return emptyList()
+            stream.bufferedReader().use { it.readLines() }
         }
+        return lines.map { it.trim() }
+            .filter { it.isNotEmpty() && !it.startsWith("#") }
+            .map { parseLine(it) }
     }
 
     /** Returns the raw file content for [studySet] (for cache fingerprinting), or "" when absent. */
