@@ -67,16 +67,6 @@ class AnnotationStoreTest : StringSpec({
         src.computeCount shouldBe 1
     }
 
-    "forceRecompute ignores the sidecar and overwrites it" {
-        val dir = tmpDir()
-        val sd = studyDataOf("alpha beta gamma")
-        AnnotationStore(sd, dir).get(CountingSource("names", "abc", listOf(0..4)))
-
-        val src = CountingSource("names", "abc", listOf(0..4))
-        AnnotationStore(sd, dir, forceRecompute = true).get(src)
-        src.computeCount shouldBe 1
-    }
-
     "a changed study text invalidates the sidecar (text-hash mismatch)" {
         val dir = tmpDir()
         AnnotationStore(studyDataOf("first text"), dir).get(CountingSource("names", "abc", listOf(0..3)))

@@ -68,11 +68,6 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .flag(default = false)
         .help("Force download and re-index the study set, even if data exists (default: false)")
 
-    private val recomputeAnnotations: Boolean by option("--recompute-annotations")
-        .flag(default = false)
-        .help("Recompute and overwrite cached name/number/highlight annotations, ignoring any cache " +
-            "(default: false)")
-
     private val validate: Boolean by option("--validate")
         .flag(default = false)
         .help("Launch the interactive annotation validator for the study set instead of generating")
@@ -162,7 +157,6 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val annotationStore = AnnotationStore(
             studyData,
             cacheDir = dataDir.resolve(studySet.simpleName),
-            forceRecompute = recomputeAnnotations,
         )
 
         for (resource in selected) {
