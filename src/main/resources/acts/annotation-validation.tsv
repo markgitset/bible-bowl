@@ -50,6 +50,7 @@ Athens	places
 Attalia	places
 Augustan	people-groups
 Author	divine
+Author of life	divine
 Away	none
 Azotus	places
 Babylon	places
@@ -481,6 +482,8 @@ alone	none
 anyone	none
 arm	body-parts
 arms	body-parts
+authorities	none
+authority	none
 bear	none
 beasts	animals
 birds	animals
