@@ -21,8 +21,12 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.format.DateTimeFormatter
 
 private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
+
+/** Footer date format, matching the Typst and DOCX writers (e.g. "June 14, 2026"). */
+private val dateFormatter = DateTimeFormatter.ofPattern("LLLL d, uuuu")
 
 /**
  * LaTeX output writer. Owns file lifecycle and `pdflatex` compilation; the per-transition emit
@@ -59,7 +63,7 @@ class LatexBibleTextWriter : BibleTextWriter {
 private class LatexHandler(private val out: Appendable) : BibleTextHandler {
 
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
-        preamble(out, studyData.studySet.name, layout, features)
+        preamble(out, studyData.studySet.name, layout.testDate.format(dateFormatter), layout, features)
     }
 
     override fun documentEnd() {
@@ -181,7 +185,13 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
         return """\footnote{${verseRef.format(FULL_BOOK_FORMAT)} $italicized}"""
     }
 
-    private fun preamble(out: Appendable, bookName: String, layout: LayoutOptions, features: FeatureOptions) {
+    private fun preamble(
+        out: Appendable,
+        bookName: String,
+        date: String,
+        layout: LayoutOptions,
+        features: FeatureOptions,
+    ) {
         out.appendLine(
             """
                 \documentclass[${layout.fontSize}pt, letter paper, twoside]{article}
@@ -189,6 +199,7 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
                 \usepackage[margin=0.6in, bindingoffset=0.5in, foot=0.25in]{geometry}
                 \usepackage{multicol}
                 \usepackage[normalem]{ulem}
+                \usepackage{fancyhdr}
 
                 \setlength{\parindent}{0pt} % no paragraph indent
                 \setlength{\parskip}{1ex plus 0.5ex} % vertical space before each paragraph
@@ -248,9 +259,19 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
                 \author{}
                 \date{}
 
+                % evenly-spaced page footer: study info (left), book(s) (center), page number (right)
+                \pagestyle{fancy}
+                \fancyhf{}
+                \renewcommand{\headrulewidth}{0pt}
+                \renewcommand{\footrulewidth}{0pt}
+                \fancyfoot[L]{Texas Bible Bowl, $date}
+                \fancyfoot[C]{$bookName}
+                \fancyfoot[R]{\thepage}
+
                 \begin{document}
 
                 \newpage
+                \thispagestyle{fancy}
                 \begin{multicols}{2}
 
             """.trimIndent()

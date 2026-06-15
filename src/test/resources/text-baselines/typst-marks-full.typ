@@ -2,7 +2,12 @@
   paper: "us-letter",
   margin: (top: 1in, bottom: 0.75in, x: 0.75in),
   columns: 2,
-  footer: align(center)[Joshua, Judges, and Ruth — March 28, 2026],
+  footer: grid(
+    columns: (1fr, 1fr, 1fr),
+    align(left)[Texas Bible Bowl, March 28, 2026],
+    align(center)[Joshua, Judges, and Ruth],
+    align(right)[#context counter(page).display()],
+  ),
 )
 #set text(font: "Libertinus Serif", size: 10pt)
 #set par(justify: true)

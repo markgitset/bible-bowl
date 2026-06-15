@@ -67,7 +67,12 @@ private class TypstHandler(
               paper: "us-letter",
               margin: (top: 1in, bottom: 0.75in, x: 0.75in),
               columns: $columns,
-              footer: align(center)[${escape(title)} — ${escape(date)}],
+              footer: grid(
+                columns: (1fr, 1fr, 1fr),
+                align(left)[Texas Bible Bowl, ${escape(date)}],
+                align(center)[${escape(title)}],
+                align(right)[#context counter(page).display()],
+              ),
             )
             #set text(font: "${style.mainFont}", size: ${layout.fontSize}pt)
             #set par(justify: $justify)

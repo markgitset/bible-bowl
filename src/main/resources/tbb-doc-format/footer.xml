@@ -18,19 +18,16 @@
       <w:tabs>
         <w:tab w:val="clear" w:pos="4819"/>
         <w:tab w:val="clear" w:pos="9638"/>
-        <w:tab w:val="center" w:pos="4320" w:leader="none"/>
-        <w:tab w:val="center" w:pos="7200" w:leader="none"/>
+        <w:tab w:val="center" w:pos="4680" w:leader="none"/>
         <w:tab w:val="right" w:pos="9359" w:leader="none"/>
       </w:tabs>
       <w:rPr></w:rPr>
     </w:pPr>
     <w:r>
       <w:rPr></w:rPr>
-      <w:t>Texas Bible Bowl</w:t>
+      <w:t>Texas Bible Bowl, ${date}</w:t>
       <w:tab/>
       <w:t>${title}</w:t>
-      <w:tab/>
-      <w:t>${date}</w:t>
       <w:tab/>
     </w:r>
     <w:r>
