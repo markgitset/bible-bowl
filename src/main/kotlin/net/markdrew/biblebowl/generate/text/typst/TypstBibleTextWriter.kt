@@ -172,7 +172,7 @@ private class TypstHandler(
     }
 
     override fun verseSeparator(inPoetry: Boolean) {
-        out.append(" ")
+        out.append("~")
     }
 
     override fun bookBegin(book: Book) {
