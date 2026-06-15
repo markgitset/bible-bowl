@@ -2020,7 +2020,7 @@
 #versenum(34) So #myhl(men)[Abimelech] and all the men who were with him rose up by night and set an ambush against #myhl(places)[Shechem] in #myhl(numbers)[four] companies. 
 #versenum(35) And #myhl(men)[Gaal] the son of #myhl(men)[Ebed] went out and stood in the entrance of the gate of the city, and #myhl(men)[Abimelech] and the people who were with him rose from the ambush. 
 #versenum(36) And when #myhl(men)[Gaal] saw the people, he said to #myhl(men)[Zebul], “Look, people are coming down from the mountaintops!” And #myhl(men)[Zebul] said to him, “You #underline[mistake]#footnote[Judges 9:36 Hebrew #emph[You see]] the #underline[shadow] of the mountains for men.” 
-#versenum(37) #myhl(men)[Gaal] spoke again and said, “Look, people are coming down from the #underline[center] of the land, and one company is coming from the direction of the #underline[#myhl(places)[Diviners]’ Oak].” 
+#versenum(37) #myhl(men)[Gaal] spoke again and said, “Look, people are coming down from the #underline[center] of the land, and one company is coming from the direction of the #myhl(places)[#underline[Diviners]’ Oak].” 
 #versenum(38) Then #myhl(men)[Zebul] said to him, “Where is your mouth now, you who said, ‘Who is #myhl(men)[Abimelech], that we should serve him?’ Are not these the people whom you #underline[despised]? Go out now and fight with them.” 
 #versenum(39) And #myhl(men)[Gaal] went out at the head of the leaders of #myhl(places)[Shechem] and fought with #myhl(men)[Abimelech]. 
 #versenum(40) And #myhl(men)[Abimelech] chased him, and he fled before him. And many fell #underline[wounded], up to the entrance of the gate. 

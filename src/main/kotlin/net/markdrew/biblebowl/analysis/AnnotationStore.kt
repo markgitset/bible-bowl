@@ -3,6 +3,7 @@ package net.markdrew.biblebowl.analysis
 import mu.KLogger
 import mu.KotlinLogging
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.model.StudySet
 import net.markdrew.chupacabra.core.DisjointRangeMap
 import net.markdrew.chupacabra.core.DisjointRangeSet
 import java.nio.file.Files
@@ -28,10 +29,14 @@ private val log: KLogger = KotlinLogging.logger {}
  * layers. Returned maps must be treated as read-only — they are the live cached instances.
  *
  * @param cacheDir per-study-set directory (`<dataDir>/<simpleName>`); null disables disk persistence
+ * @param sourceDir editable resources root for the unified category resolution (so generation reflects
+ *   live word-list/override edits); null reads the bundled classpath resources. Not part of cache keying —
+ *   the patterns it produces already drive [AnnotationSource.defDigest].
  */
 class AnnotationStore(
     private val studyData: StudyData,
     private val cacheDir: Path?,
+    private val sourceDir: Path? = null,
 ) {
     private val memo: MutableMap<String, DisjointRangeMap<*>> = HashMap()
 
@@ -42,6 +47,10 @@ class AnnotationStore(
         memo[key]?.let { return it as DisjointRangeMap<V> }
         return loadOrCompute(source).also { memo[key] = it }
     }
+
+    /** The unified word-list category resolution for [studySet], reading lists/overrides from [sourceDir]. */
+    fun categoryResolution(studySet: StudySet): DisjointRangeMap<String> =
+        get(WordList.categoryAnnotator(studySet, sourceDir))
 
     /** Convenience: the layer for [source] as a [DisjointRangeSet] of its ranges. */
     fun ranges(source: AnnotationSource<*>): DisjointRangeSet = DisjointRangeSet(get(source).keys)

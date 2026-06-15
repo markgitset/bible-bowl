@@ -30,6 +30,9 @@ class AnnotationValidator(
 
     val contextRenderer = ContextRenderer(studyData)
 
+    /** The category currently resolved for the whole [range], or null if no category encloses it. */
+    fun proposedAt(range: IntRange): WordList? = WordList.byToken(resolved.valueEnclosing(range) ?: "")
+
     /** Pending candidate groups (already-reviewed forms skipped), in reading order. */
     fun pendingGroups(): List<CandidateGroup> =
         CandidateScanner.scan(studyData, selectedCategories, resolved, state::verdictOf)

@@ -55,7 +55,7 @@ fun writeWordListIndex(
 ) {
     // Pull this category's occurrences from the one unified resolution (honors cross-list disambiguation
     // and per-occurrence overrides), so the index agrees with the highlights.
-    val categoryMap = store.get(WordList.categoryAnnotator(studyData.studySet))
+    val categoryMap = store.categoryResolution(studyData.studySet)
     val ranges: List<IntRange> = categoryMap.entries.filter { it.value == wordList.token }.map { it.key }
     val wordListEntries: List<WordIndexEntry> = buildWordListIndex(studyData, ranges)
     val indexEntries: List<WordIndexEntryC> = wordListEntries.map { wordIndexEntry ->

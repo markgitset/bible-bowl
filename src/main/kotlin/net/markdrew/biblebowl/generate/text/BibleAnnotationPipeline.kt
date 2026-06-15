@@ -52,7 +52,7 @@ object BibleAnnotationPipeline {
         // Each range is tagged with its category id; the palette categories (which now include `other`
         // and `numbers`) become the colored REGEX highlights, each resolved to its color by the writers.
         val paletteCategories: Set<String> = features.customHighlights.rules.map { it.first }.toSet()
-        val resolved = store.get(WordList.categoryAnnotator(studyData.studySet))
+        val resolved = store.categoryResolution(studyData.studySet)
         val regexRanges = DisjointRangeMap<String>().apply {
             resolved.forEach { (range, category) -> if (category in paletteCategories) put(range, category) }
         }

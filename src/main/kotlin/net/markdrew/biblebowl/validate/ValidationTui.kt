@@ -262,7 +262,10 @@ class ValidationTui(private val validator: AnnotationValidator) {
             renderBounds(occ, range)
             val key = screen.readInput()
             when (key.keyType) {
-                KeyType.Enter, KeyType.Escape -> return occ.copy(range = range, text = text.substring(range))
+                // Recompute proposed for the resized span: a freshly-extended span isn't yet resolved as a
+                // whole, so this becomes null and WritePolicy will write the new (longer) entry.
+                KeyType.Enter, KeyType.Escape ->
+                    return occ.copy(range = range, text = text.substring(range), proposed = validator.proposedAt(range))
                 KeyType.ArrowRight -> if (range.last + 1 <= text.lastIndex) range = range.first..range.last + 1
                 KeyType.ArrowLeft -> if (range.last > range.first) range = range.first until range.last
                 else -> when (key.character) {

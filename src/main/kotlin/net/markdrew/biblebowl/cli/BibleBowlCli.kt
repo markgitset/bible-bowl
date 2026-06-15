@@ -80,7 +80,8 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
     private val sourceDir: Path by option("--source-dir")
         .convert { Path(it) }
         .default(Path("src/main/resources"))
-        .help("With --validate, the resources root whose word-lists/overrides are edited " +
+        .help("Resources root for word-lists/overrides: edited by --validate and read by generation, so " +
+            "edits show up without rebuilding. Falls back to bundled resources if absent " +
             "(default: src/main/resources)")
 
     private val resources: List<String> by option("--resource", "-r")
@@ -157,6 +158,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val annotationStore = AnnotationStore(
             studyData,
             cacheDir = dataDir.resolve(studySet.simpleName),
+            sourceDir = sourceDir,
         )
 
         for (resource in selected) {

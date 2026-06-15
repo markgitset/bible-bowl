@@ -53,7 +53,7 @@ class StudyResource(
  * from here exactly like the other word-list indices.
  */
 private fun categoryRanges(data: StudyData, store: AnnotationStore, wordList: WordList): List<IntRange> =
-    store.get(WordList.categoryAnnotator(data.studySet))
+    store.categoryResolution(data.studySet)
         .filterValues { it == wordList.token }.keys.toList()
 
 /** A category-specific word-list index: its [wordList] plus the singular/plural labels the index uses. */

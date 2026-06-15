@@ -43,10 +43,12 @@ object BibleTextWalker {
 
         for ((excerpt, transition) in doc.stateTransitions()) {
 
-            // 1. Close ended highlights
-            if (features.underlineUniqueWords && transition.isEnded(UNIQUE_WORD)) handler.uniqueWordEnd()
-            if (transition.isEnded(REGEX)) handler.regexEnd()
-            if (transition.isEnded(SMALL_CAPS)) handler.smallCapsEnd()
+            // 1. Close ended inline highlights, innermost (shortest span) first, so the writers'
+            //    positional close tags nest correctly even when a multi-word highlight contains a
+            //    shorter underline/small-caps span.
+            transition.ended.filter { it.key in INLINE_HIGHLIGHTS }
+                .sortedWith(compareBy<RangeAnnotation<AnalysisUnit>> { it.range.last }.thenByDescending { it.range.first })
+                .forEach { closeInline(it.key, handler, features) }
 
             // 8. Trailing footnote. The continuing-highlight context lets LaTeX handlers do their
             //    close-emit-reopen dance; other writers ignore it.
@@ -109,13 +111,6 @@ object BibleTextWalker {
             transition.prePoint(LEADING_FOOTNOTE)?.apply {
                 val anchorPos = excerpt.excerptRange.first
                 val verseRef = lookupVerse(studyData, anchorPos)
-                println(
-                    "DBG_LEADING_FOOTNOTE: verse=$verseRef anchorPos=$anchorPos " +
-                        "endPara=${transition.isEnded(PARAGRAPH)} beginPara=${transition.isBeginning(PARAGRAPH)} " +
-                        "presentPara=${transition.isPresent(PARAGRAPH)} " +
-                        "beginVerse=${transition.isBeginning(VERSE)} " +
-                        "excerpt=${excerpt.excerptText.take(40).replace("\n", "\\n")}"
-                )
                 handler.leadingFootnote(verseRef, value as String)
             }
 
@@ -124,19 +119,46 @@ object BibleTextWalker {
                 handler.verseSeparator(inPoetry)
             }
 
-            // 6. Open new highlights
-            if (features.underlineUniqueWords && transition.isBeginning(UNIQUE_WORD)) handler.uniqueWordBegin()
-            if (transition.isBeginning(REGEX)) {
-                val category = transition.beginning.first { it.key == REGEX }.value as String
-                handler.regexBegin(category)
-            }
-            if (transition.isBeginning(SMALL_CAPS)) handler.smallCapsBegin()
+            // 6. Open new inline highlights, outermost (longest span) first, so a multi-word highlight
+            //    wraps any shorter underline/small-caps span nested within it.
+            transition.beginning.filter { it.key in INLINE_HIGHLIGHTS }
+                .sortedWith(
+                    compareByDescending<RangeAnnotation<AnalysisUnit>> { it.range.last }
+                        .thenBy { it.range.first }.thenBy { nestRank(it.key) }
+                )
+                .forEach { openInline(it, handler, features) }
 
             // 7. Text
             handler.text(excerpt.excerptText, inPoetry, inParagraph)
         }
 
         handler.documentEnd()
+    }
+
+    /** The inline, character-level highlight layers that nest within each other (by span length). */
+    private val INLINE_HIGHLIGHTS = setOf(UNIQUE_WORD, REGEX, SMALL_CAPS)
+
+    /** Tie-break for equal-span inline layers: underline outermost, then highlight, then small-caps. */
+    private fun nestRank(key: AnalysisUnit): Int = when (key) {
+        UNIQUE_WORD -> 0; REGEX -> 1; SMALL_CAPS -> 2; else -> 3
+    }
+
+    private fun openInline(ann: RangeAnnotation<AnalysisUnit>, handler: BibleTextHandler, features: FeatureOptions) {
+        when (ann.key) {
+            UNIQUE_WORD -> if (features.underlineUniqueWords) handler.uniqueWordBegin()
+            REGEX -> handler.regexBegin(ann.value as String)
+            SMALL_CAPS -> handler.smallCapsBegin()
+            else -> {}
+        }
+    }
+
+    private fun closeInline(key: AnalysisUnit, handler: BibleTextHandler, features: FeatureOptions) {
+        when (key) {
+            UNIQUE_WORD -> if (features.underlineUniqueWords) handler.uniqueWordEnd()
+            REGEX -> handler.regexEnd()
+            SMALL_CAPS -> handler.smallCapsEnd()
+            else -> {}
+        }
     }
 
     /**

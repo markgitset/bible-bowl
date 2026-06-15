@@ -73,11 +73,13 @@ enum class WordList(val areNames: Boolean = false) {
          * tree rather than the classpath, so the resolution reflects edits the validator just wrote.
          */
         fun categoryAnnotator(studySet: StudySet, sourceDir: Path? = null): CategoryAnnotator {
-            val wordListsDir = sourceDir?.resolve("word-lists")
+            // Use sourceDir only when it really is a resources tree; otherwise fall back to the classpath
+            // (a bogus/absent --source-dir, or a packaged run). Keeps lists and overrides consistent.
+            val eff = sourceDir?.takeIf { Files.isDirectory(it.resolve("word-lists")) }
             return CategoryAnnotator(
                 name = "wordlist-categories",
-                categories = entries.map { it.token to it.regexSequence(wordListsDir).toSet() },
-                overrides = CategoryOverrides.load(studySet, sourceDir),
+                categories = entries.map { it.token to it.regexSequence(eff?.resolve("word-lists")).toSet() },
+                overrides = CategoryOverrides.load(studySet, eff),
             )
         }
 
