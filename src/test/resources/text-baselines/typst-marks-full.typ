@@ -37,7 +37,20 @@
     level: 2, outlined: false,
     text(font: "Libertinus Serif", size: 12pt, weight: "bold")[#label],
 )
-#let vin = h(2em)
+#let pstep = 2em
+#let pind(level) = h(pstep * level)
+// Poetry verse number: hangs into the whitespace to the left of the *first* indent
+// (`pstep`), regardless of this line's indent `level`, with zero net advance — so the
+// contents stay at `pstep * level` and the number sits near the margin at every level.
+#let pverse(n, level) = context {
+    let label = versenum(n)
+    let w = measure(label).width
+    let gap = 0.3em
+    let back = calc.max(level - 1, 0) * pstep + w + gap
+    h(-back)
+    label
+    h(back - w)
+}
 
   
 #chapter-heading[Joshua 1]
@@ -289,11 +302,18 @@
 #versenum(26)~#myhl(men)[Joshua] laid an oath on them at that time, saying, “Cursed before the #myhl(divine)[#smallcaps[Lord]] be the man who rises up and #underline[rebuilds] this city, #myhl(places)[Jericho].
 
 
-    “At the cost of his firstborn\
-    #vin shall he lay its #underline[foundation],\
-    and at the cost of his youngest son\
-    #vin shall he set up its gates.”\
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“At the cost of his firstborn
 
+#pind(2)shall he lay its #underline[foundation],
+
+#pind(1)and at the cost of his youngest son
+
+#pind(2)shall he set up its gates.”
+
+]
 
       
 #versenum(27)~So the #myhl(divine)[#smallcaps[Lord]] was with #myhl(men)[Joshua], and his #underline[fame] was in all the land.
@@ -486,12 +506,18 @@
 #versenum(12)~At that time #myhl(men)[Joshua] spoke to the #myhl(divine)[#smallcaps[Lord]] in the day when the #myhl(divine)[#smallcaps[Lord]] gave the #myhl(other)[Amorites] over to the sons of #myhl(people-groups)[Israel], and he said in the sight of #myhl(people-groups)[Israel],
 
 
-    “Sun, stand still at #myhl(places)[Gibeon],\
-    #vin and moon, in the #myhl(places)[Valley of Aijalon].”\
     
-#versenum(13)~And the sun stood still, and the moon stopped,\
-    #vin until the nation took vengeance on their enemies.\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“Sun, stand still at #myhl(places)[Gibeon],
 
+#pind(2)and moon, in the #myhl(places)[Valley of Aijalon].”
+
+#pind(1)#pverse(13, 1)And the sun stood still, and the moon stopped,
+
+#pind(2)until the nation took vengeance on their enemies.
+
+]
 
       Is this not written in the #myhl(other)[Book of #underline[Jashar]]? The sun stopped in the midst of heaven and did not hurry to set for about a whole day. 
 #versenum(14)~There has been no day like it before or since, when the #myhl(divine)[#smallcaps[Lord]] #underline[heeded] the voice of a man, for the #myhl(divine)[#smallcaps[Lord]] fought for #myhl(people-groups)[Israel].
@@ -1593,162 +1619,273 @@
 
 
     
-#versenum(2)~“That the leaders took the lead in #myhl(places)[Israel],\
-    #vin that the people offered themselves willingly,\
-    #vin bless the #myhl(divine)[#smallcaps[Lord]]!\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(2, 1)“That the leaders took the lead in #myhl(places)[Israel],
 
+#pind(2)that the people offered themselves willingly,
 
-    
-#versenum(3)~“Hear, O kings; give #underline[ear], O princes;\
-    #vin to the #myhl(divine)[#smallcaps[Lord]] I will #underline[sing];\
-    #vin I will make #underline[melody] to the #myhl(divine)[#smallcaps[Lord], the God of Israel].\
+#pind(2)bless the #myhl(divine)[#smallcaps[Lord]]!
 
-
-    
-#versenum(4)~“#myhl(divine)[#smallcaps[Lord]], when you went out from #myhl(places)[Seir],\
-    #vin when you marched from the region of #myhl(places)[Edom],\
-    the earth #underline[trembled]\
-    #vin and the heavens dropped,\
-    #vin #underline[yes], the #underline[clouds] dropped water.\
-    
-#versenum(5)~The mountains #underline[quaked] before the #myhl(divine)[#smallcaps[Lord]],\
-    #vin even #underline[#myhl(places)[Sinai]] before the #myhl(divine)[#smallcaps[Lord],#footnote[Judges 5:5 Or #emph[before the Lord, the One of Sinai, before the Lord]] the God of Israel].\
-
+]
 
     
-#versenum(6)~“In the days of #myhl(men)[Shamgar], son of #myhl(men)[Anath],\
-    #vin in the days of #myhl(women)[Jael], the highways were abandoned,\
-    #vin and #underline[travelers] kept to the #underline[byways].\
-    
-#versenum(7)~The villagers ceased in #myhl(places)[Israel];\
-    #vin they ceased to be until I arose;\
-    #vin I, #myhl(women)[Deborah], arose as a mother in #myhl(places)[Israel].\
-    
-#versenum(8)~When new gods were chosen,\
-    #vin then war was in the gates.\
-    Was #underline[shield] or #underline[spear] to be seen\
-    #vin among #myhl(numbers)[forty thousand] in #myhl(places)[Israel]?\
-    
-#versenum(9)~My heart goes out to the commanders of #myhl(people-groups)[Israel]\
-    #vin who offered themselves willingly among the people.\
-    #vin Bless the #myhl(divine)[#smallcaps[Lord]].\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(3, 1)“Hear, O kings; give #underline[ear], O princes;
 
+#pind(2)to the #myhl(divine)[#smallcaps[Lord]] I will #underline[sing];
+
+#pind(2)I will make #underline[melody] to the #myhl(divine)[#smallcaps[Lord], the God of Israel].
+
+]
 
     
-#versenum(10)~“Tell of it, you who #underline[ride] on #underline[white] donkeys,\
-    #vin you who sit on rich #underline[carpets]#footnote[Judges 5:10 The meaning of the Hebrew word is uncertain; it may connote #emph[saddle blankets]]\
-    #vin and you who walk by the way.\
-    
-#versenum(11)~To the sound of #underline[musicians]#footnote[Judges 5:11 Or #emph[archers]; the meaning of the Hebrew word is uncertain] at the #underline[watering] places,\
-    #vin there they #underline[repeat] the righteous triumphs of the #myhl(divine)[#smallcaps[Lord]],\
-    #vin the righteous triumphs of his villagers in #myhl(places)[Israel].\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(4, 1)“#myhl(divine)[#smallcaps[Lord]], when you went out from #myhl(places)[Seir],
 
+#pind(2)when you marched from the region of #myhl(places)[Edom],
 
-    “Then down to the gates marched the people of the #myhl(divine)[#smallcaps[Lord]].\
+#pind(1)the earth #underline[trembled]
 
+#pind(2)and the heavens dropped,
 
-    
-#versenum(12)~“Awake, awake, #myhl(women)[Deborah]!\
-    #vin Awake, awake, break out in a #underline[song]!\
-    Arise, #myhl(men)[Barak], lead away your #underline[captives],\
-    #vin O son of #myhl(men)[Abinoam].\
-    
-#versenum(13)~Then down marched the remnant of the #underline[noble];\
-    #vin the people of the #myhl(divine)[#smallcaps[Lord]] marched down for me against the mighty.\
-    
-#versenum(14)~From #myhl(other)[Ephraim] their #underline[root] they marched down into the valley,#footnote[Judges 5:14 Septuagint; Hebrew #emph[in Amalek]]\
-    #vin following you, #myhl(men)[Benjamin], with your #underline[kinsmen];\
-    from #myhl(men)[Machir] marched down the commanders,\
-    #vin and from #myhl(other)[Zebulun] those who bear the #underline[lieutenant’s]#footnote[Judges 5:14 Hebrew #emph[commander’s]] staff;\
-    
-#versenum(15)~the princes of #myhl(other)[Issachar] came with #myhl(women)[Deborah],\
-    #vin and #myhl(other)[Issachar] #underline[faithful] to #myhl(men)[Barak];\
-    #vin into the valley they rushed at his heels.\
-    Among the clans of #myhl(other)[Reuben]\
-    #vin there were great searchings of heart.\
-    
-#versenum(16)~Why did you sit still among the #underline[sheepfolds],\
-    #vin to hear the #underline[whistling] for the #underline[flocks]?\
-    Among the clans of #myhl(other)[Reuben]\
-    #vin there were great searchings of heart.\
-    
-#versenum(17)~#myhl(places)[Gilead] stayed beyond the #myhl(places)[Jordan];\
-    #vin and #myhl(other)[Dan], why did he stay with the #underline[ships]?\
-    #myhl(other)[Asher] sat still at the coast of the sea,\
-    #vin #underline[staying] by his #underline[landings].\
-    
-#versenum(18)~#myhl(other)[Zebulun] is a people who risked their lives to the death;\
-    #vin #myhl(other)[Naphtali], too, on the #underline[heights] of the field.\
+#pind(2)#underline[yes], the #underline[clouds] dropped water.
 
+#pind(1)#pverse(5, 1)The mountains #underline[quaked] before the #myhl(divine)[#smallcaps[Lord]],
+
+#pind(2)even #underline[#myhl(places)[Sinai]] before the #myhl(divine)[#smallcaps[Lord],#footnote[Judges 5:5 Or #emph[before the Lord, the One of Sinai, before the Lord]] the God of Israel].
+
+]
 
     
-#versenum(19)~“The kings came, they fought;\
-    #vin then fought the kings of #myhl(places)[Canaan],\
-    at #myhl(places)[Taanach], by the waters of #myhl(places)[Megiddo];\
-    #vin they got no #underline[spoils] of silver.\
-    
-#versenum(20)~From heaven the #underline[stars] fought,\
-    #vin from their #underline[courses] they fought against #myhl(men)[Sisera].\
-    
-#versenum(21)~The torrent #myhl(places)[Kishon] #underline[swept] them away,\
-    #vin the #underline[ancient] torrent, the torrent #myhl(places)[Kishon].\
-    #vin March on, my soul, with might!\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(6, 1)“In the days of #myhl(men)[Shamgar], son of #myhl(men)[Anath],
 
+#pind(2)in the days of #myhl(women)[Jael], the highways were abandoned,
 
-    
-#versenum(22)~“Then #underline[loud] beat the horses’ #underline[hoofs]\
-    #vin with the galloping, galloping of his #underline[steeds].\
+#pind(2)and #underline[travelers] kept to the #underline[byways].
 
+#pind(1)#pverse(7, 1)The villagers ceased in #myhl(places)[Israel];
 
-    
-#versenum(23)~“Curse #underline[#myhl(places)[Meroz]], says the #myhl(divine)[angel of the #smallcaps[Lord]],\
-    #vin curse its inhabitants #underline[thoroughly],\
-    because they did not come to the help of the #myhl(divine)[#smallcaps[Lord]],\
-    #vin to the help of the #myhl(divine)[#smallcaps[Lord]] against the mighty.\
+#pind(2)they ceased to be until I arose;
 
+#pind(2)I, #myhl(women)[Deborah], arose as a mother in #myhl(places)[Israel].
 
-    
-#versenum(24)~“Most blessed of women be #myhl(women)[Jael],\
-    #vin the wife of #myhl(men)[Heber] the #myhl(other)[Kenite],\
-    #vin of #underline[tent-dwelling] women most blessed.\
-    
-#versenum(25)~He asked for water and she gave him milk;\
-    #vin she brought him #underline[curds] in a #underline[noble’s] bowl.\
-    
-#versenum(26)~She sent her hand to the tent peg\
-    #vin and her right hand to the #underline[workmen’s] #underline[mallet];\
-    she struck #myhl(men)[Sisera];\
-    #vin she crushed his head;\
-    #vin she #underline[shattered] and #underline[pierced] his temple.\
-    
-#versenum(27)~Between her feet\
-    #vin he sank, he fell, he lay still;\
-    between her feet\
-    #vin he sank, he fell;\
-    where he sank,\
-    #vin there he fell—dead.\
+#pind(1)#pverse(8, 1)When new gods were chosen,
 
+#pind(2)then war was in the gates.
+
+#pind(1)Was #underline[shield] or #underline[spear] to be seen
+
+#pind(2)among #myhl(numbers)[forty thousand] in #myhl(places)[Israel]?
+
+#pind(1)#pverse(9, 1)My heart goes out to the commanders of #myhl(people-groups)[Israel]
+
+#pind(2)who offered themselves willingly among the people.
+
+#pind(2)Bless the #myhl(divine)[#smallcaps[Lord]].
+
+]
 
     
-#versenum(28)~“Out of the window she #underline[peered],\
-    #vin the mother of #myhl(men)[Sisera] #underline[wailed] through the #underline[lattice]:\
-    ‘Why is his chariot so long in coming?\
-    #vin Why #underline[tarry] the #underline[hoofbeats] of his chariots?’\
-    
-#versenum(29)~Her #underline[wisest] #underline[princesses] answer,\
-    #vin indeed, she #underline[answers] #underline[herself],\
-    
-#versenum(30)~‘Have they not found and divided the spoil?—\
-    #vin A womb or #myhl(numbers)[two] for every man;\
-    spoil of dyed materials for #myhl(men)[Sisera],\
-    #vin spoil of dyed materials embroidered,\
-    #vin #myhl(numbers)[two] pieces of dyed work embroidered for the #underline[neck] as spoil?’\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(10, 1)“Tell of it, you who #underline[ride] on #underline[white] donkeys,
 
+#pind(2)you who sit on rich #underline[carpets]#footnote[Judges 5:10 The meaning of the Hebrew word is uncertain; it may connote #emph[saddle blankets]]
+
+#pind(2)and you who walk by the way.
+
+#pind(1)#pverse(11, 1)To the sound of #underline[musicians]#footnote[Judges 5:11 Or #emph[archers]; the meaning of the Hebrew word is uncertain] at the #underline[watering] places,
+
+#pind(2)there they #underline[repeat] the righteous triumphs of the #myhl(divine)[#smallcaps[Lord]],
+
+#pind(2)the righteous triumphs of his villagers in #myhl(places)[Israel].
+
+]
 
     
-#versenum(31)~“So may all your enemies perish, O #myhl(divine)[#smallcaps[Lord]]!\
-    #vin But your #underline[friends] be like the sun as he rises in his might.”\
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“Then down to the gates marched the people of the #myhl(divine)[#smallcaps[Lord]].
 
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(12, 1)“Awake, awake, #myhl(women)[Deborah]!
+
+#pind(2)Awake, awake, break out in a #underline[song]!
+
+#pind(1)Arise, #myhl(men)[Barak], lead away your #underline[captives],
+
+#pind(2)O son of #myhl(men)[Abinoam].
+
+#pind(1)#pverse(13, 1)Then down marched the remnant of the #underline[noble];
+
+#pind(2)the people of the #myhl(divine)[#smallcaps[Lord]] marched down for me against the mighty.
+
+#pind(1)#pverse(14, 1)From #myhl(other)[Ephraim] their #underline[root] they marched down into the valley,#footnote[Judges 5:14 Septuagint; Hebrew #emph[in Amalek]]
+
+#pind(2)following you, #myhl(men)[Benjamin], with your #underline[kinsmen];
+
+#pind(1)from #myhl(men)[Machir] marched down the commanders,
+
+#pind(2)and from #myhl(other)[Zebulun] those who bear the #underline[lieutenant’s]#footnote[Judges 5:14 Hebrew #emph[commander’s]] staff;
+
+#pind(1)#pverse(15, 1)the princes of #myhl(other)[Issachar] came with #myhl(women)[Deborah],
+
+#pind(2)and #myhl(other)[Issachar] #underline[faithful] to #myhl(men)[Barak];
+
+#pind(2)into the valley they rushed at his heels.
+
+#pind(1)Among the clans of #myhl(other)[Reuben]
+
+#pind(2)there were great searchings of heart.
+
+#pind(1)#pverse(16, 1)Why did you sit still among the #underline[sheepfolds],
+
+#pind(2)to hear the #underline[whistling] for the #underline[flocks]?
+
+#pind(1)Among the clans of #myhl(other)[Reuben]
+
+#pind(2)there were great searchings of heart.
+
+#pind(1)#pverse(17, 1)#myhl(places)[Gilead] stayed beyond the #myhl(places)[Jordan];
+
+#pind(2)and #myhl(other)[Dan], why did he stay with the #underline[ships]?
+
+#pind(1)#myhl(other)[Asher] sat still at the coast of the sea,
+
+#pind(2)#underline[staying] by his #underline[landings].
+
+#pind(1)#pverse(18, 1)#myhl(other)[Zebulun] is a people who risked their lives to the death;
+
+#pind(2)#myhl(other)[Naphtali], too, on the #underline[heights] of the field.
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(19, 1)“The kings came, they fought;
+
+#pind(2)then fought the kings of #myhl(places)[Canaan],
+
+#pind(1)at #myhl(places)[Taanach], by the waters of #myhl(places)[Megiddo];
+
+#pind(2)they got no #underline[spoils] of silver.
+
+#pind(1)#pverse(20, 1)From heaven the #underline[stars] fought,
+
+#pind(2)from their #underline[courses] they fought against #myhl(men)[Sisera].
+
+#pind(1)#pverse(21, 1)The torrent #myhl(places)[Kishon] #underline[swept] them away,
+
+#pind(2)the #underline[ancient] torrent, the torrent #myhl(places)[Kishon].
+
+#pind(2)March on, my soul, with might!
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(22, 1)“Then #underline[loud] beat the horses’ #underline[hoofs]
+
+#pind(2)with the galloping, galloping of his #underline[steeds].
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(23, 1)“Curse #underline[#myhl(places)[Meroz]], says the #myhl(divine)[angel of the #smallcaps[Lord]],
+
+#pind(2)curse its inhabitants #underline[thoroughly],
+
+#pind(1)because they did not come to the help of the #myhl(divine)[#smallcaps[Lord]],
+
+#pind(2)to the help of the #myhl(divine)[#smallcaps[Lord]] against the mighty.
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(24, 1)“Most blessed of women be #myhl(women)[Jael],
+
+#pind(2)the wife of #myhl(men)[Heber] the #myhl(other)[Kenite],
+
+#pind(2)of #underline[tent-dwelling] women most blessed.
+
+#pind(1)#pverse(25, 1)He asked for water and she gave him milk;
+
+#pind(2)she brought him #underline[curds] in a #underline[noble’s] bowl.
+
+#pind(1)#pverse(26, 1)She sent her hand to the tent peg
+
+#pind(2)and her right hand to the #underline[workmen’s] #underline[mallet];
+
+#pind(1)she struck #myhl(men)[Sisera];
+
+#pind(2)she crushed his head;
+
+#pind(2)she #underline[shattered] and #underline[pierced] his temple.
+
+#pind(1)#pverse(27, 1)Between her feet
+
+#pind(2)he sank, he fell, he lay still;
+
+#pind(1)between her feet
+
+#pind(2)he sank, he fell;
+
+#pind(1)where he sank,
+
+#pind(2)there he fell—dead.
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(28, 1)“Out of the window she #underline[peered],
+
+#pind(2)the mother of #myhl(men)[Sisera] #underline[wailed] through the #underline[lattice]:
+
+#pind(1)‘Why is his chariot so long in coming?
+
+#pind(2)Why #underline[tarry] the #underline[hoofbeats] of his chariots?’
+
+#pind(1)#pverse(29, 1)Her #underline[wisest] #underline[princesses] answer,
+
+#pind(2)indeed, she #underline[answers] #underline[herself],
+
+#pind(1)#pverse(30, 1)‘Have they not found and divided the spoil?—
+
+#pind(2)A womb or #myhl(numbers)[two] for every man;
+
+#pind(1)spoil of dyed materials for #myhl(men)[Sisera],
+
+#pind(2)spoil of dyed materials embroidered,
+
+#pind(2)#myhl(numbers)[two] pieces of dyed work embroidered for the #underline[neck] as spoil?’
+
+]
+
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)#pverse(31, 1)“So may all your enemies perish, O #myhl(divine)[#smallcaps[Lord]]!
+
+#pind(2)But your #underline[friends] be like the sun as he rises in his might.”
+
+]
 
       And the land had rest for #myhl(numbers)[forty] years.
 
@@ -2286,9 +2423,14 @@
 #versenum(14)~And he said to them,
 
 
-    “Out of the #underline[eater] came something to eat.\
-    Out of the strong came something #underline[sweet].”\
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“Out of the #underline[eater] came something to eat.
 
+#pind(1)Out of the strong came something #underline[sweet].”
+
+]
 
       And in #myhl(numbers)[three] days they could not #underline[solve] the riddle.
 
@@ -2300,16 +2442,26 @@
 #versenum(18)~And the men of the city said to him on the #myhl(numbers)[seventh] day before the sun went down,
 
 
-    “What is #underline[sweeter] than honey?\
-    What is #underline[stronger] than a lion?”\
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“What is #underline[sweeter] than honey?
 
+#pind(1)What is #underline[stronger] than a lion?”
+
+]
 
       And he said to them,
 
 
-    “If you had not #underline[plowed] with my #underline[heifer],\
-    you would not have found out my riddle.”\
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“If you had not #underline[plowed] with my #underline[heifer],
 
+#pind(1)you would not have found out my riddle.”
+
+]
 
       
 #versenum(19)~And the #myhl(divine)[Spirit] of the #myhl(divine)[#smallcaps[Lord]] rushed upon him, and he went down to #myhl(places)[Ashkelon] and struck down #myhl(numbers)[thirty] men of the town and took their spoil and gave the garments to those who had told the riddle. In #underline[hot] anger he went back to his father’s house. 
@@ -2347,11 +2499,18 @@
 #versenum(16)~And #myhl(men)[Samson] said,
 
 
-    “With the jawbone of a donkey,\
-    #vin heaps upon heaps,\
-    with the jawbone of a donkey\
-    #vin have I struck down a #myhl(numbers)[thousand] men.”\
+    
+#block(breakable: true)[
+#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)
+#pind(1)“With the jawbone of a donkey,
 
+#pind(2)heaps upon heaps,
+
+#pind(1)with the jawbone of a donkey
+
+#pind(2)have I struck down a #myhl(numbers)[thousand] men.”
+
+]
 
       
 #versenum(17)~As soon as he had finished #underline[speaking], he threw away the jawbone out of his hand. And that place was called #underline[#myhl(places)[Ramath-lehi]].#footnote[Judges 15:17 #emph[Ramath-lehi] means #emph[the hill of the jawbone]]

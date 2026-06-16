@@ -1,6 +1,5 @@
 package net.markdrew.biblebowl.generate.text.typst
 
-import net.markdrew.biblebowl.INDENT_POETRY_LINES
 import net.markdrew.biblebowl.generate.text.AnnotatedDoc
 import net.markdrew.biblebowl.generate.text.BibleTextHandler
 import net.markdrew.biblebowl.generate.text.BibleTextWalker
@@ -57,6 +56,10 @@ private class TypstHandler(
     private val style: TypstStyle,
 ) : BibleTextHandler {
 
+    /** Indent level of the poetry line currently being emitted; passed from [paragraphBegin] to
+     *  [verseBegin] so the hanging verse number knows how far back to reach. 0 outside poetry. */
+    private var currentPoetryIndentLevel = 0
+
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         val columns = if (layout.twoColumns) 2 else 1
         val justify = if (style.justified) "true" else "false"
@@ -108,7 +111,20 @@ private class TypstHandler(
                 level: 2, outlined: false,
                 text(font: "${style.headingFont}", size: ${style.headingFontSize}pt, weight: "bold")[#label],
             )
-            #let vin = h(2em)
+            #let pstep = 2em
+            #let pind(level) = h(pstep * level)
+            // Poetry verse number: hangs into the whitespace to the left of the *first* indent
+            // (`pstep`), regardless of this line's indent `level`, with zero net advance — so the
+            // contents stay at `pstep * level` and the number sits near the margin at every level.
+            #let pverse(n, level) = context {
+                let label = versenum(n)
+                let w = measure(label).width
+                let gap = 0.3em
+                let back = calc.max(level - 1, 0) * pstep + w + gap
+                h(-back)
+                label
+                h(back - w)
+            }
         """.trimIndent())
         out.appendLine()
     }
@@ -142,20 +158,32 @@ private class TypstHandler(
     }
 
     override fun paragraphBegin(poetryIndentLevel: Int, inPoetry: Boolean, isFirstParagraphOfPoetry: Boolean) {
-        // No explicit emit — poetry runs use trailing `\` linebreaks; prose paragraphs are separated
-        // by the blank line emitted in paragraphEnd().
+        // Emit the poetry line's indent here, before the verse number, so every line's contents start
+        // at `pstep * level` whether or not the line begins with a verse number (the number hangs into
+        // the whitespace to the left via pverse). Same-level lines therefore align by their contents.
+        // Prose paragraphs and base-level (0) poetry lines start flush; line separation comes from
+        // paragraphEnd(). Wrapped lines hang at `pstep * 4` via the block's hanging-indent setting.
+        currentPoetryIndentLevel = if (inPoetry) poetryIndentLevel else 0
+        if (inPoetry && poetryIndentLevel > 0) out.append("#pind($poetryIndentLevel)")
     }
 
     override fun paragraphEnd(inPoetry: Boolean) {
-        if (!inPoetry) out.appendLine().appendLine()
+        // Every line — prose paragraph or poetry line — is separated by a blank line. For poetry
+        // this makes each line its own paragraph so `hanging-indent` applies per line.
+        out.appendLine().appendLine()
     }
 
     override fun poetryBegin() {
-        // No explicit emit — poetry markup happens inline (per-line `\` + `#vin`).
+        // Scope poetry in a breakable block (so it can still split across columns/pages) that renders
+        // lines single-spaced, ragged-left, and hanging-indented — matching esv.org.
+        out.appendLine()
+        out.appendLine("#block(breakable: true)[")
+        out.appendLine("#set par(justify: false, spacing: 0.6em, hanging-indent: pstep * 4)")
     }
 
     override fun poetryEnd() {
-        out.appendLine().appendLine()
+        out.appendLine("]")
+        out.appendLine()
     }
 
     override fun verseBegin(
@@ -166,18 +194,26 @@ private class TypstHandler(
         useHeadingsForChapters: Boolean,
         inPoetry: Boolean,
     ) {
-        out.appendLine()
+        // In poetry, the line break is produced by paragraphEnd; only prose needs the leading newline.
+        if (!inPoetry) out.appendLine()
         if (isFirstVerseOfChapter && !useHeadingsForChapters) {
             // Inline chapter label at the start of the chapter's first verse — mirrors DOCX's
             // useHeadingsForChapters=false path.
             out.append("*${escape(chapterLabel(chapter, multiBook))}*")
         } else {
-            out.append("#versenum(${verse.verse})")
+            // In poetry the number hangs left of the first indent (near the margin) while the contents
+            // stay at their indent; in prose it sits inline.
+            out.append(
+                if (inPoetry) "#pverse(${verse.verse}, $currentPoetryIndentLevel)"
+                else "#versenum(${verse.verse})"
+            )
         }
     }
 
     override fun verseSeparator(inPoetry: Boolean) {
-        out.append("~")
+        // Prose separates the verse number from its text with a non-breaking space; in poetry the gap
+        // is built into the hanging pverse, and the contents must stay flush to their indent.
+        if (!inPoetry) out.append("~")
     }
 
     override fun bookBegin(book: Book) {
@@ -185,7 +221,8 @@ private class TypstHandler(
     }
 
     override fun poetryIndent(numIndents: Int) {
-        // Typst converts leading-space runs into `#vin` inside text(); no separate event handling needed.
+        // No-op — the poetry indent is emitted in paragraphBegin(), before the verse number, so the
+        // contents (not the number) carry the indent and same-level lines align.
     }
 
     override fun leadingFootnote(verseRef: VerseRef, content: String) {
@@ -205,27 +242,17 @@ private class TypstHandler(
     override fun smallCapsEnd()   {}
 
     override fun text(text: String, inPoetry: Boolean, inParagraph: Boolean) {
-        out.append(emitText(text, inPoetry))
+        // Inter-line regions in poetry are whitespace only (the newlines between lines and ESV's
+        // trailing post-poetry indent line); drop them so indentation is driven solely by pind().
+        if (inPoetry && !inParagraph) return
+        out.append(emitText(text))
     }
 
     private fun chapterLabel(chapterRef: ChapterRef, multiBook: Boolean): String =
         if (multiBook) chapterRef.format(FULL_BOOK_FORMAT) else "Chapter ${chapterRef.chapter}"
 
-    private fun emitText(rawText: String, inPoetry: Boolean): String {
-        var text = escape(rawText)
-        text = text.replace("LORD".toRegex(), "#smallcaps[Lord]")
-        if (inPoetry) {
-            text = text
-                // Replace each newline with `\<NL>` so Typst renders it as a hard linebreak. Java's
-                // replaceAll consumes `\\` as one literal `\`; Kotlin's `"\\\\"` is two backslashes,
-                // so the replacement string is `\\<NL>` → output `\<NL>`.
-                .replace("""\n""".toRegex(), "\\\\\n")
-                // Each run of INDENT_POETRY_LINES spaces that follows another such run is a
-                // second-level indent — emit a `#vin` (a 2em horizontal-space binding from the preamble).
-                .replace("""(?<= {$INDENT_POETRY_LINES}) {$INDENT_POETRY_LINES}""".toRegex(), "#vin ")
-        }
-        return text
-    }
+    private fun emitText(rawText: String): String =
+        escape(rawText).replace("LORD".toRegex(), "#smallcaps[Lord]")
 
     private fun renderFootnote(verseRef: VerseRef, content: String): String {
         val escaped = escape(content)
