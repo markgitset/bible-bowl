@@ -17,16 +17,17 @@ JDK 23 toolchain is configured in `gradle.properties` (`jvmVersion = 23`, `kotli
 - Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl acts -r text`
 - Run built binary with verbose logs: `./build/install/bible-bowl/bin/bible-bowl acts -v`
 - All tests: `./gradlew test`
+- Regenerate text snapshot baselines: `./gradlew test -Dregenerate-baseline-texts=true`
 - Single test class: `./gradlew test --tests 'net.markdrew.biblebowl.analysis.FindNamesKtTest'`
 - Single test method: `./gradlew test --tests 'net.markdrew.biblebowl.model.VerseRefKtTest.<methodName>'`
 
-Tests use JUnit 5 (`useJUnitPlatform()`) and mockito-kotlin.
+Tests use JUnit 5 (`useJUnitPlatform()`) and mockito-kotlin. Text writers support bypassing expensive PDF generation steps (pdflatex, typst, libreoffice) in tests if the system property `skip-pdf-generation` is set to `true`.
 
 The `chupacabra` dependency is resolved from JitPack (configured in `settings.gradle.kts`).
 
 ## Required configuration
 
-- `ESV_API_TOKEN` env var must be set to download new study sets via `EsvClient` / `EsvService` (see `ws/EsvClient.kt`). Without it, requests to api.esv.org go unauthenticated and will fail. Already-indexed data under `dataDir` can be regenerated without a token.
+- `ESV_API_TOKEN` env var must be set to download new study sets or the dynamic copyright notice via `EsvClient` / `EsvService` (see `ws/EsvClient.kt`). Without it, requests to api.esv.org go unauthenticated and will fail. Already-indexed data under `dataDir` can be regenerated, and the cached copyright details at `<rawDataDir>/copyright.txt` will be used if available.
 - Default I/O layout lives under `~/.tbb/`: `~/.tbb/raw-data` (ESV JSON), `~/.tbb/data` (indexed `StudyData` files), `~/.tbb/products` (generated artifacts). Each can be overridden with `-r`, `-d`, `-p`. The repo also has its own `data/`, `raw-data/`, `products/` trees that some legacy code paths default to — prefer the `~/.tbb` layout via the CLI.
 - **Properties Configuration**: Default CLI values for the study set (`default-study-set`) and footer date (`test-date`) can be configured in a `bible-bowl.properties` file. Resolution order is: `./bible-bowl.properties` (CWD) -> `~/.tbb/bible-bowl.properties` (User global) -> hardcoded code defaults. Option `--test-date` or arguments on command line will override these values at runtime.
 
