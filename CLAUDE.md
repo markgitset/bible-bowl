@@ -11,8 +11,11 @@ BibleBowl is a Kotlin/JVM CLI + library that prepares study materials for the Te
 JDK 23 toolchain is configured in `gradle.properties` (`jvmVersion = 23`, `kotlinVersion = 2.3.10`). Use the wrapper.
 
 - Build: `./gradlew build`
+- Build distribution: `./gradlew installDist`
 - Run full pipeline against the default study set (Joshua/Judges/Ruth): `./gradlew run`
 - Run with args: `./gradlew run --args="luke --force-download"` (study set name, plus any flags from `BibleBowlCli`)
+- Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl acts -r text`
+- Run built binary with verbose logs: `./build/install/bible-bowl/bin/bible-bowl acts -v`
 - All tests: `./gradlew test`
 - Single test class: `./gradlew test --tests 'net.markdrew.biblebowl.analysis.FindNamesKtTest'`
 - Single test method: `./gradlew test --tests 'net.markdrew.biblebowl.model.VerseRefKtTest.<methodName>'`
@@ -84,6 +87,8 @@ All generators take `(StudyData, productsDir)` and write to `productsDir/<simple
 - Character offsets are over the joined `StudyData.text` string, not per-chapter. `DisjointRangeMap` operations (`enclose`, `intersect`, `valuesIntersectedBy`, etc.) come from `chupacabra`.
 - Many generators shell out for typesetting (e.g. `evince` to preview PDFs, LaTeX/Typst compilers must be installed for those output formats to actually produce PDFs).
 - `editorconfig` enforces 4-space indent, 120-col lines, LF, no trailing newline.
+- **Logging**: Console log output is restricted to `WARN`/`ERROR` level by default. Detailed logs (like cache loading events) are written to `~/.tbb/bible-bowl.log` at `DEBUG` level. To show detailed logs on the console, run with the `--verbose` / `-v` flag.
+- **Caching**: `AnnotationStore` manages sidecar caches (`~/.tbb/data/<studySet>`). The cache fingerprint (`codeVersion` header) is calculated using a deterministic bytecode-level classes walk (using normalized relative package paths) in both raw classes directory and packaged JARs, ensuring that switching execution environments doesn't invalidate cache.
 
 ## TODO.md
 
