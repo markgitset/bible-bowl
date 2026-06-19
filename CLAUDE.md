@@ -28,6 +28,7 @@ The `chupacabra` dependency is resolved from JitPack (configured in `settings.gr
 
 - `ESV_API_TOKEN` env var must be set to download new study sets via `EsvClient` / `EsvService` (see `ws/EsvClient.kt`). Without it, requests to api.esv.org go unauthenticated and will fail. Already-indexed data under `dataDir` can be regenerated without a token.
 - Default I/O layout lives under `~/.tbb/`: `~/.tbb/raw-data` (ESV JSON), `~/.tbb/data` (indexed `StudyData` files), `~/.tbb/products` (generated artifacts). Each can be overridden with `-r`, `-d`, `-p`. The repo also has its own `data/`, `raw-data/`, `products/` trees that some legacy code paths default to — prefer the `~/.tbb` layout via the CLI.
+- **Properties Configuration**: Default CLI values for the study set (`default-study-set`) and footer date (`test-date`) can be configured in a `bible-bowl.properties` file. Resolution order is: `./bible-bowl.properties` (CWD) -> `~/.tbb/bible-bowl.properties` (User global) -> hardcoded code defaults. Option `--test-date` or arguments on command line will override these values at runtime.
 
 ## Entry points
 

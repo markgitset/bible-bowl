@@ -70,12 +70,47 @@ private class TypstHandler(
               paper: "us-letter",
               margin: (top: 1in, bottom: 0.75in, x: 0.75in),
               columns: $columns,
-              footer: grid(
-                columns: (1fr, 1fr, 1fr),
-                align(left)[Texas Bible Bowl, ${escape(date)}],
-                align(center)[${escape(title)}],
-                align(right)[#context counter(page).display()],
-              ),
+              header: context {
+                let page-num = counter(page).get().first()
+                let page-verses = query(<verse-marker>).filter(v => v.location().page() == page-num)
+                let val = if page-verses.len() > 0 {
+                  if calc.even(page-num) {
+                    page-verses.first().value
+                  } else {
+                    page-verses.last().value
+                  }
+                } else {
+                  let before-verses = query(<verse-marker>).filter(v => v.location().page() < page-num)
+                  if before-verses.len() > 0 {
+                    before-verses.last().value
+                  } else {
+                    ""
+                  }
+                }
+                if val != "" {
+                  if calc.even(page-num) {
+                    align(left)[*#val*]
+                  } else {
+                    align(right)[*#val*]
+                  }
+                }
+              },
+              footer: context {
+                let page-num = counter(page).get().first()
+                if calc.even(page-num) {
+                  grid(
+                    columns: (1fr, 1fr),
+                    align(left)[#counter(page).display()],
+                    align(right)[Texas Bible Bowl, ${escape(date)}],
+                  )
+                } else {
+                  grid(
+                    columns: (1fr, 1fr),
+                    align(left)[Texas Bible Bowl, ${escape(date)}],
+                    align(right)[#counter(page).display()],
+                  )
+                }
+              },
             )
             #set text(font: "${style.mainFont}", size: ${layout.fontSize}pt)
             #set par(justify: $justify)
@@ -194,6 +229,8 @@ private class TypstHandler(
         useHeadingsForChapters: Boolean,
         inPoetry: Boolean,
     ) {
+        val formattedRef = escape(verse.format(FULL_BOOK_FORMAT))
+        out.append("#metadata(\"$formattedRef\")<verse-marker>")
         // In poetry, the line break is produced by paragraphEnd; only prose needs the leading newline.
         if (!inPoetry) out.appendLine()
         if (isFirstVerseOfChapter && !useHeadingsForChapters) {

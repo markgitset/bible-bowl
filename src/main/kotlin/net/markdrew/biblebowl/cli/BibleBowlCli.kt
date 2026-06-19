@@ -35,6 +35,8 @@ import net.markdrew.biblebowl.ws.EsvIndexer
 import net.markdrew.biblebowl.ws.Passage
 import java.nio.file.Path
 import java.time.LocalDate
+import kotlin.io.path.exists
+import kotlin.io.path.inputStream
 import kotlin.io.path.Path
 import kotlin.time.TimeSource
 import ch.qos.logback.classic.Logger
@@ -65,7 +67,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
 
     private val studySetName: String? by argument("STUDY_SET")
         .optional()
-        .help("Name of the study set to use (default: ${StandardStudySet.DEFAULT.simpleName})")
+        .help("Name of the study set to use (default: $DEFAULT_STUDY_SET_NAME)")
 
     private val forceDownload: Boolean by option("--force-download", "-F")
         .flag(default = false)
@@ -125,6 +127,11 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .default(defaultProductsPath)
         .help("Directory for output products (default: $defaultProductsPath)")
 
+    private val testDateOption: LocalDate by option("--test-date", envvar = "TEST_DATE")
+        .convert { LocalDate.parse(it) }
+        .default(DEFAULT_TEST_DATE)
+        .help("Date stamped on the cover/footer (default: $DEFAULT_TEST_DATE, format: YYYY-MM-DD)")
+
     override fun run() {
         configureConsoleLogging(verbose)
         val started = TimeSource.Monotonic.markNow()
@@ -138,7 +145,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val formats: Set<OutputFormat> =
             if (textFormats.isEmpty()) defaultTextFormats
             else textFormats.toSet()
-        val registry: List<StudyResource> = studyResources(formats, TEST_DATE)
+        val registry: List<StudyResource> = studyResources(formats, testDateOption)
 
         if (listResources) {
             printResourceList(registry)
@@ -179,7 +186,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
 
     private fun resolveStudySet(): StudySet = studySetName?.let { name ->
         StandardStudySet.parseOrNull(name) ?: throw UsageError("unrecognized study set: $name")
-    } ?: StandardStudySet.DEFAULT
+    } ?: (StandardStudySet.parseOrNull(DEFAULT_STUDY_SET_NAME) ?: StandardStudySet.DEFAULT)
 
     private fun loadStudyData(studySet: StudySet): StudyData = try {
         StudyData.readData(studySet, dataDir, rawDataDir, forceDownload)
@@ -246,8 +253,44 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
     }
 
     private companion object {
-        // Date stamped on generated covers/footers.
-        private val TEST_DATE: LocalDate = LocalDate.of(2026, 3, 28)
+        private val configProperties: java.util.Properties by lazy {
+            val props = java.util.Properties()
+            // 1. User config: ~/.tbb/bible-bowl.properties
+            val userConfig = net.markdrew.biblebowl.defaultTbbPath.resolve("bible-bowl.properties")
+            if (userConfig.exists()) {
+                try {
+                    userConfig.inputStream().use { props.load(it) }
+                } catch (e: Exception) {
+                    System.err.println("Warning: failed to load config from $userConfig: ${e.message}")
+                }
+            }
+            // 2. CWD config: ./bible-bowl.properties
+            val localConfig = java.nio.file.Path.of("bible-bowl.properties")
+            if (localConfig.exists()) {
+                try {
+                    localConfig.inputStream().use { props.load(it) }
+                } catch (e: Exception) {
+                    System.err.println("Warning: failed to load config from $localConfig: ${e.message}")
+                }
+            }
+            props
+        }
+
+        val DEFAULT_STUDY_SET_NAME: String = configProperties.getProperty("default-study-set", "acts")
+
+        val DEFAULT_TEST_DATE: LocalDate by lazy {
+            val dateStr = configProperties.getProperty("test-date")
+            if (dateStr != null) {
+                try {
+                    LocalDate.parse(dateStr)
+                } catch (e: Exception) {
+                    System.err.println("Warning: invalid test-date format in config: $dateStr. Expected YYYY-MM-DD.")
+                    LocalDate.of(2026, 3, 28)
+                }
+            } else {
+                LocalDate.of(2026, 3, 28)
+            }
+        }
     }
 }
 
