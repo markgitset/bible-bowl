@@ -119,11 +119,27 @@ class AnnotationStore(
             if (Files.isDirectory(path)) { // `./gradlew run` runs from build/classes/kotlin/main
                 Files.walk(path).use { stream ->
                     stream.filter { it.toString().endsWith(".class") }.sorted().forEach {
-                        md.update(it.toString().toByteArray()); md.update(Files.readAllBytes(it))
+                        val relPath = path.relativize(it).toString().replace('\\', '/')
+                        md.update(relPath.toByteArray(Charsets.UTF_8))
+                        md.update(Files.readAllBytes(it))
                     }
                 }
             } else { // packaged jar
-                md.update(Files.readAllBytes(path))
+                java.util.zip.ZipFile(path.toFile()).use { zip ->
+                    zip.entries().asSequence()
+                        .filter { it.name.endsWith(".class") }
+                        .sortedWith(compareBy { it.name })
+                        .forEach { entry ->
+                            md.update(entry.name.toByteArray(Charsets.UTF_8))
+                            zip.getInputStream(entry).use { input ->
+                                val buffer = ByteArray(8192)
+                                var bytesRead: Int
+                                while (input.read(buffer).also { bytesRead = it } != -1) {
+                                    md.update(buffer, 0, bytesRead)
+                                }
+                            }
+                        }
+                }
             }
             return md.digest().take(6).joinToString("") { "%02x".format(it) }
         }

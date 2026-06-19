@@ -37,6 +37,9 @@ import java.nio.file.Path
 import java.time.LocalDate
 import kotlin.io.path.Path
 import kotlin.time.TimeSource
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.filter.ThresholdFilter
+import org.slf4j.LoggerFactory
 
 /**
  * Clikt command that drives the full BibleBowl generation pipeline
@@ -93,6 +96,10 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .flag(default = false)
         .help("Interactively pick which resources to generate from a checklist (default: false)")
 
+    private val verbose: Boolean by option("--verbose", "-v")
+        .flag(default = false)
+        .help("Enable verbose console logging (default: false)")
+
     private val listResources: Boolean by option("--list")
         .flag(default = false)
         .help("List the available resources and categories, then exit (default: false)")
@@ -119,6 +126,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .help("Directory for output products (default: $defaultProductsPath)")
 
     override fun run() {
+        configureConsoleLogging(verbose)
         val started = TimeSource.Monotonic.markNow()
         print(BANNER)
 
@@ -225,6 +233,16 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             }
         }.orEmpty().toSet()
         return registry.filter { it.slug in chosenSlugs }
+    }
+
+    private fun configureConsoleLogging(verbose: Boolean) {
+        val root = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME) as? Logger ?: return
+        val consoleAppender = root.getAppender("STDOUT") ?: return
+        consoleAppender.clearAllFilters()
+        val filter = ThresholdFilter()
+        filter.setLevel(if (verbose) "INFO" else "WARN")
+        filter.start()
+        consoleAppender.addFilter(filter)
     }
 
     private companion object {
