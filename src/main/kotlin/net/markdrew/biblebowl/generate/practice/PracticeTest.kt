@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StudySet
 import java.nio.file.Files
@@ -46,7 +46,7 @@ data class PracticeTest(
      * Builds the standard `.tex` output path for this test under [productsDir], encoding the round, covered
      * chapter range, and seed. Creates parent directories as a side effect.
      */
-    fun buildTexFileName(productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path {
+    fun buildTexFileName(productsDir: Path = defaultProductsPath): Path {
         val setName = studySet.simpleName
         val fileName: String = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d.tex"
             .format(randomSeed)

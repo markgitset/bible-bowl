@@ -1,7 +1,8 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
+import java.nio.file.Path
 import net.markdrew.biblebowl.analysis.oneSectionWords
 import net.markdrew.biblebowl.flashcards.Card
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -73,7 +74,7 @@ fun main(args: Array<String>) {
  * One-chapter and one-heading cards are merged so any word appearing in both lists collapses to the
  * narrower (heading) scope.
  */
-fun writeCramFewTimeWords(studyData: StudyData) {
+fun writeCramFewTimeWords(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     // build one-chapter words
     val oneChapterWordCards: Map<Card, IntRange> =
         oneSectionWordCards(studyData, studyData.chapters) { it.format(FULL_BOOK_FORMAT) }
@@ -87,7 +88,7 @@ fun writeCramFewTimeWords(studyData: StudyData) {
 
     // write 'em out
     val simpleName = studyData.studySet.simpleName
-    val outFile = File("$PRODUCTS_DIR_NAME/$simpleName/cram", "$simpleName-cram-local-words.tsv")
+    val outFile = productsDir.resolve("$simpleName/cram/$simpleName-cram-local-words.tsv").toFile()
     CardWriter.writeCards(fewTimeWordCards, outFile)
     println("Wrote local words cards to $outFile")
 }

@@ -1,7 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
 import net.markdrew.biblebowl.analysis.ChapterIndexEntry
 import net.markdrew.biblebowl.analysis.VerseIndexEntry
 import net.markdrew.biblebowl.analysis.WordIndexEntry
@@ -29,7 +28,7 @@ fun main() {
 private fun writeOneTimeWordsList(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
     val names: List<String> = oneTimeWords(studyData).map { studyData.excerpt(it).excerptText }.sorted()
-    val dir = File("$PRODUCTS_DIR_NAME/$studyName/lists").also { it.mkdirs() }
+    val dir = defaultProductsPath.resolve("$studyName/lists").toFile().also { it.mkdirs() }
     val file = dir.resolve("$studyName-list-unique-words.txt")
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
@@ -39,7 +38,7 @@ private fun writeOneTimeWordsList(studyData: StudyData) {
 /** Writes the one-time-words index (alphabetical + by appearance) for [studyData] as a LaTeX PDF. */
 fun writeOneTimeWordsIndex(
     studyData: StudyData,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     oneTimeWordRanges: List<IntRange> = oneTimeWords(studyData),
 ) {
     val simpleName = studyData.studySet.simpleName

@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
 }
 
 /** Writes a Cram-style TSV of verse flashcards (verse text -> heading + reference) for [studyData]. */
-fun writeCramVerses(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeCramVerses(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val setName = studyData.studySet.simpleName
 
     val cramFile = productsDir.resolve(setName, "cram", "$setName-cram-verses.tsv")

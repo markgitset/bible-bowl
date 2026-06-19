@@ -1,3 +1,4 @@
+@file:Suppress("DEPRECATION")
 package net.markdrew.biblebowl.latex
 
 import net.markdrew.biblebowl.defaultProductsPath

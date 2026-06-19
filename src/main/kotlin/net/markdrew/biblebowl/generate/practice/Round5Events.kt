@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.BookFormat
@@ -105,7 +105,7 @@ data class MultiChoiceQuestion(val question: Question, val choices: List<Chapter
  */
 fun writeRound5Events(
     practiceTest: PracticeTest,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
 ): Path? {
     // not enough chapters in practice content to build a reasonable practice test
     if (practiceTest.content.coveredChapters.size < 3) return null

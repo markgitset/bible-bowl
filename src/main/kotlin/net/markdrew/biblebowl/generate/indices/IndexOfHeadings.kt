@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.latex.writeDoc
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
 }
 
 /** Writes the headings list as a fixed-width text file (verse range left, title right). */
-fun writeHeadingsText(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeHeadingsText(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val studyName = studyData.studySet.simpleName
     val dir = productsDir.resolve(studyName, "lists").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.txt")
@@ -52,7 +52,7 @@ private fun Writer.writeCsv(headings: List<Heading>) {
 }
 
 /** Writes the headings list as a CSV file with book/chapter/heading/verseRange columns. */
-fun writeHeadingsCsv(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeHeadingsCsv(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val studyName = studyData.studySet.simpleName
     val dir = productsDir.resolve(studyName, "csv").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.csv")
@@ -61,7 +61,7 @@ fun writeHeadingsCsv(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_
 }
 
 /** Writes the headings index as a two-column LaTeX PDF, grouped by chapter. */
-fun writeHeadingsPdf(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeHeadingsPdf(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val studyName = studyData.studySet.simpleName
     val dir = productsDir.resolve(studyName, "indices").also { Files.createDirectories(it) }
     val file = dir.resolve("$studyName-headings.tex")

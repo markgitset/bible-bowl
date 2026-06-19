@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
  * Mines the study text for unambiguous in-quotes sentences and asks contestants to identify the chapter
  * each quotation comes from.
  */
-fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)): Path? {
+fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = defaultProductsPath): Path? {
     val studyData: StudyData = practiceTest.content.studyData
 
     // not enough chapters in practice content to build a reasonable practice test

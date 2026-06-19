@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.generate.practice.BibleUse.CLOSED
 import net.markdrew.biblebowl.generate.practice.BibleUse.OPEN
 import net.markdrew.biblebowl.model.PracticeContent
@@ -61,7 +61,7 @@ fun practiceTest(round: Round, content: PracticeContent, seed: Int, numQuestions
  */
 fun writeFullSet(
     studyData: StudyData,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     repsPerRange: Int = 5,
     writer: (content: PracticeContent, seed: Int, productsDir: Path) -> Unit,
 ) {

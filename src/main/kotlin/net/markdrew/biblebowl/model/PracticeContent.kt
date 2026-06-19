@@ -12,6 +12,7 @@ import net.markdrew.chupacabra.core.intersect
  * @param coveredChapters the chapters in scope, in Bible order; must be a subset of [studyData]'s chapters
  * @throws IllegalArgumentException if [coveredChapters] is empty or contains chapters outside [studyData]
  */
+@ConsistentCopyVisibility
 data class PracticeContent internal constructor(
     val studyData: StudyData,
     val coveredChapters: List<ChapterRef> = studyData.chapterRefs

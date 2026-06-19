@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
@@ -49,7 +49,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
             )
         }
     val simpleName = studyData.studySet.simpleName
-    val dir = File("$PRODUCTS_DIR_NAME/$simpleName/indices").also { it.mkdirs() }
+    val dir = defaultProductsPath.resolve("$simpleName/indices").toFile().also { it.mkdirs() }
     val file = dir.resolve("$simpleName-index-phrases.tex")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
@@ -83,7 +83,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
  *
  * "Non-local" = phrases that recur across more than one chapter; see [buildNonLocalPhrasesIndex].
  */
-fun writeNonLocalPhrasesIndex(studyData: StudyData, productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+fun writeNonLocalPhrasesIndex(studyData: StudyData, productsDir: Path = defaultProductsPath,
                               maxPhraseLength: Int = 50) {
     val indexEntries: List<WordIndexEntryC> = buildNonLocalPhrasesIndex(studyData, maxPhraseLength)
         .map { phraseIndexEntry ->

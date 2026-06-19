@@ -67,7 +67,7 @@ val defaultTbbPath: Path = userHomeDir.resolve(".tbb")
 val defaultDataPath: Path = defaultTbbPath.resolve(DATA_DIR_NAME)
 
 /** Default location for generated artifacts (`~/.tbb/products/`) */
-val defaultProductsPath: Path = defaultTbbPath.resolve(PRODUCTS_DIR_NAME)
+val defaultProductsPath: Path = defaultTbbPath.resolve("products")
 
 /** Default location for the raw ESV download cache (`~/.tbb/raw-data/`) */
 val defaultRawDataPath: Path = defaultTbbPath.resolve(RAW_DATA_DIR_NAME)

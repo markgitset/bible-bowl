@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.practice
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.generate.normalizeWS
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
  */
 fun writeRound1VerseFind(
     practiceTest: PracticeTest,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     minCharLength: Int = 15,
 ): Path {
     val content: PracticeContent = practiceTest.content

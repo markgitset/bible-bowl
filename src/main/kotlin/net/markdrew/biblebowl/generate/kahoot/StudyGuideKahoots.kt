@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.kahoot
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -61,7 +61,7 @@ private fun writeStudyGuideKahoot(
     val chapterString = chapterRef.format(BRIEF_BOOK_FORMAT).lowercase().replace(' ', '-')
     val fileName = "study-guide-kahoot-$chapterString"
 
-    val xlsxFile = File("$PRODUCTS_DIR_NAME/$setName/kahoot/study-guide/$fileName.xlsx")
+    val xlsxFile = defaultProductsPath.resolve("$setName/kahoot/study-guide/$fileName.xlsx").toFile()
     kahoot(xlsxFile) {
         for (sgQuestion in studyGuideQuestions.filter { it.chapterRef == chapterRef }) {
             question(

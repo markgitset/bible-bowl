@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNamesIndex
@@ -29,7 +29,7 @@ fun main() {
 private fun writeNamesList(studyData: StudyData) {
     val studyName = studyData.studySet.simpleName
     val names: Sequence<String> = findNames(studyData).map { it.excerptText }.sorted().distinct()
-    val dir = File("$PRODUCTS_DIR_NAME/$studyName/lists").also { it.mkdirs() }
+    val dir = defaultProductsPath.resolve("$studyName/lists").toFile().also { it.mkdirs() }
     val file = dir.resolve("$studyName-list-names.txt")
     file.writer().use { writer ->
         for (name in names) writer.appendLine(name)
@@ -40,7 +40,7 @@ private fun writeNamesList(studyData: StudyData) {
 /** Writes the names index (alphabetical + frequency) for [studyData] as a LaTeX PDF. */
 fun writeNamesIndex(
     studyData: StudyData,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     nameRanges: List<IntRange> = findNames(studyData).map { it.excerptRange }.toList(),
 ) {
     val studyName = studyData.studySet.simpleName

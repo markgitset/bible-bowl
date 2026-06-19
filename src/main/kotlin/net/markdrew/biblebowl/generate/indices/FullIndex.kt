@@ -1,6 +1,6 @@
 package net.markdrew.biblebowl.generate.indices
 
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.analysis.STOP_WORDS
 import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
  *
  * Excludes [stopWords] from the alphabetical section. The frequency section omits one-time words.
  */
-fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS, productsDir: Path = Path.of(PRODUCTS_DIR_NAME)) {
+fun writeFullIndex(studyData: StudyData, stopWords: Set<String> = STOP_WORDS, productsDir: Path = defaultProductsPath) {
     val indexEntries: List<WordIndexEntryC> = buildWordIndex(studyData)
         .map { wordIndexEntry ->
             WordIndexEntryC(

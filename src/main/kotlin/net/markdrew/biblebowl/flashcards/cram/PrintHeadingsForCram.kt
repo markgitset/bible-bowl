@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.flashcards.cram
 
 import net.markdrew.biblebowl.BANNER
-import net.markdrew.biblebowl.PRODUCTS_DIR_NAME
+import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.model.ChapterRange
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -48,7 +48,7 @@ private fun makePath(
     studyData: StudyData,
     fileType: String,
     chapterRange: ChapterRange,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME)
+    productsDir: Path = defaultProductsPath
 ): Path {
     val setName = studyData.studySet.simpleName
     val actualChapterRange = chapterRange.intersect(studyData.chapterRange)
@@ -67,7 +67,7 @@ private fun makePath(
  */
 fun writeCramHeadings(
     studyData: StudyData,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     chapterRange: ChapterRange = studyData.chapterRange
 ) {
     // NOTE: Headings may not be unique within a book! (e.g., "Jesus Heals Many" in Mat 8 and 15)
@@ -92,7 +92,7 @@ fun writeCramHeadings(
  */
 fun writeCramReverseHeadings(
     studyData: StudyData,
-    productsDir: Path = Path.of(PRODUCTS_DIR_NAME),
+    productsDir: Path = defaultProductsPath,
     chapterRange: ChapterRange = studyData.chapterRange,
 ) {
     val cramHeadingsPath = makePath(studyData, "cram-reverse-headings", chapterRange, productsDir)

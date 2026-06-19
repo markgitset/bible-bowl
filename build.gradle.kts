@@ -8,17 +8,19 @@ plugins {
 }
 
 // set the project version from tags and commits in Git repository
-val gitVersion: groovy.lang.Closure<String> by extra
+@Suppress("UNCHECKED_CAST")
+val gitVersion = extra["gitVersion"] as groovy.lang.Closure<String>
 version = gitVersion()
 
 kotlin {
-    val jvmVersion: String by project.properties
+    val jvmVersion = project.findProperty("jvmVersion") as String
     jvmToolchain(jvmVersion.toInt())
 }
 
 application {
 //    mainClass.set("net.markdrew.biblebowl.MainKt")
     mainClass.set("net.markdrew.biblebowl.cli.BibleBowlCliKt")
+    applicationDefaultJvmArgs = listOf("--enable-native-access=ALL-UNNAMED")
 }
 
 dependencies {
