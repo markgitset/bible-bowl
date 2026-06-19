@@ -29,6 +29,7 @@ import java.util.zip.ZipFile
  * intentional output change is made and the snapshots need to be regenerated.
  */
 class TextWriterFidelityTest : StringSpec({
+    System.setProperty("skip-pdf-generation", "true")
 
     val regenerate = System.getProperty("regenerate-baseline-texts") != null
     val studySetDir = defaultDataPath.resolve("josh-judg-ruth")

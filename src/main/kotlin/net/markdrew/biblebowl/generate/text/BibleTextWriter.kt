@@ -1,8 +1,10 @@
 package net.markdrew.biblebowl.generate.text
 
+import net.markdrew.biblebowl.ws.DEFAULT_COPYRIGHT_DISCLAIMER
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.StudyData
 import java.nio.file.Path
+
 
 /**
  * Identifier for an output technology.
@@ -77,5 +79,6 @@ interface BibleTextWriter {
         studyData: StudyData,
         layout: LayoutOptions,
         features: FeatureOptions,
+        copyrightDisclaimer: String = DEFAULT_COPYRIGHT_DISCLAIMER,
     )
 }

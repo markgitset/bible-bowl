@@ -47,26 +47,44 @@ class LatexBibleTextWriter : BibleTextWriter {
         studyData: StudyData,
         layout: LayoutOptions,
         features: FeatureOptions,
+        copyrightDisclaimer: String,
     ) {
         require(supports(layout)) {
             "LatexBibleTextWriter requires layout.twoColumns = true (preamble hardcodes \\begin{multicols}{2})"
         }
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, layout, features, LatexHandler(out))
+            BibleTextWalker.walk(doc, studyData, layout, features, LatexHandler(out, copyrightDisclaimer))
         }
         println("Wrote $outputFile")
-        outputFile.latexToPdf(twice = true, keepTexFiles = true, showStdIo = false)
+        if (System.getProperty("skip-pdf-generation") != "true") {
+            outputFile.latexToPdf(twice = true, keepTexFiles = true, showStdIo = false)
+        }
     }
 }
 
-private class LatexHandler(private val out: Appendable) : BibleTextHandler {
+fun formatLatexCopyright(disclaimer: String): String {
+    return disclaimer
+        .replace("&", "\\&")
+        .replace("_", "\\_")
+        .replace("%", "\\%")
+        .replace("®", "\\textsuperscript{\\textregistered}")
+        .replace("©", "\\textsuperscript{\\textcopyright}")
+        .replace("\u00a0", "~")
+        .split("\n\n")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .joinToString("\n\n\\noindent ")
+}
+
+private class LatexHandler(private val out: Appendable, private val copyrightDisclaimer: String) : BibleTextHandler {
 
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         preamble(out, studyData.studySet.name, layout.testDate.format(dateFormatter), layout, features)
     }
 
     override fun documentEnd() {
+        val formattedDisclaimer = formatLatexCopyright(copyrightDisclaimer)
         out.appendLine(
             """
 
@@ -74,11 +92,7 @@ private class LatexHandler(private val out: Appendable) : BibleTextHandler {
                 \vspace*{\fill}
                 \vspace{\baselineskip}
                 \footnotesize
-                \noindent %\raggedright
-                Taken from the \textit{ESV}\textsuperscript{\textregistered}\textit{ Bible }
-                (\textit{The Holy Bible, English Standard Version}\textsuperscript{\textregistered}),
-                Copyright \textsuperscript{\textcopyright} 2001 by Crossway,
-                a publishing ministry of Good News Publishers. Used by permission. All rights reserved.
+                \noindent $formattedDisclaimer
                 \vspace{\baselineskip}
                 \end{document}
             """.trimIndent()

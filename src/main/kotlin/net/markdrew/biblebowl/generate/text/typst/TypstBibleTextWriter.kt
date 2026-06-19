@@ -41,19 +41,23 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
         studyData: StudyData,
         layout: LayoutOptions,
         features: FeatureOptions,
+        copyrightDisclaimer: String,
     ) {
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, layout, features, TypstHandler(out, style))
+            BibleTextWalker.walk(doc, studyData, layout, features, TypstHandler(out, style, copyrightDisclaimer))
         }
         println("Wrote $outputFile")
-        outputFile.typstToPdf(keepTypFiles = true)
+        if (System.getProperty("skip-pdf-generation") != "true") {
+            outputFile.typstToPdf(keepTypFiles = true)
+        }
     }
 }
 
 private class TypstHandler(
     private val out: Appendable,
     private val style: TypstStyle,
+    private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
 
     /** Indent level of the poetry line currently being emitted; passed from [paragraphBegin] to
@@ -167,13 +171,15 @@ private class TypstHandler(
     override fun documentEnd() {
         out.appendLine()
         out.appendLine()
+        val paragraphs = copyrightDisclaimer.split("\n\n")
+            .map { escape(it.trim()) }
+            .filter { it.isNotEmpty() }
+            .joinToString("\n\n  ")
         out.appendLine("""
             #v(1em)
             #align(center)[
               #set text(size: 0.85em)
-              Taken from the _ESV® Bible_ (_The Holy Bible, English Standard Version®_),
-              Copyright © 2001 by Crossway, a publishing ministry of Good News Publishers.
-              Used by permission. All rights reserved.
+              $paragraphs
             ]
         """.trimIndent())
     }

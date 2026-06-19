@@ -16,6 +16,8 @@ import net.markdrew.biblebowl.generate.text.typst.TypstBibleTextWriter
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
+import net.markdrew.biblebowl.ws.DEFAULT_COPYRIGHT_DISCLAIMER
+import net.markdrew.biblebowl.ws.EsvClient
 import java.nio.file.Path
 import java.time.LocalDate
 
@@ -48,8 +50,9 @@ object BibleTextPipeline {
         writer: BibleTextWriter,
         productsPath: Path,
         store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
-    ): Path = render(studyData, BibleAnnotationPipeline.build(studyData, features, store), layout, features, writer, productsPath)
-
+        copyrightDisclaimer: String = DEFAULT_COPYRIGHT_DISCLAIMER,
+    ): Path = render(studyData, BibleAnnotationPipeline.build(studyData, features, store), layout, features, writer, productsPath, copyrightDisclaimer)
+ 
     /**
      * Renders an already-built [doc] for the given [layout]/[features] via [writer].
      *
@@ -64,12 +67,13 @@ object BibleTextPipeline {
         features: FeatureOptions,
         writer: BibleTextWriter,
         productsPath: Path,
+        copyrightDisclaimer: String = DEFAULT_COPYRIGHT_DISCLAIMER,
     ): Path {
         require(writer.supports(layout)) {
             "Writer ${writer::class.simpleName} does not support layout $layout"
         }
         val outputFile = computeOutputPath(studyData, layout, features, writer.format, productsPath)
-        writer.write(outputFile, doc, studyData, layout, features)
+        writer.write(outputFile, doc, studyData, layout, features, copyrightDisclaimer)
         return outputFile
     }
 
@@ -131,6 +135,8 @@ fun generateBibleTexts(
     productsPath: Path,
     formats: Set<OutputFormat> = setOf(Docx, Latex, Typst),
     store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
+    rawDataDir: Path = defaultRawDataPath,
+    forceDownload: Boolean = false,
 ) {
     val tbbLayoutPlain = LayoutOptions(testDate = testDate, fontSize = 12)
     val marksLayoutPlain = LayoutOptions(
@@ -153,12 +159,18 @@ fun generateBibleTexts(
     val docByFeatures: Map<FeatureOptions, AnnotatedDoc<AnalysisUnit>> =
         featureVariants.associateWith { BibleAnnotationPipeline.build(studyData, it, store) }
 
+    val copyrightDisclaimer = try {
+        EsvClient(rawDataDir = rawDataDir).fetchCopyrightDisclaimer(forceDownload = forceDownload)
+    } catch (e: Exception) {
+        DEFAULT_COPYRIGHT_DISCLAIMER
+    }
+
     if (Docx in formats) {
         val tbb = DocxBibleTextWriter(TbbDocxStyle)
         val marks = DocxBibleTextWriter(MarksDocxStyle)
         for ((writer, layout) in listOf(tbb to tbbLayoutPlain, marks to marksLayoutPlain)) {
             for (features in featureVariants) {
-                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath)
+                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
             }
         }
     }
@@ -169,7 +181,7 @@ fun generateBibleTexts(
         for ((writer, layout) in listOf(tbbLatex to tbbLayoutPlain, marksLatex to marksLayoutPlain)) {
             for (features in featureVariants) {
                 try {
-                    BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath)
+                    BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
                 } catch (e: IllegalArgumentException) {
                     val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
                     println("Skipping $outFile due to: " + e.message)
@@ -183,7 +195,7 @@ fun generateBibleTexts(
         val marksTypst = TypstBibleTextWriter(MarksTypstStyle)
         for ((writer, layout) in listOf(tbbTypst to tbbLayoutPlain, marksTypst to marksLayoutPlain)) {
             for (features in featureVariants) {
-                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath)
+                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
             }
         }
     }

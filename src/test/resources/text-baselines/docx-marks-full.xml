@@ -1,4 +1,4 @@
-    <w:body><!-- Created by docx4j 11.4.11 (Apache licensed) using REFERENCE JAXB in Azul Systems, Inc. Java 23.0.1 on Linux -->
+    <w:body><!-- Created by docx4j 11.4.11 (Apache licensed) using REFERENCE JAXB in Eclipse Adoptium Java 23.0.2 on Mac OS X -->
         <w:p>
             <w:pPr>
                 <w:pStyle w:val="Heading1"/>
@@ -68395,9 +68395,7 @@
                     <w:sz w:val="16"/>
                     <w:szCs w:val="16"/>
                 </w:rPr>
-                <w:t xml:space="preserve">Taken from the ESV ® Bible (The Holy Bible, English Standard Version®), </w:t>
-                <w:br/>
-                <w:t>Copyright © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
+                <w:t xml:space="preserve">ESV® Bible (The Holy Bible, English Standard Version®), copyright © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</w:t>
             </w:r>
         </w:p>
         <w:sectPr>

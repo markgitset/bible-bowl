@@ -18,6 +18,9 @@ import kotlin.io.path.writeText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+const val DEFAULT_COPYRIGHT_DISCLAIMER = "ESV® Bible (The Holy Bible, English Standard Version®), copyright ©\u00a02001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved."
+
+
 /**
  * High-level wrapper around [EsvService] that fetches one chapter at a time and caches the JSON response on disk
  *
@@ -78,6 +81,73 @@ class EsvClient(
         indentPsalmDoxology,
         lineLength
     )
+ 
+    fun fetchCopyrightDisclaimer(forceDownload: Boolean = false): String {
+        val cacheFile = rawDataDir.resolve("copyright.txt")
+        if (!forceDownload && cacheFile.isReadable()) {
+            try {
+                val cachedText = cacheFile.readText().trim()
+                if (cachedText.isNotEmpty()) {
+                    return cachedText
+                }
+            } catch (e: Exception) {
+                // ignore and fetch
+            }
+        }
+
+        var fromService = false
+        val disclaimer = try {
+            val response = esvService.text(
+                query = "John 11:35",
+                includePassageReferences = false,
+                includeFirstVerseNumbers = false,
+                includeVerseNumbers = false,
+                includeFootnotes = false,
+                includeFootnoteBody = false,
+                includeShortCopyright = false,
+                includeCopyright = true,
+                includePassageHorizontalLines = false,
+                includeHeadingHorizontalLines = false,
+                includeHeadings = false,
+            ).execute()
+            if (response.isSuccessful) {
+                val text = response.body()?.passages?.firstOrNull()
+                if (text != null) {
+                    val index = text.indexOf("ESV® Bible")
+                    val parsed = if (index != -1) {
+                        text.substring(index).trim()
+                    } else {
+                        val doubleNewlineIndex = text.indexOf("\n\n")
+                        if (doubleNewlineIndex != -1) {
+                            text.substring(doubleNewlineIndex + 2).trim()
+                        } else {
+                            text.trim()
+                        }
+                    }
+                    val firstParagraph = parsed.substringBefore("\n\n").trim()
+                    fromService = true
+                    firstParagraph
+                } else {
+                    DEFAULT_COPYRIGHT_DISCLAIMER
+                }
+            } else {
+                DEFAULT_COPYRIGHT_DISCLAIMER
+            }
+        } catch (e: Exception) {
+            DEFAULT_COPYRIGHT_DISCLAIMER
+        }
+
+        if (fromService) {
+            try {
+                cacheFile.parent.createDirectories()
+                cacheFile.writeText(disclaimer)
+            } catch (e: Exception) {
+                // ignore write errors
+            }
+        }
+
+        return disclaimer
+    }
 
     private fun queryPassage(singleQuery: String): Passage {
         require(',' !in singleQuery) { "singleQuery may not contain a comma!" }

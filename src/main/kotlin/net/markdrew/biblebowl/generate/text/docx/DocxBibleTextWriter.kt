@@ -89,12 +89,15 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
         studyData: StudyData,
         layout: LayoutOptions,
         features: FeatureOptions,
+        copyrightDisclaimer: String,
     ) {
         Files.createDirectories(outputFile.parent)
-        val handler = DocxHandler(style, layout, features)
+        val handler = DocxHandler(style, layout, features, copyrightDisclaimer)
         BibleTextWalker.walk(doc, studyData, layout, features, handler)
         handler.save(outputFile.toFile())
-        outputFile.docxToPdf()
+        if (System.getProperty("skip-pdf-generation") != "true") {
+            outputFile.docxToPdf()
+        }
     }
 }
 
@@ -102,6 +105,7 @@ private class DocxHandler(
     private val style: DocxStyle,
     private val layout: LayoutOptions,
     private val features: FeatureOptions,
+    private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
 
     private val factory = ObjectFactory()
@@ -391,8 +395,54 @@ private class DocxHandler(
         }
     }
 
+    private fun String.escapeXml(): String {
+        return this.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&apos;")
+    }
+
     private fun addEndMatter() {
-        addContentsFromDoc(template("endMatter.xml"))
+        val fontSize = if (style.resourcePath.contains("tbb")) "18" else "16"
+        val paragraphsXml = copyrightDisclaimer.split("\n\n")
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .joinToString("\n") { para ->
+                """
+                <w:p>
+                  <w:pPr>
+                    <w:pStyle w:val="Normal"/>
+                    <w:spacing w:before="234" w:after="234"/>
+                    <w:jc w:val="center"/>
+                  </w:pPr>
+                  <w:r>
+                    <w:rPr>
+                      <w:sz w:val="$fontSize"/>
+                      <w:szCs w:val="$fontSize"/>
+                    </w:rPr>
+                    <w:t xml:space="preserve">${para.escapeXml()}</w:t>
+                  </w:r>
+                </w:p>
+                """.trimIndent()
+            }
+        
+        val docXml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    $paragraphsXml
+  </w:body>
+</w:document>"""
+        
+        try {
+            val doc = java.io.ByteArrayInputStream(docXml.toByteArray(Charsets.UTF_8)).use {
+                XmlUtils.unmarshal(it) as Document
+            }
+            mainPart.content.addAll(doc.body.content)
+        } catch (e: Exception) {
+            System.err.println("Warning: failed to parse dynamic end matter: ${e.message}")
+            addContentsFromDoc(template("endMatter.xml"))
+        }
     }
 
     private fun addFootnotes() {

@@ -145,7 +145,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val formats: Set<OutputFormat> =
             if (textFormats.isEmpty()) defaultTextFormats
             else textFormats.toSet()
-        val registry: List<StudyResource> = studyResources(formats, testDateOption)
+        val registry: List<StudyResource> = studyResources(formats, testDateOption, rawDataDir, forceDownload)
 
         if (listResources) {
             printResourceList(registry)

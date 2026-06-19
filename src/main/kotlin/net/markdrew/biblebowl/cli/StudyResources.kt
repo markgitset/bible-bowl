@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.cli
 
+import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.analysis.OneTimeWordsSource
 import net.markdrew.biblebowl.analysis.WordList
@@ -77,10 +78,15 @@ private val WORD_LISTS: List<WordListSpec> = listOf(
  * Kahoot, monikers, event-card, and Anki generators exist in the codebase but are intentionally not
  * registered here (they aren't part of the standard year set today); adding one is a single `+=`.
  */
-fun studyResources(formats: Set<OutputFormat>, testDate: LocalDate): List<StudyResource> = buildList {
+fun studyResources(
+    formats: Set<OutputFormat>,
+    testDate: LocalDate,
+    rawDataDir: Path = defaultRawDataPath,
+    forceDownload: Boolean = false,
+): List<StudyResource> = buildList {
     // TEXT
     add(StudyResource("text", TEXT, "Bible text variants") { data, store, dir ->
-        generateBibleTexts(data, testDate, dir, formats, store)
+        generateBibleTexts(data, testDate, dir, formats, store, rawDataDir, forceDownload)
     })
 
     // INDICES

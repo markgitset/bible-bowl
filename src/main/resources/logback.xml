@@ -21,7 +21,7 @@
 
     <logger name="org.apache.http" level="INFO"/>
     <logger name="org.crosswire.jsword" level="WARN"/>
-    <logger name="org.docx4j" level="WARN"/>
+    <logger name="org.docx4j" level="ERROR"/>
 
     <root level="DEBUG">
         <appender-ref ref="FILE" />
