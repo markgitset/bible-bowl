@@ -137,9 +137,9 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         "--two-columns" to true, "--no-two-columns" to false,
     ).help("Override two-column layout")
 
-    private val chapterHeadingsOverride: Boolean? by option().switch(
-        "--chapter-headings" to true, "--no-chapter-headings" to false,
-    ).help("Override heading-style chapter titles (vs. inline labels)")
+    private val inlineChapterLabelsOverride: Boolean? by option().switch(
+        "--inline-chapter-labels" to true, "--no-inline-chapter-labels" to false,
+    ).help("Override inline chapter labels at the start of the first verse (vs. heading-style chapter titles)")
 
     private val pageBreakChaptersOverride: Boolean? by option().switch(
         "--page-break-chapters" to true, "--no-page-break-chapters" to false,
@@ -195,7 +195,8 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
             fontSize = fontSizeOverride,
             twoColumns = twoColumnsOverride,
             chapterBreaksPage = pageBreakChaptersOverride,
-            useHeadingsForChapters = chapterHeadingsOverride,
+            // CLI speaks in terms of inline labels; the model field is the inverse (use headings?).
+            useHeadingsForChapters = inlineChapterLabelsOverride?.let { !it },
             underlineUniqueWords = underlineUniqueOverride,
             highlight = highlightOverride,
             verseOnNewLine = versePerLineOverride,
