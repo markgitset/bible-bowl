@@ -112,6 +112,10 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .help("Text format(s) to generate; repeatable. One of: ${OutputFormat.all.joinToString { it.subdir }} " +
             "(default: ${defaultTextFormats.joinToString { it.subdir }})")
 
+    private val versePerLine: Boolean by option("--verse-per-line")
+        .flag(default = false)
+        .help("Start each verse on a new line (Typst only; other formats are skipped with a message)")
+
     private val dataDir: Path by option("--data-dir")
         .convert { Path(it) }
         .default(defaultDataPath)
@@ -145,7 +149,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val formats: Set<OutputFormat> =
             if (textFormats.isEmpty()) defaultTextFormats
             else textFormats.toSet()
-        val registry: List<StudyResource> = studyResources(formats, testDateOption, rawDataDir, forceDownload)
+        val registry: List<StudyResource> = studyResources(formats, testDateOption, rawDataDir, forceDownload, versePerLine)
 
         if (listResources) {
             printResourceList(registry)

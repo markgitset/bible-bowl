@@ -45,7 +45,7 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
     ) {
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, layout, features, TypstHandler(out, style, copyrightDisclaimer))
+            BibleTextWalker.walk(doc, studyData, layout, features, TypstHandler(out, style, copyrightDisclaimer, features.verseOnNewLine))
         }
         println("Wrote $outputFile")
         if (System.getProperty("skip-pdf-generation") != "true") {
@@ -58,11 +58,16 @@ private class TypstHandler(
     private val out: Appendable,
     private val style: TypstStyle,
     private val copyrightDisclaimer: String,
+    private val verseOnNewLine: Boolean = false,
 ) : BibleTextHandler {
 
     /** Indent level of the poetry line currently being emitted; passed from [paragraphBegin] to
      *  [verseBegin] so the hanging verse number knows how far back to reach. 0 outside poetry. */
     private var currentPoetryIndentLevel = 0
+
+    /** True until the first verse of the current prose paragraph is emitted; used by [verseOnNewLine]
+     *  to skip the leading line break on a paragraph's opening verse. */
+    private var firstVerseInParagraph = false
 
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         val columns = if (layout.twoColumns) 2 else 1
@@ -205,6 +210,7 @@ private class TypstHandler(
         // Prose paragraphs and base-level (0) poetry lines start flush; line separation comes from
         // paragraphEnd(). Wrapped lines hang at `pstep * 4` via the block's hanging-indent setting.
         currentPoetryIndentLevel = if (inPoetry) poetryIndentLevel else 0
+        firstVerseInParagraph = true
         if (inPoetry && poetryIndentLevel > 0) out.append("#pind($poetryIndentLevel)")
     }
 
@@ -238,7 +244,13 @@ private class TypstHandler(
         val formattedRef = escape(verse.format(FULL_BOOK_FORMAT))
         out.append("#metadata(\"$formattedRef\")<verse-marker>")
         // In poetry, the line break is produced by paragraphEnd; only prose needs the leading newline.
-        if (!inPoetry) out.appendLine()
+        if (!inPoetry) {
+            // With verseOnNewLine, force a visual line break before every prose verse except the one
+            // that opens the paragraph (which already starts a fresh line).
+            if (verseOnNewLine && !firstVerseInParagraph) out.append("#linebreak()")
+            out.appendLine()
+        }
+        firstVerseInParagraph = false
         if (isFirstVerseOfChapter && !useHeadingsForChapters) {
             // Inline chapter label at the start of the chapter's first verse — mirrors DOCX's
             // useHeadingsForChapters=false path.

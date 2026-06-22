@@ -12,9 +12,12 @@ package net.markdrew.biblebowl.generate.text
  *   (the `other` category) and numbers (the `numbers` category) are ordinary palette entries now — add
  *   them via [fullHighlightPalette] to highlight them, just like men/places/divine.
  * @param smallCaps map from match text to its small-caps replacement (e.g., `"LORD" -> "Lord"`)
+ * @param verseOnNewLine if true, start every verse on its own line. Affects prose only (poetry verses
+ *   already begin on a new line). Currently only the Typst writer honors this; other formats reject it.
  */
 data class FeatureOptions(
     val underlineUniqueWords: Boolean = false,
     val customHighlights: HighlightPalette = HighlightPalette.empty(),
     val smallCaps: Map<String, String> = smallCapsNames,
+    val verseOnNewLine: Boolean = false,
 )

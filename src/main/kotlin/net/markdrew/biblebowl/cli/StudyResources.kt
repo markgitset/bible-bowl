@@ -83,10 +83,11 @@ fun studyResources(
     testDate: LocalDate,
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
+    verseOnNewLine: Boolean = false,
 ): List<StudyResource> = buildList {
     // TEXT
     add(StudyResource("text", TEXT, "Bible text variants") { data, store, dir ->
-        generateBibleTexts(data, testDate, dir, formats, store, rawDataDir, forceDownload)
+        generateBibleTexts(data, testDate, dir, formats, store, rawDataDir, forceDownload, verseOnNewLine)
     })
 
     // INDICES

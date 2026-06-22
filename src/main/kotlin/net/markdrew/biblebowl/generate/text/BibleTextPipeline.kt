@@ -72,6 +72,9 @@ object BibleTextPipeline {
         require(writer.supports(layout)) {
             "Writer ${writer::class.simpleName} does not support layout $layout"
         }
+        require(!features.verseOnNewLine || writer.format == Typst) {
+            "${writer.format.subdir} does not support the verse-per-line option (only typst does)"
+        }
         val outputFile = computeOutputPath(studyData, layout, features, writer.format, productsPath)
         writer.write(outputFile, doc, studyData, layout, features, copyrightDisclaimer)
         return outputFile
@@ -99,6 +102,7 @@ object BibleTextPipeline {
     fun fileNameSuffix(layout: LayoutOptions, features: FeatureOptions): String =
         (if (features.customHighlights.entries.isNotEmpty()) "highlight-" else "") +
             (if (features.underlineUniqueWords) "unique-" else "") +
+            (if (features.verseOnNewLine) "verse-line-" else "") +
             (if (layout.chapterBreaksPage) "breaks-" else "") +
             "${layout.fontSize}pt"
 }
@@ -137,6 +141,7 @@ fun generateBibleTexts(
     store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
+    verseOnNewLine: Boolean = false,
 ) {
     val tbbLayoutPlain = LayoutOptions(testDate = testDate, fontSize = 12)
     val marksLayoutPlain = LayoutOptions(
@@ -146,11 +151,12 @@ fun generateBibleTexts(
         useHeadingsForChapters = true,
     )
 
-    val plain = FeatureOptions()
-    val unique = FeatureOptions(underlineUniqueWords = true)
+    val plain = FeatureOptions(verseOnNewLine = verseOnNewLine)
+    val unique = FeatureOptions(underlineUniqueWords = true, verseOnNewLine = verseOnNewLine)
     val full = FeatureOptions(
         underlineUniqueWords = true,
         customHighlights = fullHighlightPalette(),
+        verseOnNewLine = verseOnNewLine,
     )
 
     // The annotated doc depends only on (studyData, features), never on layout/writer, so build each
@@ -170,7 +176,12 @@ fun generateBibleTexts(
         val marks = DocxBibleTextWriter(MarksDocxStyle)
         for ((writer, layout) in listOf(tbb to tbbLayoutPlain, marks to marksLayoutPlain)) {
             for (features in featureVariants) {
-                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
+                try {
+                    BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
+                } catch (e: IllegalArgumentException) {
+                    val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
+                    println("Skipping $outFile due to: " + e.message)
+                }
             }
         }
     }
