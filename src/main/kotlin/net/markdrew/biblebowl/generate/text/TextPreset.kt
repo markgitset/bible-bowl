@@ -51,6 +51,66 @@ data class TextPreset(
     val features: FeatureOptions,
 )
 
+/**
+ * Field-level overrides applied on top of a [TextPreset]. Every field is nullable: `null` means "inherit
+ * the preset's value", a non-null value replaces it. This is the CLI's "preset-then-override" model — a
+ * caller picks a base preset and tweaks individual options, or starts from [Presets.plain] and sets
+ * everything for a fully-custom document.
+ *
+ * @param highlight tri-state toggle for the full highlight palette: true applies [fullHighlightPalette],
+ *   false clears highlights, null inherits the preset's [FeatureOptions.customHighlights].
+ */
+data class TextOverrides(
+    val style: StyleId? = null,
+    val fontSize: Int? = null,
+    val twoColumns: Boolean? = null,
+    val chapterBreaksPage: Boolean? = null,
+    val useHeadingsForChapters: Boolean? = null,
+    val underlineUniqueWords: Boolean? = null,
+    val highlight: Boolean? = null,
+    val verseOnNewLine: Boolean? = null,
+) {
+    /** True if any override is set; drives the hybrid pack-vs-single dispatch in the generator. */
+    fun anySet(): Boolean = listOf(
+        style, fontSize, twoColumns, chapterBreaksPage, useHeadingsForChapters,
+        underlineUniqueWords, highlight, verseOnNewLine,
+    ).any { it != null }
+}
+
+/** A fully-resolved single-document configuration: which style family plus concrete option groups. */
+data class ResolvedTextConfig(
+    val style: StyleId,
+    val layout: LayoutOptions,
+    val features: FeatureOptions,
+)
+
+/**
+ * Resolves this preset against [overrides], stamping the per-run [testDate], into a concrete config.
+ *
+ * Each option falls back to the preset's value when the corresponding override is null. The [testDate] is
+ * always taken from the argument (presets carry only a placeholder date).
+ */
+fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate): ResolvedTextConfig {
+    val resolvedStyle = overrides.style ?: style
+    val resolvedLayout = layout.copy(
+        testDate = testDate,
+        fontSize = overrides.fontSize ?: layout.fontSize,
+        twoColumns = overrides.twoColumns ?: layout.twoColumns,
+        chapterBreaksPage = overrides.chapterBreaksPage ?: layout.chapterBreaksPage,
+        useHeadingsForChapters = overrides.useHeadingsForChapters ?: layout.useHeadingsForChapters,
+    )
+    val resolvedFeatures = features.copy(
+        underlineUniqueWords = overrides.underlineUniqueWords ?: features.underlineUniqueWords,
+        customHighlights = when (overrides.highlight) {
+            true -> fullHighlightPalette()
+            false -> HighlightPalette.empty()
+            null -> features.customHighlights
+        },
+        verseOnNewLine = overrides.verseOnNewLine ?: features.verseOnNewLine,
+    )
+    return ResolvedTextConfig(resolvedStyle, resolvedLayout, resolvedFeatures)
+}
+
 /** The registry of predefined text presets. */
 object Presets {
     /** Texas Bible Bowl official format — single-column, 12pt, inline chapter labels, no emphasis. */
