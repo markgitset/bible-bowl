@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-BibleBowl is a Kotlin/JVM CLI + library that prepares study materials for the Texas Bible Bowl. It downloads ESV passages, indexes them into a single annotated text model, then generates indices, flashcards, Kahoot sheets, practice tests, and typeset Bibles (LaTeX / Typst / DOCX / ODT).
+BibleBowl is a Kotlin/JVM CLI + library that prepares study materials for the Texas Bible Bowl. It downloads ESV passages, indexes them into a single annotated text model, then generates indices, flashcards, Kahoot sheets, practice tests, and typeset Bibles (Typst is the primary format; LaTeX / DOCX are legacy and maintained but no longer extended).
 
 ## Build, run, test
 
@@ -64,7 +64,9 @@ StudySet → EsvClient (ESV API) → Passage stream
 
 All generators take `(StudyData, productsDir)` and write to `productsDir/<simpleName>/<category>/...`. Use `fileForProduct()` in `biblebowl.kt` for the standard naming.
 
-- `generate/text/` — annotated Bible text in multiple formats. `AnnotatedDoc` + `Annotation` are the abstraction layer over `StudyData` ranges; format-specific writers live in `latex/`, `typst/`, `docx/`. `TextOptions` toggles highlighting (names, numbers, unique words, red-letter, etc.).
+- `generate/text/` — annotated Bible text in multiple formats. `AnnotatedDoc` + `Annotation` are the abstraction layer over `StudyData` ranges (built by `BibleAnnotationPipeline`, walked by `BibleTextWalker` which dispatches format-agnostic events to a `BibleTextHandler`); format-specific writers live in `typst/`, `latex/`, `docx/`. **Typst is the actively-developed format; LaTeX and DOCX are effectively deprecated** — kept working for now, but new text features land in Typst only (other writers should reject an unsupported option via `BibleTextWriter.supports(...)` or the feature guard in `BibleTextPipeline.render`, which skips-with-message rather than aborting).
+  - **Configuration model** (see `TextPreset.kt`): three orthogonal option groups — `FeatureOptions` (content emphasis: `underlineUniqueWords`, `customHighlights`, `verseOnNewLine`, `smallCaps`), `LayoutOptions` (page structure: `fontSize`, `twoColumns`, `chapterBreaksPage`, `useHeadingsForChapters`, `testDate`), and `StyleId` (typography family `TBB`/`MARKS`, resolved per-format to a concrete `TypstStyle`/`DocxStyle`). A `TextPreset` (`tbb`, `marks`, `plain`) bundles a coherent default of all three; `TextOverrides` carries tri-state per-field overrides (`null` = inherit) applied via `TextPreset.resolve(...)`.
+  - **`generateBibleTexts` has two modes**: with no `--preset`/override flags it emits the curated *pack* (plain/unique/full × tbb/marks × formats); naming a preset or setting any override switches to *single* mode (one resolved `ResolvedTextConfig` → one document per format). CLI exposes `--preset` plus tri-state flags (`--style`, `--font-size`, `--[no-]two-columns`, `--[no-]chapter-headings`, `--[no-]page-break-chapters`, `--[no-]underline-unique`, `--[no-]highlight`, `--[no-]verse-per-line`).
 - `generate/indices/` — `FullIndex`, `IndexOfNames`, `IndexOfNumbers`, `IndexOfHeadings`, `IndexOfUniqueWords`, `PhrasesIndex`, `IndexOfWordList` (driven by `analysis/WordList.kt` enum: animals, foods, body parts, men, women, places, …).
 - `generate/practice/` — practice round generators driven by `Round` enum + `PracticeTest`. **Implemented**: Round 1 (Find the Verse), Round 4 (Quotes), Round 5 (Events). Round 2/3/Power are listed in `TODO.md` and not generated.
 - `generate/kahoot/` — Kahoot-format xlsx (Apache POI).
