@@ -7,11 +7,7 @@ import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.text.BibleTextPipeline.computeOutputPath
 import net.markdrew.biblebowl.generate.text.docx.DocxBibleTextWriter
-import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
-import net.markdrew.biblebowl.generate.text.docx.TbbDocxStyle
 import net.markdrew.biblebowl.generate.text.latex.LatexBibleTextWriter
-import net.markdrew.biblebowl.generate.text.typst.MarksTypstStyle
-import net.markdrew.biblebowl.generate.text.typst.TbbTypstStyle
 import net.markdrew.biblebowl.generate.text.typst.TypstBibleTextWriter
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -124,14 +120,24 @@ fun fullHighlightPalette(): HighlightPalette = HighlightPalette(listOf(
 ))
 
 /**
- * Generates the standard pack of Bible-text variants for [studyData] under [productsPath]
+ * Generates Bible-text outputs for [studyData] under [productsPath], in one of two modes.
  *
- * For each requested format in [formats], produces six outputs: plain, unique-words-underlined, and
- * full-highlighting in both the TBB official style and Mark's two-column style. This is the unified
- * replacement for the legacy `writeBibleDoc(...)` and `writeBibleText(...)` entry points.
+ * **Pack mode** (default — no [preset] and no [overrides] set): produces the curated set of six variants
+ * per format — plain, unique-words-underlined, and full-highlighting, each in the TBB official style and
+ * Mark's two-column style. This is the "give me everything" convenience.
+ *
+ * **Single mode** (a [preset] is named or any field of [overrides] is set): resolves exactly one
+ * [ResolvedTextConfig] (base preset, default [Presets.tbb], with overrides applied) and emits one
+ * document per requested format.
+ *
+ * Either way, formats that cannot honor the requested layout/features are skipped with a message rather
+ * than aborting the run (see [renderGuarded]).
  *
  * @param testDate date stamped on the cover/footer
  * @param formats which output formats to generate (default: all of [Docx], [Latex], [Typst])
+ * @param preset name of the base preset to resolve in single mode; null selects pack mode (unless
+ *   [overrides] forces single mode)
+ * @param overrides field-level overrides applied on top of the base preset in single mode
  */
 fun generateBibleTexts(
     studyData: StudyData,
@@ -141,73 +147,94 @@ fun generateBibleTexts(
     store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
-    verseOnNewLine: Boolean = false,
+    preset: String? = null,
+    overrides: TextOverrides = TextOverrides(),
 ) {
-    val tbbLayoutPlain = LayoutOptions(testDate = testDate, fontSize = 12)
-    val marksLayoutPlain = LayoutOptions(
-        testDate = testDate,
-        fontSize = 10,
-        twoColumns = true,
-        useHeadingsForChapters = true,
-    )
-
-    val plain = FeatureOptions(verseOnNewLine = verseOnNewLine)
-    val unique = FeatureOptions(underlineUniqueWords = true, verseOnNewLine = verseOnNewLine)
-    val full = FeatureOptions(
-        underlineUniqueWords = true,
-        customHighlights = fullHighlightPalette(),
-        verseOnNewLine = verseOnNewLine,
-    )
-
-    // The annotated doc depends only on (studyData, features), never on layout/writer, so build each
-    // feature variant once and reuse it across every format and layout below.
-    val featureVariants = listOf(plain, unique, full)
-    val docByFeatures: Map<FeatureOptions, AnnotatedDoc<AnalysisUnit>> =
-        featureVariants.associateWith { BibleAnnotationPipeline.build(studyData, it, store) }
-
     val copyrightDisclaimer = try {
         EsvClient(rawDataDir = rawDataDir).fetchCopyrightDisclaimer(forceDownload = forceDownload)
     } catch (e: Exception) {
         DEFAULT_COPYRIGHT_DISCLAIMER
     }
 
-    if (Docx in formats) {
-        val tbb = DocxBibleTextWriter(TbbDocxStyle)
-        val marks = DocxBibleTextWriter(MarksDocxStyle)
-        for ((writer, layout) in listOf(tbb to tbbLayoutPlain, marks to marksLayoutPlain)) {
+    val orderedFormats = OutputFormat.all.filter { it in formats }
+
+    if (preset == null && !overrides.anySet()) {
+        generateTextPack(studyData, testDate, productsPath, orderedFormats, store, copyrightDisclaimer)
+    } else {
+        val base = preset?.let { Presets.byName(it) ?: error("unknown preset '$it'") } ?: Presets.tbb
+        val config = base.resolve(overrides, testDate)
+        generateSingleText(studyData, config, productsPath, orderedFormats, store, copyrightDisclaimer)
+    }
+}
+
+/** The curated pack: (tbb, marks) presets × (plain, unique, full) feature variants × [formats]. */
+private fun generateTextPack(
+    studyData: StudyData,
+    testDate: LocalDate,
+    productsPath: Path,
+    formats: List<OutputFormat>,
+    store: AnnotationStore,
+    copyrightDisclaimer: String,
+) {
+    val featureVariants = listOf(
+        FeatureOptions(),
+        FeatureOptions(underlineUniqueWords = true),
+        FeatureOptions(underlineUniqueWords = true, customHighlights = fullHighlightPalette()),
+    )
+    // The annotated doc depends only on (studyData, features), never on layout/writer, so build each
+    // feature variant once and reuse it across every format and preset below.
+    val docByFeatures: Map<FeatureOptions, AnnotatedDoc<AnalysisUnit>> =
+        featureVariants.associateWith { BibleAnnotationPipeline.build(studyData, it, store) }
+
+    val packPresets = listOf(Presets.tbb, Presets.marks)
+    for (format in formats) {
+        for (base in packPresets) {
+            val writer = writerFor(format, base.style)
+            val layout = base.layout.copy(testDate = testDate)
             for (features in featureVariants) {
-                try {
-                    BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
-                } catch (e: IllegalArgumentException) {
-                    val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
-                    println("Skipping $outFile due to: " + e.message)
-                }
+                renderGuarded(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
             }
         }
     }
+}
 
-    if (Latex in formats) {
-        val tbbLatex = LatexBibleTextWriter()
-        val marksLatex = LatexBibleTextWriter()
-        for ((writer, layout) in listOf(tbbLatex to tbbLayoutPlain, marksLatex to marksLayoutPlain)) {
-            for (features in featureVariants) {
-                try {
-                    BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
-                } catch (e: IllegalArgumentException) {
-                    val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
-                    println("Skipping $outFile due to: " + e.message)
-                }
-            }
-        }
+/** Single mode: one resolved config, one document per requested format. */
+private fun generateSingleText(
+    studyData: StudyData,
+    config: ResolvedTextConfig,
+    productsPath: Path,
+    formats: List<OutputFormat>,
+    store: AnnotationStore,
+    copyrightDisclaimer: String,
+) {
+    val doc = BibleAnnotationPipeline.build(studyData, config.features, store)
+    for (format in formats) {
+        val writer = writerFor(format, config.style)
+        renderGuarded(studyData, doc, config.layout, config.features, writer, productsPath, copyrightDisclaimer)
     }
+}
 
-    if (Typst in formats) {
-        val tbbTypst = TypstBibleTextWriter(TbbTypstStyle)
-        val marksTypst = TypstBibleTextWriter(MarksTypstStyle)
-        for ((writer, layout) in listOf(tbbTypst to tbbLayoutPlain, marksTypst to marksLayoutPlain)) {
-            for (features in featureVariants) {
-                BibleTextPipeline.render(studyData, docByFeatures.getValue(features), layout, features, writer, productsPath, copyrightDisclaimer)
-            }
-        }
+/** Builds the writer for [format], resolving the concrete style for [styleId] (LaTeX ignores style). */
+private fun writerFor(format: OutputFormat, styleId: StyleId): BibleTextWriter = when (format) {
+    Docx -> DocxBibleTextWriter(styleId.docx())
+    Latex -> LatexBibleTextWriter()
+    Typst -> TypstBibleTextWriter(styleId.typst())
+}
+
+/** Renders one document, skipping with a message if the writer can't honor the layout/features. */
+private fun renderGuarded(
+    studyData: StudyData,
+    doc: AnnotatedDoc<AnalysisUnit>,
+    layout: LayoutOptions,
+    features: FeatureOptions,
+    writer: BibleTextWriter,
+    productsPath: Path,
+    copyrightDisclaimer: String,
+) {
+    try {
+        BibleTextPipeline.render(studyData, doc, layout, features, writer, productsPath, copyrightDisclaimer)
+    } catch (e: IllegalArgumentException) {
+        val outFile: Path = computeOutputPath(studyData, layout, features, writer.format, productsPath)
+        println("Skipping $outFile due to: " + e.message)
     }
 }

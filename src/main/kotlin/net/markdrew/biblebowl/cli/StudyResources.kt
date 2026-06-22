@@ -28,6 +28,7 @@ import net.markdrew.biblebowl.generate.practice.writeRound1VerseFind
 import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.generate.text.OutputFormat
+import net.markdrew.biblebowl.generate.text.TextOverrides
 import net.markdrew.biblebowl.generate.text.generateBibleTexts
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.typst.writeTypstFlashCards
@@ -83,11 +84,12 @@ fun studyResources(
     testDate: LocalDate,
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
-    verseOnNewLine: Boolean = false,
+    preset: String? = null,
+    overrides: TextOverrides = TextOverrides(),
 ): List<StudyResource> = buildList {
     // TEXT
     add(StudyResource("text", TEXT, "Bible text variants") { data, store, dir ->
-        generateBibleTexts(data, testDate, dir, formats, store, rawDataDir, forceDownload, verseOnNewLine)
+        generateBibleTexts(data, testDate, dir, formats, store, rawDataDir, forceDownload, preset, overrides)
     })
 
     // INDICES

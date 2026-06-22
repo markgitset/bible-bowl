@@ -15,7 +15,9 @@ import com.github.ajalt.clikt.parameters.options.help
 import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.split
+import com.github.ajalt.clikt.parameters.options.switch
 import com.github.ajalt.clikt.parameters.types.choice
+import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.mordant.input.interactiveMultiSelectList
 import net.markdrew.biblebowl.BANNER
 import net.markdrew.biblebowl.analysis.AnnotationStore
@@ -26,6 +28,9 @@ import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.text.OutputFormat
+import net.markdrew.biblebowl.generate.text.Presets
+import net.markdrew.biblebowl.generate.text.StyleId
+import net.markdrew.biblebowl.generate.text.TextOverrides
 import net.markdrew.biblebowl.generate.text.Typst
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -112,9 +117,45 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         .help("Text format(s) to generate; repeatable. One of: ${OutputFormat.all.joinToString { it.subdir }} " +
             "(default: ${defaultTextFormats.joinToString { it.subdir }})")
 
-    private val versePerLine: Boolean by option("--verse-per-line")
-        .flag(default = false)
-        .help("Start each verse on a new line (Typst only; other formats are skipped with a message)")
+    // ---- Text format selection: a base preset plus tri-state per-option overrides. -----------------
+    // Naming a preset or setting any override switches text generation from the curated "pack" (all
+    // variants) to a single resolved document per format.
+
+    private val preset: String? by option("--preset")
+        .choice(*Presets.all.map { it.name }.toTypedArray(), ignoreCase = true)
+        .help("Base text preset to start from: ${Presets.all.joinToString { it.name }} " +
+            "(omit for the full variant pack)")
+
+    private val styleOverride: StyleId? by option("--style")
+        .choice(StyleId.entries.associateBy { it.token }, ignoreCase = true)
+        .help("Override the typographic style family: ${StyleId.entries.joinToString { it.token }}")
+
+    private val fontSizeOverride: Int? by option("--font-size").int()
+        .help("Override body font size (points)")
+
+    private val twoColumnsOverride: Boolean? by option().switch(
+        "--two-columns" to true, "--no-two-columns" to false,
+    ).help("Override two-column layout")
+
+    private val chapterHeadingsOverride: Boolean? by option().switch(
+        "--chapter-headings" to true, "--no-chapter-headings" to false,
+    ).help("Override heading-style chapter titles (vs. inline labels)")
+
+    private val pageBreakChaptersOverride: Boolean? by option().switch(
+        "--page-break-chapters" to true, "--no-page-break-chapters" to false,
+    ).help("Override forcing a page break between chapters")
+
+    private val underlineUniqueOverride: Boolean? by option().switch(
+        "--underline-unique" to true, "--no-underline-unique" to false,
+    ).help("Override underlining of one-time words")
+
+    private val highlightOverride: Boolean? by option().switch(
+        "--highlight" to true, "--no-highlight" to false,
+    ).help("Override the full category highlight palette")
+
+    private val versePerLineOverride: Boolean? by option().switch(
+        "--verse-per-line" to true, "--no-verse-per-line" to false,
+    ).help("Override starting each verse on a new line (Typst only; other formats skip with a message)")
 
     private val dataDir: Path by option("--data-dir")
         .convert { Path(it) }
@@ -149,7 +190,18 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
         val formats: Set<OutputFormat> =
             if (textFormats.isEmpty()) defaultTextFormats
             else textFormats.toSet()
-        val registry: List<StudyResource> = studyResources(formats, testDateOption, rawDataDir, forceDownload, versePerLine)
+        val overrides = TextOverrides(
+            style = styleOverride,
+            fontSize = fontSizeOverride,
+            twoColumns = twoColumnsOverride,
+            chapterBreaksPage = pageBreakChaptersOverride,
+            useHeadingsForChapters = chapterHeadingsOverride,
+            underlineUniqueWords = underlineUniqueOverride,
+            highlight = highlightOverride,
+            verseOnNewLine = versePerLineOverride,
+        )
+        val registry: List<StudyResource> =
+            studyResources(formats, testDateOption, rawDataDir, forceDownload, preset, overrides)
 
         if (listResources) {
             printResourceList(registry)
