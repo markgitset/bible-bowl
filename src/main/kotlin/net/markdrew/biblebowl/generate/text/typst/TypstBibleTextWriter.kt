@@ -71,9 +71,19 @@ private class TypstHandler(
 
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         val columns = if (layout.twoColumns) 2 else 1
-        val justify = if (style.justified) "true" else "false"
+        val isJustified = layout.justified ?: style.justified
+        val justify = if (isJustified) "true" else "false"
         val date = layout.testDate.format(dateFormatter)
         val title = studyData.studySet.name
+
+        val mainFont = layout.mainFont ?: style.mainFont
+        val headingFont = layout.headingFont ?: style.headingFont
+        val verseNumFont = layout.verseNumFont ?: style.verseNumFont
+
+        val chapterFontSize = layout.chapterFontSize ?: style.chapterFontSize
+        val headingFontSize = layout.headingFontSize ?: style.headingFontSize
+        val footnoteFontSize = layout.footnoteFontSize ?: style.footnoteFontSize
+
         out.appendLine("""
             #set page(
               paper: "us-letter",
@@ -121,9 +131,9 @@ private class TypstHandler(
                 }
               },
             )
-            #set text(font: "${style.mainFont}", size: ${layout.fontSize}pt)
+            #set text(font: "$mainFont", size: ${layout.fontSize}pt)
             #set par(justify: $justify)
-            #show footnote.entry: set text(size: ${style.footnoteFontSize}pt)
+            #show footnote.entry: set text(size: ${footnoteFontSize}pt)
 
             // Built-in highlight color — the default fill for divine names (matching DOCX)
             #let divineColor = rgb($DIVINE_R, $DIVINE_G, $DIVINE_B)
@@ -145,7 +155,7 @@ private class TypstHandler(
                 fill: rgb("404040"),
                 inset: (x: 3pt, y: 1pt),
                 radius: 1pt,
-                text(fill: white, weight: "bold", font: "${style.verseNumFont}")[#n],
+                text(fill: white, weight: "bold", font: "$verseNumFont")[#n],
             )
             #let chapter-heading(label) = heading(
                 level: 1, outlined: false,
@@ -155,16 +165,16 @@ private class TypstHandler(
                     align: horizon,
                     gutter: 0.5em,
                     line(length: 100%, stroke: 0.5em + black),
-                    text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label],
+                    text(font: "$headingFont", size: ${chapterFontSize}pt, weight: "bold")[#label],
                     line(length: 100%, stroke: 0.5em + black),
                 )
                 """.trimIndent().trim() else """
-                text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label],
+                text(font: "$headingFont", size: ${chapterFontSize}pt, weight: "bold")[#label],
                 """.trimIndent().trim()}
             )
             #let section-heading(label) = heading(
                 level: 2, outlined: false,
-                text(font: "${style.headingFont}", size: ${style.headingFontSize}pt, weight: "bold")[#label],
+                text(font: "$headingFont", size: ${headingFontSize}pt, weight: "bold")[#label],
             )
             #let pstep = 2em
             #let pind(level) = h(pstep * level)

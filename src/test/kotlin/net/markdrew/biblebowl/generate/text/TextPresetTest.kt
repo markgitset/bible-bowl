@@ -46,8 +46,14 @@ class TextPresetTest : StringSpec({
         config.layout.chapterEndLines shouldBe true
     }
 
-    "the style override changes the resolved style family" {
-        Presets.tbb.resolve(TextOverrides(style = StyleId.MARKS), testDate).style shouldBe StyleId.MARKS
+    "typographic overrides are resolved correctly" {
+        val config = Presets.tbb.resolve(
+            TextOverrides(mainFont = "Liberation Sans", chapterFontSize = 18, justified = true),
+            testDate
+        )
+        config.layout.mainFont shouldBe "Liberation Sans"
+        config.layout.chapterFontSize shouldBe 18
+        config.layout.justified shouldBe true
     }
 
     "highlight is tri-state: true applies the full palette, false clears it, null inherits" {

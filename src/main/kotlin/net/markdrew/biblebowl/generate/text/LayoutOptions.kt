@@ -23,4 +23,11 @@ data class LayoutOptions(
     val chapterBreaksPage: Boolean = false,
     val useHeadingsForChapters: Boolean = false,
     val chapterEndLines: Boolean = false,
+    val mainFont: String? = null,
+    val verseNumFont: String? = null,
+    val headingFont: String? = null,
+    val chapterFontSize: Int? = null,
+    val headingFontSize: Int? = null,
+    val footnoteFontSize: Int? = null,
+    val justified: Boolean? = null,
 )

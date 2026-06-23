@@ -217,9 +217,27 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
         .help("Base text preset to start from: ${Presets.all.joinToString { it.name }} " +
             "(omit for the full variant pack)")
 
-    private val styleOverride: StyleId? by option("--style")
-        .choice(StyleId.entries.associateBy { it.token }, ignoreCase = true)
-        .help("Override the typographic style family: ${StyleId.entries.joinToString { it.token }}")
+    private val mainFontOverride: String? by option("--main-font")
+        .help("Override main body text font family")
+
+    private val headingFontOverride: String? by option("--heading-font")
+        .help("Override chapter and section headings font family")
+
+    private val verseNumFontOverride: String? by option("--verse-num-font")
+        .help("Override verse numbers font family")
+
+    private val chapterFontSizeOverride: Int? by option("--chapter-font-size").int()
+        .help("Override chapter heading font size (points)")
+
+    private val headingFontSizeOverride: Int? by option("--heading-font-size").int()
+        .help("Override section heading font size (points)")
+
+    private val footnoteFontSizeOverride: Int? by option("--footnote-font-size").int()
+        .help("Override footnote font size (points)")
+
+    private val justifiedOverride: Boolean? by option().switch(
+        "--justified" to true, "--no-justified" to false,
+    ).help("Override body text justification (justified vs. left-aligned)")
 
     private val fontSizeOverride: Int? by option("--font-size").int()
         .help("Override body font size (points)")
@@ -270,7 +288,6 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
             else -> null
         }
         val overrides = TextOverrides(
-            style = styleOverride,
             fontSize = fontSizeOverride,
             twoColumns = twoColumnsOverride,
             chapterBreaksPage = pageBreakChaptersOverride,
@@ -280,6 +297,13 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
             highlight = highlightOverride,
             verseOnNewLine = versePerLineOverride,
             chapterEndLines = resolvedChapterEndLines,
+            mainFont = mainFontOverride,
+            verseNumFont = verseNumFontOverride,
+            headingFont = headingFontOverride,
+            chapterFontSize = chapterFontSizeOverride,
+            headingFontSize = headingFontSizeOverride,
+            footnoteFontSize = footnoteFontSizeOverride,
+            justified = justifiedOverride,
         )
         val registry = studyResources(formats, testDate, rawDataDir, forceDownload, preset, overrides)
         runResources(registry.filter { it.category == ResourceCategory.TEXT })

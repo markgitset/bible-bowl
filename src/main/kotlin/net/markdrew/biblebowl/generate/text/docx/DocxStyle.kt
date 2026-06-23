@@ -5,7 +5,17 @@ enum class WmlFont(val value: String) {
     TIMES_NEW_ROMAN("Times New Roman:liga"),
     QUATTROCENTO_SANS("Quattrocento Sans"),
     MONOSPACE("Liberation Mono"),
-    SANS_SERIF("Liberation Sans"),
+    SANS_SERIF("Liberation Sans");
+
+    companion object {
+        fun byValueOrToken(name: String): WmlFont? {
+            val normalized = name.lowercase().replace("-", "").replace("_", "").replace(" ", "")
+            return entries.firstOrNull {
+                it.name.lowercase().replace("_", "") == normalized ||
+                it.value.lowercase().replace(" ", "").split(":")[0] == normalized
+            }
+        }
+    }
 }
 
 /**

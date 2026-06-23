@@ -61,7 +61,6 @@ data class TextPreset(
  *   false clears highlights, null inherits the preset's [FeatureOptions.customHighlights].
  */
 data class TextOverrides(
-    val style: StyleId? = null,
     val fontSize: Int? = null,
     val twoColumns: Boolean? = null,
     val chapterBreaksPage: Boolean? = null,
@@ -70,11 +69,20 @@ data class TextOverrides(
     val highlight: Boolean? = null,
     val verseOnNewLine: Boolean? = null,
     val chapterEndLines: Boolean? = null,
+    val mainFont: String? = null,
+    val verseNumFont: String? = null,
+    val headingFont: String? = null,
+    val chapterFontSize: Int? = null,
+    val headingFontSize: Int? = null,
+    val footnoteFontSize: Int? = null,
+    val justified: Boolean? = null,
 ) {
     /** True if any override is set; drives the hybrid pack-vs-single dispatch in the generator. */
     fun anySet(): Boolean = listOf(
-        style, fontSize, twoColumns, chapterBreaksPage, useHeadingsForChapters,
+        fontSize, twoColumns, chapterBreaksPage, useHeadingsForChapters,
         underlineUniqueWords, highlight, verseOnNewLine, chapterEndLines,
+        mainFont, verseNumFont, headingFont, chapterFontSize, headingFontSize,
+        footnoteFontSize, justified,
     ).any { it != null }
 }
 
@@ -92,7 +100,6 @@ data class ResolvedTextConfig(
  * always taken from the argument (presets carry only a placeholder date).
  */
 fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate): ResolvedTextConfig {
-    val resolvedStyle = overrides.style ?: style
     val resolvedLayout = layout.copy(
         testDate = testDate,
         fontSize = overrides.fontSize ?: layout.fontSize,
@@ -100,6 +107,13 @@ fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate):
         chapterBreaksPage = overrides.chapterBreaksPage ?: layout.chapterBreaksPage,
         useHeadingsForChapters = overrides.useHeadingsForChapters ?: layout.useHeadingsForChapters,
         chapterEndLines = overrides.chapterEndLines ?: layout.chapterEndLines,
+        mainFont = overrides.mainFont ?: layout.mainFont,
+        verseNumFont = overrides.verseNumFont ?: layout.verseNumFont,
+        headingFont = overrides.headingFont ?: layout.headingFont,
+        chapterFontSize = overrides.chapterFontSize ?: layout.chapterFontSize,
+        headingFontSize = overrides.headingFontSize ?: layout.headingFontSize,
+        footnoteFontSize = overrides.footnoteFontSize ?: layout.footnoteFontSize,
+        justified = overrides.justified ?: layout.justified,
     )
     val resolvedFeatures = features.copy(
         underlineUniqueWords = overrides.underlineUniqueWords ?: features.underlineUniqueWords,
@@ -110,7 +124,7 @@ fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate):
         },
         verseOnNewLine = overrides.verseOnNewLine ?: features.verseOnNewLine,
     )
-    return ResolvedTextConfig(resolvedStyle, resolvedLayout, resolvedFeatures)
+    return ResolvedTextConfig(style, resolvedLayout, resolvedFeatures)
 }
 
 /** The registry of predefined text presets. */

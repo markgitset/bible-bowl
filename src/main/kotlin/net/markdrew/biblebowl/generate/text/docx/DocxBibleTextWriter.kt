@@ -83,6 +83,13 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
 
     override val format: OutputFormat = Docx
 
+    override fun supports(layout: LayoutOptions): Boolean {
+        layout.mainFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following main fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        layout.verseNumFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following verse number fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        layout.headingFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following heading fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        return true
+    }
+
     override fun write(
         outputFile: Path,
         doc: AnnotatedDoc<AnalysisUnit>,
@@ -107,6 +114,20 @@ private class DocxHandler(
     private val features: FeatureOptions,
     private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
+
+    private val resolvedTypography = style.typography.copy(
+        mainFont = layout.mainFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.mainFont,
+        verseNumFont = layout.verseNumFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.verseNumFont,
+        headingFont = layout.headingFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.headingFont,
+        chapterFontSizeHalfPt = layout.chapterFontSize?.let { it * 2 } ?: style.typography.chapterFontSizeHalfPt,
+        headingFontSizeHalfPt = layout.headingFontSize?.let { it * 2 } ?: style.typography.headingFontSizeHalfPt,
+        footnoteFontSizeHalfPt = layout.footnoteFontSize?.let { it * 2 } ?: style.typography.footnoteFontSizeHalfPt,
+        justified = when (layout.justified) {
+            true -> "both"
+            false -> "left"
+            null -> style.typography.justified
+        }
+    )
 
     private val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
@@ -147,7 +168,7 @@ private class DocxHandler(
     override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
         mainPart.addTargetPart(stylesPartFromTemplate(
             template("styles.xml"),
-            style.typography.toTemplateBindings(layout.fontSize),
+            resolvedTypography.toTemplateBindings(layout.fontSize),
         ))
         footerRel = mainPart.addTargetPart(
             footerFromTemplate(
