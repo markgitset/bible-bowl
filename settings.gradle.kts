@@ -1,5 +1,8 @@
 import org.gradle.api.initialization.resolve.RepositoriesMode
 
+rootProject.name = "bible-bowl"
+
+
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version("1.0.0")
 }
