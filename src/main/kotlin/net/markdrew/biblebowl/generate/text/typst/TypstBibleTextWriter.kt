@@ -149,7 +149,7 @@ private class TypstHandler(
             )
             #let chapter-heading(label) = heading(
                 level: 1, outlined: false,
-                text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label],
+                text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label${if (layout.chapterEndLines) " #box(width: 1fr, inset: (left: 0.5em), baseline: -0.3em, line(length: 100%, stroke: 0.5em + black))" else ""}],
             )
             #let section-heading(label) = heading(
                 level: 2, outlined: false,

@@ -19,6 +19,7 @@ class TextPresetTest : StringSpec({
         // Explicitly turning something OFF is still an override, not 'inherit'.
         TextOverrides(twoColumns = false).anySet().shouldBeTrue()
         TextOverrides(fontSize = 11).anySet().shouldBeTrue()
+        TextOverrides(chapterEndLines = false).anySet().shouldBeTrue()
     }
 
     "resolve with no overrides keeps preset values and stamps the testDate" {
@@ -27,6 +28,7 @@ class TextPresetTest : StringSpec({
         config.layout.fontSize shouldBe 10
         config.layout.twoColumns shouldBe true
         config.layout.useHeadingsForChapters shouldBe true
+        config.layout.chapterEndLines shouldBe false
         config.layout.testDate shouldBe testDate
         config.features.underlineUniqueWords shouldBe false
         config.features.verseOnNewLine shouldBe false
@@ -34,13 +36,14 @@ class TextPresetTest : StringSpec({
 
     "a null override field inherits the preset value; a non-null replaces it" {
         val config = Presets.marks.resolve(
-            TextOverrides(fontSize = 14, twoColumns = false, verseOnNewLine = true),
+            TextOverrides(fontSize = 14, twoColumns = false, verseOnNewLine = true, chapterEndLines = true),
             testDate,
         )
         config.layout.fontSize shouldBe 14          // replaced
         config.layout.twoColumns shouldBe false     // replaced (with false)
         config.layout.useHeadingsForChapters shouldBe true   // inherited from marks
         config.features.verseOnNewLine shouldBe true
+        config.layout.chapterEndLines shouldBe true
     }
 
     "the style override changes the resolved style family" {

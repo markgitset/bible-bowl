@@ -22,4 +22,5 @@ data class LayoutOptions(
     val twoColumns: Boolean = false,
     val chapterBreaksPage: Boolean = false,
     val useHeadingsForChapters: Boolean = false,
+    val chapterEndLines: Boolean = false,
 )

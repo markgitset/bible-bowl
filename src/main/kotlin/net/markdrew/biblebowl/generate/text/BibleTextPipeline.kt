@@ -71,6 +71,12 @@ object BibleTextPipeline {
         require(!features.verseOnNewLine || writer.format == Typst) {
             "${writer.format.subdir} does not support the verse-per-line option (only typst does)"
         }
+        require(!layout.chapterEndLines || writer.format == Typst) {
+            "${writer.format.subdir} does not support the chapter-end-lines option (only typst does)"
+        }
+        require(!layout.chapterEndLines || layout.useHeadingsForChapters) {
+            "chapter-end-lines option is incompatible with inline chapter labels"
+        }
         val outputFile = computeOutputPath(studyData, layout, features, writer.format, productsPath)
         writer.write(outputFile, doc, studyData, layout, features, copyrightDisclaimer)
         return outputFile
@@ -99,6 +105,7 @@ object BibleTextPipeline {
         (if (features.customHighlights.entries.isNotEmpty()) "highlight-" else "") +
             (if (features.underlineUniqueWords) "unique-" else "") +
             (if (features.verseOnNewLine) "verse-line-" else "") +
+            (if (layout.chapterEndLines) "chap-line-" else "") +
             (if (layout.chapterBreaksPage) "breaks-" else "") +
             "${layout.fontSize}pt"
 }

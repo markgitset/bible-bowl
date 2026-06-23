@@ -69,11 +69,12 @@ data class TextOverrides(
     val underlineUniqueWords: Boolean? = null,
     val highlight: Boolean? = null,
     val verseOnNewLine: Boolean? = null,
+    val chapterEndLines: Boolean? = null,
 ) {
     /** True if any override is set; drives the hybrid pack-vs-single dispatch in the generator. */
     fun anySet(): Boolean = listOf(
         style, fontSize, twoColumns, chapterBreaksPage, useHeadingsForChapters,
-        underlineUniqueWords, highlight, verseOnNewLine,
+        underlineUniqueWords, highlight, verseOnNewLine, chapterEndLines,
     ).any { it != null }
 }
 
@@ -98,6 +99,7 @@ fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate):
         twoColumns = overrides.twoColumns ?: layout.twoColumns,
         chapterBreaksPage = overrides.chapterBreaksPage ?: layout.chapterBreaksPage,
         useHeadingsForChapters = overrides.useHeadingsForChapters ?: layout.useHeadingsForChapters,
+        chapterEndLines = overrides.chapterEndLines ?: layout.chapterEndLines,
     )
     val resolvedFeatures = features.copy(
         underlineUniqueWords = overrides.underlineUniqueWords ?: features.underlineUniqueWords,

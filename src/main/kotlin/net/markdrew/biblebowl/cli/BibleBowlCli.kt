@@ -248,6 +248,10 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
         "--verse-per-line" to true, "--no-verse-per-line" to false,
     ).help("Override starting each verse on a new line (Typst only; other formats skip with a message)")
 
+    private val chapterEndLinesOverride: Boolean? by option().switch(
+        "--chapter-end-lines" to true, "--no-chapter-end-lines" to false,
+    ).help("Draw a bold, black horizontal line from the right side of the chapter label to the right edge (Typst only)")
+
     private val testDate: LocalDate by option("--test-date", envvar = "TEST_DATE")
         .convert { LocalDate.parse(it) }
         .default(CliConfig.defaultTestDate)
@@ -255,16 +259,27 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
 
     override fun execute() {
         val formats = if (textFormats.isEmpty()) setOf(Typst) else textFormats.toSet()
+        val resolvedInlineChapters = when {
+            inlineChapterLabelsOverride != null -> inlineChapterLabelsOverride
+            chapterEndLinesOverride == true -> false
+            else -> null
+        }
+        val resolvedChapterEndLines = when {
+            chapterEndLinesOverride != null -> chapterEndLinesOverride
+            inlineChapterLabelsOverride == true -> false
+            else -> null
+        }
         val overrides = TextOverrides(
             style = styleOverride,
             fontSize = fontSizeOverride,
             twoColumns = twoColumnsOverride,
             chapterBreaksPage = pageBreakChaptersOverride,
             // CLI speaks in terms of inline labels; the model field is the inverse (use headings?).
-            useHeadingsForChapters = inlineChapterLabelsOverride?.let { !it },
+            useHeadingsForChapters = resolvedInlineChapters?.let { !it },
             underlineUniqueWords = underlineUniqueOverride,
             highlight = highlightOverride,
             verseOnNewLine = versePerLineOverride,
+            chapterEndLines = resolvedChapterEndLines,
         )
         val registry = studyResources(formats, testDate, rawDataDir, forceDownload, preset, overrides)
         runResources(registry.filter { it.category == ResourceCategory.TEXT })
