@@ -43,12 +43,12 @@ data class PracticeTest(
     }
 
     /**
-     * Builds the standard `.tex` output path for this test under [productsDir], encoding the round, covered
+     * Builds the standard `.typ` output path for this test under [productsDir], encoding the round, covered
      * chapter range, and seed. Creates parent directories as a side effect.
      */
-    fun buildTexFileName(productsDir: Path = defaultProductsPath): Path {
+    fun buildTypFileName(productsDir: Path = defaultProductsPath): Path {
         val setName = studySet.simpleName
-        val fileName: String = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d.tex"
+        val fileName: String = "$setName-${round.shortName}${coveredChaptersForFileName()}-seed%04d.typ"
             .format(randomSeed)
         return productsDir.resolve(setName, "practice", "round${round.number}", fileName)
             .also { Files.createDirectories(it.parent) }

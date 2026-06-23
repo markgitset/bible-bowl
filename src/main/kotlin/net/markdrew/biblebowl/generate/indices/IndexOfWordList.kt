@@ -14,7 +14,6 @@ import net.markdrew.biblebowl.model.StudyData
 import java.nio.file.Files
 import java.nio.file.Path
 
-
 fun main() {
     val studyData = StudyData.readData(StandardStudySet.DEFAULT, defaultDataPath)
     val productsDir = defaultProductsPath
@@ -66,8 +65,8 @@ fun writeWordListIndex(
             }
         )
     }
-    val indexFile = fileForProduct(studyData, "indices", "index-$pluralIndexType.tex", productsDir)
-    writeLatexIndex(studyData, pluralIndexType, indexEntries, singularIndexType, indexFile)
+    val indexFile = fileForProduct(studyData, "indices", "index-$pluralIndexType.typ", productsDir)
+    writeTypstIndex(studyData, pluralIndexType, indexEntries, singularIndexType, indexFile)
     val listFile = fileForProduct(studyData, "lists", "list-$pluralIndexType.txt", productsDir)
     writeWordListList(wordListEntries.asSequence().map { it.key }, listFile)
 }

@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.typst.typstToPdf
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -17,10 +17,6 @@ import java.nio.file.Path
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-//    val nSamples = 10
-//    for (lastChapter in setOf(16, 20, 23, 25, 28, 31, 35, 38, 41, 44, 47, 50)) {
-//        writeRound4Quotes(Book.DEFAULT, numQuestions = 33, randomSeed = 1, throughChapter = lastChapter)
-//    }
 
     // PRODUCE THE FULL SET
     val seeds = setOf(10, 20, 30, 40, 50)
@@ -30,10 +26,6 @@ fun main(args: Array<String>) {
             writeRound4Quotes(PracticeTest(Round.QUOTES, content, randomSeed = seed))
         }
     }
-
-
-//    val content: PracticeContent = studyData.practice()
-//    showPdf(writeRound4Quotes(PracticeTest(Round.QUOTES, content)))
 }
 
 /**
@@ -62,11 +54,11 @@ fun writeRound4Quotes(practiceTest: PracticeTest, productsDir: Path = defaultPro
             )
         }.map { multiChoice(it, practiceTest.content.coveredChapters, practiceTest.random) }
 
-    val latexFile = practiceTest.buildTexFileName(productsDir)
-    Files.newBufferedWriter(latexFile).use { writer ->
-        toLatexInWhatChapter(writer, practiceTest, quotesToFind)
+    val typFile = practiceTest.buildTypFileName(productsDir)
+    Files.newBufferedWriter(typFile).use { writer ->
+        toTypstInWhatChapter(writer, practiceTest, quotesToFind)
     }
-    return latexFile.latexToPdf()
+    return typFile.typstToPdf()
 }
 
 private fun round4CluePool(practiceTest: PracticeTest): Map<IntRange, ChapterRef> {

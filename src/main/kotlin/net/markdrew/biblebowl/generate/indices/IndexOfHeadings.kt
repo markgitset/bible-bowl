@@ -1,8 +1,9 @@
 package net.markdrew.biblebowl.generate.indices
 
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.writeDoc
+import net.markdrew.biblebowl.typst.typstToPdf
+import net.markdrew.biblebowl.typst.writeDoc
+import net.markdrew.biblebowl.typst.escapeTypst
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.ChapterRef
 import net.markdrew.biblebowl.model.Heading
@@ -60,40 +61,43 @@ fun writeHeadingsCsv(studyData: StudyData, productsDir: Path = defaultProductsPa
     println("Wrote $file")
 }
 
-/** Writes the headings index as a two-column LaTeX PDF, grouped by chapter. */
+/** Writes the headings index as a two-column Typst PDF, grouped by chapter. */
 fun writeHeadingsPdf(studyData: StudyData, productsDir: Path = defaultProductsPath) {
     val studyName = studyData.studySet.simpleName
     val dir = productsDir.resolve(studyName, "indices").also { Files.createDirectories(it) }
-    val file = dir.resolve("$studyName-headings.tex")
+    val file = dir.resolve("$studyName-headings.typ")
     val name = studyData.studySet.name
     Files.newBufferedWriter(file).use { writer ->
         writeDoc(writer, "$name Chapter Headings") {
-            writer.appendLine("""\begin{multicols}{2}""")
-            writer.appendLine("""\begin{center}""")
+            writer.appendLine("#columns(2)[")
+            writer.appendLine("  #set align(center)")
             val bookFormat = if (studyData.isMultiBook) BRIEF_BOOK_FORMAT else NO_BOOK_FORMAT
-            val chapWidth = if (studyData.isMultiBook) "1.25cm" else ".25cm"
-            val headingWidth = if (studyData.isMultiBook) "4.6cm" else "5.6cm"
             var lastChapterRef: ChapterRef? = null
             for (heading in studyData.headings) {
                 val headingStart = heading.chapterRange.start
                 if (headingStart != lastChapterRef) {
                     if (lastChapterRef != null) {
-                        writer.appendLine("""\hline\end{tabular}""")
+                        writer.appendLine("  )")
+                        writer.appendLine("  #v(0.05in)")
                     }
-                    writer.appendLine("""\begin{tabular}{ | c L{$headingWidth} L{1.75cm} | }""")
                     val headingCount = studyData.headings.count { it.verseRange.start.chapterRef == headingStart }
-                    writer.appendLine(
-                        """\hline\multirow{$headingCount}{$chapWidth}{${headingStart.format(bookFormat)}}"""
-                    )
+                    val chapStr = escapeTypst(headingStart.format(bookFormat))
+                    writer.appendLine("  #table(")
+                    writer.appendLine("    columns: (auto, 1fr, auto),")
+                    writer.appendLine("    align: (center + horizon, left + horizon, center + horizon),")
+                    writer.appendLine("    stroke: 0.5pt + black,")
+                    writer.appendLine("    table.cell(rowspan: $headingCount)[$chapStr],")
                     lastChapterRef = headingStart
                 }
-                val verseRangeString = heading.verseRange.format(NO_BOOK_FORMAT)
-                writer.appendLine("""& ${heading.title} & $verseRangeString \\""")
+                val verseRangeString = escapeTypst(heading.verseRange.format(NO_BOOK_FORMAT))
+                val titleEsc = escapeTypst(heading.title)
+                writer.appendLine("    [$titleEsc], [$verseRangeString],")
             }
-            writer.appendLine("""\hline\end{tabular}""")
-            writer.appendLine("""\end{center}""")
-            writer.appendLine("""\end{multicols}""")
+            if (lastChapterRef != null) {
+                writer.appendLine("  )")
+            }
+            writer.appendLine("]")
         }
     }
-    file.latexToPdf(keepTexFiles = true)
+    file.typstToPdf(keepTypFiles = true)
 }

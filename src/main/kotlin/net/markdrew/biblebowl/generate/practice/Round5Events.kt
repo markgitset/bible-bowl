@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.defaultProductsPath
-import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.typst.typstToPdf
 import net.markdrew.biblebowl.model.BRIEF_BOOK_FORMAT
 import net.markdrew.biblebowl.model.BookFormat
 import net.markdrew.biblebowl.model.ChapterRef
@@ -20,16 +20,9 @@ import kotlin.random.nextInt
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-//    val practice: PracticeContent = studyData.practice(throughChapter = NUM.chapterRef(22))
-//    showPdf(writeRound5Events(PracticeTest(Round.EVENTS, practice)).latexToPdf())
 
-    // PRODUCE THE FULL SET
-    val seeds = setOf(10, 20, 30, 40, 50)
-    for (throughChapter in studyData.chapterRefs.drop(5)) {
-        val practice: PracticeContent = studyData.practice(throughChapter)
-        for (seed in seeds) {
-            writeRound5Events(PracticeTest(Round.EVENTS, practice, randomSeed = seed))
-        }
+    writeFullSet(studyData) { content, seed, productsDir ->
+        writeRound5Events(PracticeTest(Round.EVENTS, content, randomSeed = seed), productsDir)
     }
 }
 
@@ -110,14 +103,14 @@ fun writeRound5Events(
     // not enough chapters in practice content to build a reasonable practice test
     if (practiceTest.content.coveredChapters.size < 3) return null
 
-    val texFile: Path = practiceTest.buildTexFileName(productsDir)
+    val typFile: Path = practiceTest.buildTypFileName(productsDir)
 
     val headingsToFind: List<MultiChoiceQuestion> = headingsCluePool(practiceTest, nChoices = 5)
-    Files.newBufferedWriter(texFile).use { writer ->
-        toLatexInWhatChapter(writer, practiceTest, headingsToFind)
+    Files.newBufferedWriter(typFile).use { writer ->
+        toTypstInWhatChapter(writer, practiceTest, headingsToFind)
     }
 
-    return texFile.latexToPdf()
+    return typFile.typstToPdf()
 }
 
 /**
@@ -140,45 +133,27 @@ fun headingsCluePool(practiceTest: PracticeTest, nChoices: Int): List<MultiChoic
         }.map { multiChoice(it, content.coveredChapters, practiceTest.random, nChoices) }
 }
 
-/** Writes a "In What Chapter" LaTeX test sheet (questions + answer key) for the given multiple-choice questions. */
-fun toLatexInWhatChapter(
+private fun escapeTypst(s: String): String =
+    s.replace("\\", "\\\\")
+        .replace("[", "\\[")
+        .replace("]", "\\]")
+        .replace("#", "\\#")
+        .replace("*", "\\*")
+        .replace("_", "\\_")
+
+/** Writes a "In What Chapter" Typst test sheet (questions + answer key) for the given multiple-choice questions. */
+fun toTypstInWhatChapter(
     appendable: Appendable,
     practiceTest: PracticeTest,
     questions: List<MultiChoiceQuestion>,
 ) {
-    docHeader(appendable)
     val bookFormat = if (practiceTest.content.studyData.isMultiBook) BRIEF_BOOK_FORMAT else NO_BOOK_FORMAT
-    val titleString = toLatexTest(appendable, practiceTest, questions, bookFormat)
-    newPage(appendable)
-    toLatexAnswerKey(appendable, titleString, questions, bookFormat)
-    docFooter(appendable)
+    val titleString = toTypstTest(appendable, practiceTest, questions, bookFormat)
+    appendable.appendLine("\n#pagebreak()\n")
+    toTypstAnswerKey(appendable, titleString, questions, bookFormat)
 }
 
-private fun newPage(appendable: Appendable) {
-    appendable.appendLine("\n\\newpage\n")
-}
-
-private fun docFooter(appendable: Appendable) {
-    appendable.appendLine("""\end{document}""")
-}
-
-private fun docHeader(appendable: Appendable) {
-    appendable.appendLine("""
-        \documentclass{exam}
-        \usepackage{nopageno}
-        \usepackage[utf8]{inputenc}
-        \setlength{\parindent}{0in}
-        \usepackage{multicol}
-        \usepackage[letterpaper, left=.7in, right=.7in, top=0.3in, bottom=0.3in]{geometry}
-        \usepackage{xpatch}
-        \xpatchcmd{\oneparchoices}{\penalty -50\hskip 1em plus 1em\relax}{\hfill}{}{}
-        
-        \begin{document}
-        
-    """.trimIndent())
-}
-
-private fun toLatexTest(
+private fun toTypstTest(
     appendable: Appendable,
     practiceTest: PracticeTest,
     questions: List<MultiChoiceQuestion>,
@@ -188,39 +163,57 @@ private fun toLatexTest(
     val minutes: Int = round.minutesAtPaceFor(questions.size)
 
     val seedString = "%04d".format(practiceTest.randomSeed)
-    val titleString = "\\#$seedString ${round.longName} " +
-            "\\textnormal{(${round.bibleUse} Bible, $minutes min)}" +
-            "\\hfill Round ${round.number}"
+    val titleString = "#$seedString ${round.longName} " +
+            "(${round.bibleUse} Bible, $minutes min)" +
+            " \\hfill Round ${round.number}"
 
     val content = practiceTest.content
     val limitedTo: String =
         if (content.allChapters) ""
         else " (ONLY ${content.coveredChaptersString()})"
+
     appendable.appendLine(
         """
-        \section*{$titleString}
+        #set page(
+          paper: "us-letter",
+          margin: (left: 0.7in, right: 0.7in, top: 0.3in, bottom: 0.3in)
+        )
+        #set text(size: 10pt, font: "Libertinus Serif")
+        #set par(justify: false)
+
+        #align(center)[
+          #text(size: 14pt, weight: "bold")[${escapeTypst(titleString)}]
+        ]
+        #v(0.1in)
 
         Without using your Bible, mark on your score sheet the letter corresponding to the chapter number in which 
-        each of the following ${round.shortName} is found (i.e., begins) in ${practiceTest.studySet.name}$limitedTo.
+        each of the following ${round.shortName} is found (i.e., begins) in ${escapeTypst(practiceTest.studySet.name)}${escapeTypst(limitedTo)}.
         
-        \vspace{0.08in}
+        #v(0.08in)
         
-        \begin{questions}
+        #set enum(indent: 0pt, body-indent: 8pt)
     """.trimIndent()
     )
     questions.forEach { multiChoice ->
-        appendable.appendLine("\\question ${multiChoice.question.question}").appendLine()
-        appendable.appendLine("\\begin{oneparchoices}")
-        for (choice in multiChoice.choices) {
-            appendable.appendLine("\\choice ${choice?.format(bookFormat) ?: "none of these"}")
-        }
-        appendable.appendLine("\\end{oneparchoices}").appendLine()
+        val qText = escapeTypst(multiChoice.question.question)
+        appendable.appendLine("+ $qText")
+        appendable.appendLine("  #v(4pt)")
+        appendable.appendLine("  #grid(")
+        appendable.appendLine("    columns: (1fr,) * ${multiChoice.choices.size},")
+        appendable.appendLine("    align: left,")
+        val choicesStr = multiChoice.choices.mapIndexed { idx, choice ->
+            val label = ('A' + idx).toString()
+            val text = choice?.format(bookFormat) ?: "none of these"
+            "[*$label.* ${escapeTypst(text)}]"
+        }.joinToString(", ")
+        appendable.appendLine("    $choicesStr")
+        appendable.appendLine("  )")
+        appendable.appendLine("  #v(8pt)")
     }
-    appendable.appendLine("\\end{questions}")
     return titleString
 }
 
-private fun toLatexAnswerKey(
+private fun toTypstAnswerKey(
     appendable: Appendable,
     titleString: String,
     questions: List<MultiChoiceQuestion>,
@@ -228,9 +221,12 @@ private fun toLatexAnswerKey(
 ) {
     appendable.appendLine(
         """
-        \section*{ANSWER KEY\\$titleString}
-        \begin{multicols}{2}
-        \begin{enumerate}
+        #align(center)[
+          #text(size: 14pt, weight: "bold")[ANSWER KEY \ \ ${escapeTypst(titleString)}]
+        ]
+        #v(0.25in)
+        #columns(2)[
+          #set enum(indent: 0pt, body-indent: 6pt)
     """.trimIndent()
     )
     questions.forEach { multiChoice ->
@@ -239,8 +235,8 @@ private fun toLatexAnswerKey(
         val ref: String =
             if (q.answerRefs != null) q.answerRefs.first().format(bookFormat)
             else prefix + q.answers.joinToString(" and ") { it.format(bookFormat) }
-        appendable.appendLine("""    \item ${'A' + multiChoice.correctChoice} ($ref)""")
+        val label = ('A' + multiChoice.correctChoice).toString()
+        appendable.appendLine("  + *$label* (${escapeTypst(ref)})")
     }
-    appendable.appendLine("""\end{enumerate}""")
-    appendable.appendLine("""\end{multicols}""")
+    appendable.appendLine("""]""")
 }

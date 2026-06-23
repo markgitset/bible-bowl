@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.analysis
 
 import net.markdrew.biblebowl.DATA_DIR_NAME
-import net.markdrew.biblebowl.latex.IndexEntry
+import net.markdrew.biblebowl.model.IndexEntry
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef

@@ -5,14 +5,14 @@ import net.markdrew.biblebowl.analysis.WithCount
 import net.markdrew.biblebowl.analysis.WordIndexEntryC
 import net.markdrew.biblebowl.analysis.buildNonLocalPhrasesIndex
 import net.markdrew.biblebowl.analysis.buildPhrasesIndex
-import net.markdrew.biblebowl.latex.latexToPdf
-import net.markdrew.biblebowl.latex.writeDoc
-import net.markdrew.biblebowl.latex.writeIndex
+import net.markdrew.biblebowl.model.IndexEntry
+import net.markdrew.biblebowl.typst.typstToPdf
+import net.markdrew.biblebowl.typst.writeDoc
+import net.markdrew.biblebowl.typst.writeIndex
 import net.markdrew.biblebowl.model.NO_BOOK_FORMAT
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
-import java.io.File
 
 /*
     This appears to be a work in progress.  I think I intended to index the most similar words/sentences/verses
@@ -23,12 +23,12 @@ import java.io.File
 fun main() {
     val studyData = StudyData.readData(StandardStudySet.DEFAULT)
     writePhrasesIndex(studyData, maxPhraseLength = 23)
-    writeNonLocalPhrasesIndex(studyData, maxPhraseLength = 23)
+    writeNonLocalPhrasesIndex2(studyData, maxPhraseLength = 23)
 }
 
 /** Duplicate of [formatVerseRefWithCount] kept here while this file is a work-in-progress copy. */
 fun formatVerseRefWithCount2(ref: WithCount<VerseRef>): String =
-    ref.item.format(NO_BOOK_FORMAT) + (if (ref.count > 1) """(\(\times\)${ref.count})""" else "")
+    ref.item.format(NO_BOOK_FORMAT) + (if (ref.count > 1) " (×${ref.count})" else "")
 
 private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
     val indexEntries: List<WordIndexEntryC> = buildPhrasesIndex(studyData, maxPhraseLength)
@@ -40,7 +40,7 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
         }
     val simpleName = studyData.studySet.simpleName
     val dir = defaultProductsPath.resolve("$simpleName/indices").toFile().also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-index-phrases.tex")
+    val file = dir.resolve("$simpleName-index-phrases.typ")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
         writeDoc(
@@ -52,14 +52,15 @@ private fun writePhrasesIndex(studyData: StudyData, maxPhraseLength: Int = 50) {
                 writer, indexEntries.sortedBy { it.key }, "Alphabetical",
                 columns = 2, formatValue = studyData.verseRefFormat.noBreak().withCount()
             )
-            writer.appendLine("""\newpage""")
+            writer.appendLine("#pagebreak()")
+            writer.appendLine()
             writeIndex(
                 writer, indexEntries.sortedByDescending { it.values.size }, "In Order of Decreasing Frequency",
                 columns = 2, formatValue = studyData.verseRefFormat.noBreak().withCount()
             )
         }
     }
-    file.latexToPdf()
+    file.toPath().typstToPdf()
 }
 
 private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: Int = 50) {
@@ -72,7 +73,7 @@ private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: In
         }
     val simpleName = studyData.studySet.simpleName
     val dir = defaultProductsPath.resolve("$simpleName/indices").toFile().also { it.mkdirs() }
-    val file = dir.resolve("$simpleName-index-nonlocal-phrases.tex")
+    val file = dir.resolve("$simpleName-index-nonlocal-phrases.typ")
     val fullName = studyData.studySet.name
     file.writer().use { writer ->
         writeDoc(
@@ -87,7 +88,8 @@ private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: In
                 columns = 2,
                 formatValue = ::formatVerseRefWithCount2,
             )
-            writer.appendLine("""\newpage""")
+            writer.appendLine("#pagebreak()")
+            writer.appendLine()
             writeIndex(
                 writer,
                 indexEntries.sortedByDescending { it.values.size },
@@ -97,6 +99,5 @@ private fun writeNonLocalPhrasesIndex2(studyData: StudyData, maxPhraseLength: In
             )
         }
     }
-    file.latexToPdf()
+    file.toPath().typstToPdf()
 }
-

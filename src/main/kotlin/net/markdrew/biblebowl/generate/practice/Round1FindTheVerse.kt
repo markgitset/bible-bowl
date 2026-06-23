@@ -2,7 +2,8 @@ package net.markdrew.biblebowl.generate.practice
 
 import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.generate.normalizeWS
-import net.markdrew.biblebowl.latex.latexToPdf
+import net.markdrew.biblebowl.typst.typstToPdf
+import net.markdrew.biblebowl.typst.escapeTypst
 import net.markdrew.biblebowl.model.FULL_BOOK_FORMAT
 import net.markdrew.biblebowl.model.PracticeContent
 import net.markdrew.biblebowl.model.ReferencedVerse
@@ -20,12 +21,6 @@ private const val VERSES_PER_PAGE = 20
 fun main(args: Array<String>) {
     val studySet: StudySet = StandardStudySet.parse(args.getOrNull(0))
     val studyData = StudyData.readData(studySet)
-
-    // JUST DO ONE
-//    val content: PracticeContent = studyData.practice(Book.EXO.chapterRef(20))
-//    showPdf(writeFindTheVerse(
-//        PracticeTest(Round.FIND_THE_VERSE, content, numQuestions = 20)
-//    ))
 
     writeFullSet(studyData) { content, seed, productsDir ->
         writeRound1VerseFind(
@@ -53,27 +48,17 @@ fun writeRound1VerseFind(
         cluePool = cluePool.enclosedBy(content.coveredOffsets)
     }
 
-    // remove any ambiguous clues
-//    cluePool = DisjointRangeMap(cluePool.entries
-//        .groupBy { (range, _) -> studyData.text.substring(range).lowercase() }
-//        .also { it.forEach { println(it) } }
-//        .values
-//        .mapNotNull { it.singleOrNull() }
-//        .associate { (range, verse) -> range to verse }
-//    )
-
-    // TODO need a better disambiguation approach!
     val versesToFind: List<ReferencedVerse> = cluePool
         .filterKeys { it.length() >= minCharLength }
         .entries.shuffled(practiceTest.random)
         .take(practiceTest.numQuestions)
         .map { (range, verseRef) -> ReferencedVerse(verseRef, studyData.text.substring(range)) }
 
-    val outputPath = practiceTest.buildTexFileName(productsDir)
+    val outputPath = practiceTest.buildTypFileName(productsDir)
     Files.newBufferedWriter(outputPath).use { writer ->
-        versesToFind.toLatexInWhatChapter(writer, practiceTest)
+        versesToFind.toTypstInWhatChapter(writer, practiceTest)
     }
-    return outputPath.latexToPdf(keepTexFiles = false)
+    return outputPath.typstToPdf(keepTypFiles = false)
 }
 
 /** Strings containing pairs of characters that normally occur as pairs */
@@ -105,9 +90,11 @@ fun removeUnmatchedCharPair(s: String, charPair: String): String {
     return s
 }
 
-/** Writes a Round 1 LaTeX test sheet (questions + answer key) for these reference/verse pairs. */
-fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
-                                               practiceTest: PracticeTest) {
+/** Writes a Round 1 Typst test sheet (questions + answer key) for these reference/verse pairs. */
+fun List<ReferencedVerse>.toTypstInWhatChapter(
+    appendable: Appendable,
+    practiceTest: PracticeTest
+) {
     val seedString = "%04d".format(practiceTest.randomSeed)
     val minutes = Round.FIND_THE_VERSE.minutesAtPaceFor(this.size)
     val chapters: String = practiceTest.content.coveredChaptersString()
@@ -118,64 +105,73 @@ fun List<ReferencedVerse>.toLatexInWhatChapter(appendable: Appendable,
     } else {
         "chapter and verse from ${practiceTest.studySet.name}"
     }
-    val bookColDef = if (multiBook) "m{0.3in}|" else ""
-    val bookColHeading = if (multiBook) """\multicolumn{1}{c}{Book}&""" else ""
-    val tabularEnv = if (size > VERSES_PER_PAGE) "longtable" else "tabular"
+
     appendable.appendLine("""
-        \documentclass[10pt, letter paper]{article} 
-        \usepackage[utf8]{inputenc}
-        \usepackage[letterpaper, left=0.7in, right=0.7in, top=0.7in, bottom=0.7in]{geometry}
-        \usepackage{multicol}
-        \usepackage[T1]{fontenc}
-    """.trimIndent())
-    if (size > VERSES_PER_PAGE) appendable.appendLine("\\usepackage{longtable}")
-    appendable.appendLine("""
-        \usepackage{array}
-        \renewcommand{\arraystretch}{1.4}
-        \newcounter{rowcount}
-        \setcounter{rowcount}{0}
-        
-        \begin{document}
-        
-        \noindent Number \rule{1in}{0.01in}\hfill Name \rule{3in}{0.01in}\hfill Score \rule{1in}{0.01in}
-        
-        \section*{\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
-        Using your Bible, write the $answerDesc$coverage of each quotation in its matching box.
-        
-        \begin{center}
-        \begin{$tabularEnv}{|@{\stepcounter{rowcount} \therowcount.\hspace*{\tabcolsep}}%
-            p{${if (multiBook) 5.2 else 5.5}in}||${bookColDef}m{0.3in}|m{0.3in}|}
-            \multicolumn{1}{c}{}&\multicolumn{${if (multiBook) 3 else 2}}{c}{ANSWER}\\
-            \multicolumn{1}{c}{}&$bookColHeading\multicolumn{1}{c}{Chapter}&\multicolumn{1}{c}{Verse}\\
-            \hline
-    """.trimIndent())
-    this.forEachIndexed { i, refVerse ->
-        if (i > 0 && i % VERSES_PER_PAGE == 0) appendable.appendLine("""    \newpage\hline""")
-        appendable.appendLine(
-            """    ${removeUnmatchedCharPairs(refVerse.verse.normalizeWS())} & & ${if (multiBook) "&" else ""}\\"""
+        #set page(
+          paper: "us-letter",
+          margin: (left: 0.7in, right: 0.7in, top: 0.7in, bottom: 0.7in)
         )
-        appendable.appendLine("""    \hline""")
-    }
-    appendable.appendLine("""
-        \end{$tabularEnv}
-        \end{center}
-        \clearpage
-        \section*{ANSWER KEY\\\#$seedString Find The Verse \textnormal{(Open Bible, $minutes minutes)}\hfill Round 1}
-        \begin{multicols}{2}
-        \raggedright
-        \begin{enumerate}
+        #set text(size: 10pt, font: "Libertinus Serif")
+        
+        Number #box(width: 1in, stroke: (bottom: 0.5pt)) #h(1fr) Name #box(width: 3in, stroke: (bottom: 0.5pt)) #h(1fr) Score #box(width: 1in, stroke: (bottom: 0.5pt))
+        
+        #v(0.1in)
+        #align(center)[
+          #text(size: 15pt, weight: "bold")[#$seedString Find The Verse (Open Bible, $minutes minutes) #h(1fr) Round 1]
+        ]
+        #v(0.05in)
+        Using your Bible, write the ${escapeTypst(answerDesc)}${escapeTypst(coverage)} of each quotation in its matching box.
+        
+        #v(0.1in)
+        #align(center)[
     """.trimIndent())
+
+    val cols = if (multiBook) "auto, 1fr, 45pt, 45pt, 45pt" else "auto, 1fr, 45pt, 45pt"
+    val colAligns = if (multiBook) "center + horizon, left + horizon, center + horizon, center + horizon, center + horizon" else "center + horizon, left + horizon, center + horizon, center + horizon"
+    val colspan = if (multiBook) 3 else 2
+    val headings = if (multiBook) "[*Book*], [*Chapter*], [*Verse*]" else "[*Chapter*], [*Verse*]"
+
+    appendable.appendLine("""
+        #table(
+          columns: ($cols),
+          align: ($colAligns),
+          stroke: 0.5pt + black,
+          table.cell(colspan: 2)[], table.cell(colspan: $colspan)[*ANSWER*],
+          [], [], $headings,
+    """.trimIndent())
+
+    this.forEachIndexed { i, refVerse ->
+        val clue = removeUnmatchedCharPairs(refVerse.verse.normalizeWS())
+        val escapedClue = escapeTypst(clue)
+        val rowNum = "${i + 1}."
+        val emptyCells = if (multiBook) "[], [], []" else "[], []"
+        appendable.appendLine("    [$rowNum], [$escapedClue], $emptyCells,")
+    }
+
+    appendable.appendLine("""
+        )
+        ]
+        
+        #pagebreak()
+        #align(center)[
+          #text(size: 15pt, weight: "bold")[ANSWER KEY \ \ \#$seedString Find The Verse (Open Bible, $minutes minutes) #h(1fr) Round 1]
+        ]
+        #v(0.25in)
+        #columns(2)[
+          #set enum(indent: 0pt, body-indent: 6pt)
+    """.trimIndent())
+
     this.forEach {
         val verseRef: VerseRef = it.reference
-        val headings: List<String> = practiceTest.content.studyData.headingsIntersecting(verseRef)
-        if (headings.isEmpty()) throw Exception("No chapter heading(s) found for $verseRef!")
-        appendable.append("""    \item ${verseRef.format(FULL_BOOK_FORMAT)}\\""")
-        headings.joinTo(appendable, """ AND \\""")
-        appendable.appendLine()
+        val headingsList: List<String> = practiceTest.content.studyData.headingsIntersecting(verseRef)
+        if (headingsList.isEmpty()) throw Exception("No chapter heading(s) found for $verseRef!")
+        val formattedVerse = escapeTypst(verseRef.format(FULL_BOOK_FORMAT))
+        appendable.append("  + *$formattedVerse* \\ \n")
+        val escapedHeadings = headingsList.map { h -> escapeTypst(h) }
+        appendable.append("    " + escapedHeadings.joinToString(" AND \\ \n    ") + "\n")
     }
+
     appendable.appendLine("""
-        \end{enumerate}
-        \end{multicols}
-        \end{document}
+        ]
     """.trimIndent())
 }
