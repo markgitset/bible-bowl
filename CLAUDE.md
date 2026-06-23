@@ -12,12 +12,12 @@ JDK 23 toolchain is configured in `gradle.properties` (`jvmVersion = 23`, `kotli
 
 - Build: `./gradlew build`
 - Build distribution: `./gradlew installDist`
-- The CLI is subcommand-based (`text`, `annotate`, `indices`, `flashcards`, `practice`, `all`); each takes an optional `[STUDY_SET]` argument and only the options relevant to it. `all` generates every resource with defaults.
+- The CLI is subcommand-based (`text`, `annotate`, `indices`, `flashcards`, `practice`, `all`); the study set is the `-s`/`--study-set` option (default from config) and each subcommand exposes only the options relevant to it. `all` generates every resource with defaults.
 - Run everything for the default study set: `./gradlew run --args="all"`
-- Run with args: `./gradlew run --args="all luke --force-download"` (subcommand, study set name, plus that subcommand's flags)
-- Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl text acts`
-- Generate specific indices: `./build/install/bible-bowl/bin/bible-bowl indices acts names-index numbers-index` (no resource args = all in that category; `--list` to discover slugs)
-- Run a subcommand with verbose logs: `./build/install/bible-bowl/bin/bible-bowl all acts -v`
+- Run with args: `./gradlew run --args="all -s luke --force-download"` (subcommand plus that subcommand's flags)
+- Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl text -s acts`
+- Generate specific indices: `./build/install/bible-bowl/bin/bible-bowl indices names-index numbers-index` (positional resource slugs; no slugs = all in that category; `--list` to discover slugs)
+- Run a subcommand with verbose logs: `./build/install/bible-bowl/bin/bible-bowl all -s acts -v`
 - All tests: `./gradlew test`
 - Regenerate text snapshot baselines: `./gradlew test -Dregenerate-baseline-texts=true`
 - Single test class: `./gradlew test --tests 'net.markdrew.biblebowl.analysis.FindNamesKtTest'`
@@ -35,7 +35,7 @@ The `chupacabra` dependency is resolved from JitPack (configured in `settings.gr
 
 ## Entry points
 
-- **Active CLI**: `src/main/kotlin/net/markdrew/biblebowl/cli/BibleBowlCli.kt` — `mainClass` in `build.gradle.kts` points here (`BibleBowlCliKt`). Built on clikt as a subcommand tree: a no-op root `BibleBowlCli` with six subcommands. `BaseCommand` carries the shared study-set arg + I/O dirs + global flags and the data-loading helpers; `GeneratingCommand` adds `--products-dir` and `runResources(...)`; `SelectingCommand` adds the positional resource-slug selection + `--list` for the category subcommands (`indices`/`flashcards`/`practice`). `text` and `all` extend `GeneratingCommand` directly; `annotate` extends `BaseCommand` (no products). Resource definitions live in `cli/StudyResources.kt` (one `StudyResource` per generatable artifact, tagged with a `ResourceCategory`); CLI defaults resolve through `cli/CliConfig.kt`.
+- **Active CLI**: `src/main/kotlin/net/markdrew/biblebowl/cli/BibleBowlCli.kt` — `mainClass` in `build.gradle.kts` points here (`BibleBowlCliKt`). Built on clikt as a subcommand tree: a no-op root `BibleBowlCli` with six subcommands. `BaseCommand` carries the shared `-s`/`--study-set` option + I/O dirs + global flags and the data-loading helpers; `GeneratingCommand` adds `--products-dir` and `runResources(...)`; `SelectingCommand` adds the positional resource-slug selection + `--list` for the category subcommands (`indices`/`flashcards`/`practice`). `text` and `all` extend `GeneratingCommand` directly; `annotate` extends `BaseCommand` (no products). Resource definitions live in `cli/StudyResources.kt` (one `StudyResource` per generatable artifact, tagged with a `ResourceCategory`); CLI defaults resolve through `cli/CliConfig.kt`.
 - **Legacy `main`**: `src/main/kotlin/net/markdrew/biblebowl/biblebowl.kt` has an older non-clikt `main` that hard-codes the repo-relative `data/`/`raw-data/` dirs and a slightly different generator set. Don't add new behavior there — extend `BibleBowlCli` instead.
 
 ## Core architecture

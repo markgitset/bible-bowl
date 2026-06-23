@@ -9,7 +9,6 @@ import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.arguments.help
 import com.github.ajalt.clikt.parameters.arguments.multiple
-import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -66,8 +65,7 @@ abstract class BaseCommand(name: String, private val helpText: String) : CliktCo
 
     override fun help(context: Context): String = helpText
 
-    protected val studySetName: String? by argument("STUDY_SET")
-        .optional()
+    protected val studySetName: String? by option("--study-set", "-s")
         .help("Study set to use (default: ${CliConfig.defaultStudySetName})")
 
     protected val forceDownload: Boolean by option("--force-download", "-F")
