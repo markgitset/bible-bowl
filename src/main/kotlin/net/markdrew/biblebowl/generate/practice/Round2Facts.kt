@@ -80,7 +80,8 @@ private fun toTypstFactFinder(
     val round = practiceTest.round
     val minutes = round.minutesAtPaceFor(questions.size)
     val seedString = "%04d".format(practiceTest.randomSeed)
-    val titleString = "#$seedString ${round.longName} (${round.bibleUse} Bible, $minutes min) \\hfill Round ${round.number}"
+    val titleLeft = "#$seedString ${round.longName} (${round.bibleUse} Bible, $minutes min)"
+    val titleRight = "Round ${round.number}"
     
     val content = practiceTest.content
     val limitedTo = if (content.allChapters) "" else " (ONLY ${content.coveredChaptersString()})"
@@ -94,7 +95,7 @@ private fun toTypstFactFinder(
         #set par(justify: false)
         
         #align(center)[
-          #text(size: 14pt, weight: "bold")[${escapeTypst(titleString)}]
+          #text(size: 14pt, weight: "bold")[${escapeTypst(titleLeft)} #h(1fr) ${escapeTypst(titleRight)}]
         ]
         #v(0.1in)
         Using your Bible, answer each of the following multiple-choice questions by marking the letter corresponding to the correct response on your answer sheet. Questions are from ${escapeTypst(practiceTest.studySet.name)}${escapeTypst(limitedTo)}.
@@ -122,7 +123,10 @@ private fun toTypstFactFinder(
     appendable.appendLine("""
         #pagebreak()
         #align(center)[
-          #text(size: 14pt, weight: "bold")[ANSWER KEY \ \ ${escapeTypst(titleString)}]
+          #text(size: 14pt, weight: "bold")[
+            ANSWER KEY \ \
+            ${escapeTypst(titleLeft)} #h(1fr) ${escapeTypst(titleRight)}
+          ]
         ]
         #v(0.25in)
         #columns(2)[

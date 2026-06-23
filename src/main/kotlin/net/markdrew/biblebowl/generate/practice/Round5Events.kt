@@ -148,9 +148,9 @@ fun toTypstInWhatChapter(
     questions: List<MultiChoiceQuestion>,
 ) {
     val bookFormat = if (practiceTest.content.studyData.isMultiBook) BRIEF_BOOK_FORMAT else NO_BOOK_FORMAT
-    val titleString = toTypstTest(appendable, practiceTest, questions, bookFormat)
+    val (titleLeft, titleRight) = toTypstTest(appendable, practiceTest, questions, bookFormat)
     appendable.appendLine("\n#pagebreak()\n")
-    toTypstAnswerKey(appendable, titleString, questions, bookFormat)
+    toTypstAnswerKey(appendable, titleLeft, titleRight, questions, bookFormat)
 }
 
 private fun toTypstTest(
@@ -158,14 +158,13 @@ private fun toTypstTest(
     practiceTest: PracticeTest,
     questions: List<MultiChoiceQuestion>,
     bookFormat: BookFormat,
-): String {
+): Pair<String, String> {
     val round = practiceTest.round
     val minutes: Int = round.minutesAtPaceFor(questions.size)
 
     val seedString = "%04d".format(practiceTest.randomSeed)
-    val titleString = "#$seedString ${round.longName} " +
-            "(${round.bibleUse} Bible, $minutes min)" +
-            " \\hfill Round ${round.number}"
+    val titleLeft = "#$seedString ${round.longName} (${round.bibleUse} Bible, $minutes min)"
+    val titleRight = "Round ${round.number}"
 
     val content = practiceTest.content
     val limitedTo: String =
@@ -182,7 +181,7 @@ private fun toTypstTest(
         #set par(justify: false)
 
         #align(center)[
-          #text(size: 14pt, weight: "bold")[${escapeTypst(titleString)}]
+          #text(size: 14pt, weight: "bold")[${escapeTypst(titleLeft)} #h(1fr) ${escapeTypst(titleRight)}]
         ]
         #v(0.1in)
 
@@ -210,19 +209,23 @@ private fun toTypstTest(
         appendable.appendLine("  )")
         appendable.appendLine("  #v(8pt)")
     }
-    return titleString
+    return Pair(titleLeft, titleRight)
 }
 
 private fun toTypstAnswerKey(
     appendable: Appendable,
-    titleString: String,
+    titleLeft: String,
+    titleRight: String,
     questions: List<MultiChoiceQuestion>,
     bookFormat: BookFormat,
 ) {
     appendable.appendLine(
         """
         #align(center)[
-          #text(size: 14pt, weight: "bold")[ANSWER KEY \ \ ${escapeTypst(titleString)}]
+          #text(size: 14pt, weight: "bold")[
+            ANSWER KEY \ \
+            ${escapeTypst(titleLeft)} #h(1fr) ${escapeTypst(titleRight)}
+          ]
         ]
         #v(0.25in)
         #columns(2)[
