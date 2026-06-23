@@ -87,6 +87,7 @@ fun studyResources(
     forceDownload: Boolean = false,
     preset: String? = null,
     overrides: TextOverrides = TextOverrides(),
+    practiceVariants: Int = 5,
 ): List<StudyResource> = buildList {
     // TEXT
     add(StudyResource("text", TEXT, "Bible text variants") { data, store, dir ->
@@ -127,7 +128,7 @@ fun studyResources(
 
     // PRACTICE
     add(StudyResource("practice", PRACTICE, "Practice test set (rounds 1, 4, 5)") { d, _, p ->
-        writeFullSet(d, p) { content, seed, dir ->
+        writeFullSet(d, p, repsPerRange = practiceVariants) { content, seed, dir ->
             writeRound1VerseFind(practiceTest(Round.FIND_THE_VERSE, content, seed, numQuestions = 20), dir)
             writeRound4Quotes(practiceTest(Round.QUOTES, content, seed), dir)
             writeRound5Events(practiceTest(Round.EVENTS, content, seed), dir)

@@ -169,6 +169,8 @@ abstract class SelectingCommand(
     private val category: ResourceCategory,
 ) : GeneratingCommand(name, helpText) {
 
+    open val practiceVariants: Int get() = 5
+
     private val which: List<String> by argument("RESOURCE")
         .multiple()
         .help("Which ${category.name.lowercase()} resources to generate (default: all). See --list.")
@@ -178,7 +180,11 @@ abstract class SelectingCommand(
         .help("List the available ${category.name.lowercase()} resources, then exit")
 
     final override fun execute() {
-        val registry = studyResources(rawDataDir = rawDataDir, forceDownload = forceDownload)
+        val registry = studyResources(
+            rawDataDir = rawDataDir,
+            forceDownload = forceDownload,
+            practiceVariants = practiceVariants,
+        )
             .filter { it.category == category }
         if (list) {
             echo("Available ${category.name.lowercase()} resources:")
@@ -296,7 +302,14 @@ class IndicesCommand : SelectingCommand("indices", "Generate index resources", R
 class FlashcardsCommand : SelectingCommand("flashcards", "Generate flashcard decks", ResourceCategory.FLASHCARDS)
 
 /** `practice` — practice round tests. */
-class PracticeCommand : SelectingCommand("practice", "Generate practice tests", ResourceCategory.PRACTICE)
+class PracticeCommand : SelectingCommand("practice", "Generate practice tests", ResourceCategory.PRACTICE) {
+    private val variants: Int by option("--variants")
+        .int()
+        .default(5)
+        .help("Number of variants of each test to generate (default: 5)")
+
+    override val practiceVariants: Int get() = variants
+}
 
 /** `all` — generate every resource with default settings. */
 class AllCommand : GeneratingCommand("all", "Generate every resource with default settings") {
