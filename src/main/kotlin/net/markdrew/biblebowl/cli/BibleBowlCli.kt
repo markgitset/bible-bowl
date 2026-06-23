@@ -250,7 +250,7 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
 
     private val chapterEndLinesOverride: Boolean? by option().switch(
         "--chapter-end-lines" to true, "--no-chapter-end-lines" to false,
-    ).help("Draw a bold, black horizontal line from the right side of the chapter label to the right edge (Typst only)")
+    ).help("Center the chapter label and draw bold, black horizontal lines extending across the column with a break in the middle (Typst only)")
 
     private val testDate: LocalDate by option("--test-date", envvar = "TEST_DATE")
         .convert { LocalDate.parse(it) }

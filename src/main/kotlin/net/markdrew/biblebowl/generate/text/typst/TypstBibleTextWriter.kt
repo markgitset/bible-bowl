@@ -149,7 +149,18 @@ private class TypstHandler(
             )
             #let chapter-heading(label) = heading(
                 level: 1, outlined: false,
-                text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label${if (layout.chapterEndLines) " #box(width: 1fr, inset: (left: 0.5em), baseline: -0.3em, line(length: 100%, stroke: 0.5em + black))" else ""}],
+                ${if (layout.chapterEndLines) """
+                grid(
+                    columns: (1fr, auto, 1fr),
+                    align: horizon,
+                    gutter: 0.5em,
+                    line(length: 100%, stroke: 0.5em + black),
+                    text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label],
+                    line(length: 100%, stroke: 0.5em + black),
+                )
+                """.trimIndent().trim() else """
+                text(font: "${style.headingFont}", size: ${style.chapterFontSize}pt, weight: "bold")[#label],
+                """.trimIndent().trim()}
             )
             #let section-heading(label) = heading(
                 level: 2, outlined: false,
