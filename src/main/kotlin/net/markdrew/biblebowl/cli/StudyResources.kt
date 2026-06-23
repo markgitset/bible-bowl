@@ -29,6 +29,7 @@ import net.markdrew.biblebowl.generate.practice.writeRound4Quotes
 import net.markdrew.biblebowl.generate.practice.writeRound5Events
 import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.generate.text.TextOverrides
+import net.markdrew.biblebowl.generate.text.Typst
 import net.markdrew.biblebowl.generate.text.generateBibleTexts
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.typst.writeTypstFlashCards
@@ -80,8 +81,8 @@ private val WORD_LISTS: List<WordListSpec> = listOf(
  * registered here (they aren't part of the standard year set today); adding one is a single `+=`.
  */
 fun studyResources(
-    formats: Set<OutputFormat>,
-    testDate: LocalDate,
+    formats: Set<OutputFormat> = setOf(Typst),
+    testDate: LocalDate = CliConfig.defaultTestDate,
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
     preset: String? = null,
@@ -141,6 +142,10 @@ fun studyResources(
  *
  * @throws IllegalArgumentException naming the bad token if it matches neither a category nor a slug
  */
+/** Renders [resources] as aligned `slug — label` lines for a subcommand's `--list` output. */
+fun formatResourceList(resources: List<StudyResource>): String =
+    resources.joinToString("\n") { "  ${it.slug.padEnd(28)} ${it.label}" }
+
 fun resolveSelection(tokens: List<String>, all: List<StudyResource>): List<StudyResource> {
     if (tokens.isEmpty()) return all
     val bySlug: Map<String, StudyResource> = all.associateBy { it.slug }

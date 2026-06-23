@@ -12,10 +12,12 @@ JDK 23 toolchain is configured in `gradle.properties` (`jvmVersion = 23`, `kotli
 
 - Build: `./gradlew build`
 - Build distribution: `./gradlew installDist`
-- Run full pipeline against the default study set (Joshua/Judges/Ruth): `./gradlew run`
-- Run with args: `./gradlew run --args="luke --force-download"` (study set name, plus any flags from `BibleBowlCli`)
-- Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl acts -r text`
-- Run built binary with verbose logs: `./build/install/bible-bowl/bin/bible-bowl acts -v`
+- The CLI is subcommand-based (`text`, `annotate`, `indices`, `flashcards`, `practice`, `all`); each takes an optional `[STUDY_SET]` argument and only the options relevant to it. `all` generates every resource with defaults.
+- Run everything for the default study set: `./gradlew run --args="all"`
+- Run with args: `./gradlew run --args="all luke --force-download"` (subcommand, study set name, plus that subcommand's flags)
+- Run built distribution binary: `./build/install/bible-bowl/bin/bible-bowl text acts`
+- Generate specific indices: `./build/install/bible-bowl/bin/bible-bowl indices acts names-index numbers-index` (no resource args = all in that category; `--list` to discover slugs)
+- Run a subcommand with verbose logs: `./build/install/bible-bowl/bin/bible-bowl all acts -v`
 - All tests: `./gradlew test`
 - Regenerate text snapshot baselines: `./gradlew test -Dregenerate-baseline-texts=true`
 - Single test class: `./gradlew test --tests 'net.markdrew.biblebowl.analysis.FindNamesKtTest'`
@@ -28,12 +30,12 @@ The `chupacabra` dependency is resolved from JitPack (configured in `settings.gr
 ## Required configuration
 
 - `ESV_API_TOKEN` env var must be set to download new study sets or the dynamic copyright notice via `EsvClient` / `EsvService` (see `ws/EsvClient.kt`). Without it, requests to api.esv.org go unauthenticated and will fail. Already-indexed data under `dataDir` can be regenerated, and the cached copyright details at `<rawDataDir>/copyright.txt` will be used if available.
-- Default I/O layout lives under `~/.tbb/`: `~/.tbb/raw-data` (ESV JSON), `~/.tbb/data` (indexed `StudyData` files), `~/.tbb/products` (generated artifacts). Each can be overridden with `-r`, `-d`, `-p`. The repo also has its own `data/`, `raw-data/`, `products/` trees that some legacy code paths default to — prefer the `~/.tbb` layout via the CLI.
+- Default I/O layout lives under `~/.tbb/`: `~/.tbb/raw-data` (ESV JSON), `~/.tbb/data` (indexed `StudyData` files), `~/.tbb/products` (generated artifacts). Each can be overridden per-subcommand with `--raw-data-dir`, `--data-dir`, `--products-dir`/`-p`. The repo also has its own `data/`, `raw-data/`, `products/` trees that some legacy code paths default to — prefer the `~/.tbb` layout via the CLI.
 - **Properties Configuration**: Default CLI values for the study set (`default-study-set`) and footer date (`test-date`) can be configured in a `bible-bowl.properties` file. Resolution order is: `./bible-bowl.properties` (CWD) -> `~/.tbb/bible-bowl.properties` (User global) -> hardcoded code defaults. Option `--test-date` or arguments on command line will override these values at runtime.
 
 ## Entry points
 
-- **Active CLI**: `src/main/kotlin/net/markdrew/biblebowl/cli/BibleBowlCli.kt` — `mainClass` in `build.gradle.kts` points here (`BibleBowlCliKt`). Built on clikt.
+- **Active CLI**: `src/main/kotlin/net/markdrew/biblebowl/cli/BibleBowlCli.kt` — `mainClass` in `build.gradle.kts` points here (`BibleBowlCliKt`). Built on clikt as a subcommand tree: a no-op root `BibleBowlCli` with six subcommands. `BaseCommand` carries the shared study-set arg + I/O dirs + global flags and the data-loading helpers; `GeneratingCommand` adds `--products-dir` and `runResources(...)`; `SelectingCommand` adds the positional resource-slug selection + `--list` for the category subcommands (`indices`/`flashcards`/`practice`). `text` and `all` extend `GeneratingCommand` directly; `annotate` extends `BaseCommand` (no products). Resource definitions live in `cli/StudyResources.kt` (one `StudyResource` per generatable artifact, tagged with a `ResourceCategory`); CLI defaults resolve through `cli/CliConfig.kt`.
 - **Legacy `main`**: `src/main/kotlin/net/markdrew/biblebowl/biblebowl.kt` has an older non-clikt `main` that hard-codes the repo-relative `data/`/`raw-data/` dirs and a slightly different generator set. Don't add new behavior there — extend `BibleBowlCli` instead.
 
 ## Core architecture
