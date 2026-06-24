@@ -222,7 +222,7 @@ abstract class SelectingCommand(
 
 /** `text` — parent command namespace for text formats. */
 class TextCommand : CliktCommand(name = "text") {
-    override fun help(context: Context): String = "Generate the annotated Bible text"
+    override fun help(context: Context): String = "Generate the Bible text"
     override fun run() = Unit
 }
 
@@ -271,7 +271,7 @@ abstract class TextCommandBase(name: String, private val helpText: String, prote
     }
 }
 
-class TypstTextCommand : TextCommandBase("typst", "Generate the annotated Bible text in Typst format", Typst) {
+class TypstTextCommand : TextCommandBase("typst", "Generate the Bible text in Typst format", Typst) {
 
     private val mainFontOverride: String? by option("--main-font")
         .help("Override main body text font family")
@@ -357,7 +357,7 @@ class TypstTextCommand : TextCommandBase("typst", "Generate the annotated Bible 
     }
 }
 
-class DocxTextCommand : TextCommandBase("docx", "Generate the annotated Bible text in DOCX format (DEPRECATED)", Docx) {
+class DocxTextCommand : TextCommandBase("docx", "Generate the Bible text in DOCX format (DEPRECATED)", Docx) {
 
     private val mainFontOverride: String? by option("--main-font")
         .help("Override main body text font family (restricted to Times New Roman, Quattrocento Sans, Liberation Mono, Liberation Sans)")
@@ -418,7 +418,7 @@ class DocxTextCommand : TextCommandBase("docx", "Generate the annotated Bible te
     }
 }
 
-class LatexTextCommand : TextCommandBase("latex", "Generate the annotated Bible text in LaTeX format (DEPRECATED)", Latex) {
+class LatexTextCommand : TextCommandBase("latex", "Generate the Bible text in LaTeX format (DEPRECATED)", Latex) {
 
     private val fontSizeOverride: Int? by option("--font-size").int()
         .help("Override body font size in points")
