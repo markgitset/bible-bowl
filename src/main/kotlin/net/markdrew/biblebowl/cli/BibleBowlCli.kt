@@ -32,6 +32,8 @@ import net.markdrew.biblebowl.generate.text.Presets
 import net.markdrew.biblebowl.generate.text.StyleId
 import net.markdrew.biblebowl.generate.text.TextOverrides
 import net.markdrew.biblebowl.generate.text.Typst
+import net.markdrew.biblebowl.generate.text.Docx
+import net.markdrew.biblebowl.generate.text.Latex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -65,7 +67,7 @@ class BibleBowlCli : CliktCommand(name = "biblebowl") {
  */
 class GlobalOptions : OptionGroup(name = "Global Options") {
     val studySetName: String? by option("--study-set", "-s")
-        .help("Study set to use (default: ${CliConfig.defaultStudySetName})")
+        .help("Study set to use. If not specified, it is read from 'default-study-set' in bible-bowl.properties, falling back to 'acts' (default: ${CliConfig.defaultStudySetName})")
 
     val forceDownload: Boolean by option("--force-download", "-F")
         .flag(default = false)
@@ -78,9 +80,7 @@ class GlobalOptions : OptionGroup(name = "Global Options") {
     val sourceDir: Path by option("--source-dir")
         .convert { Path(it) }
         .default(Path("src/main/resources"))
-        .help("Resources root for word-lists/overrides: edited by `annotate` and read by generation, so " +
-            "edits show up without rebuilding. Falls back to bundled resources if absent " +
-            "(default: src/main/resources)")
+        .help("Resources root for word-lists/overrides: edited by `annotate` and read by generation, so edits show up without rebuilding. Falls back to bundled resources if absent (default: src/main/resources)")
 
     val dataDir: Path by option("--data-dir")
         .convert { Path(it) }
@@ -96,6 +96,11 @@ class GlobalOptions : OptionGroup(name = "Global Options") {
         .convert { Path(it) }
         .default(defaultProductsPath)
         .help("Directory for output products (default: $defaultProductsPath)")
+
+    val testDate: LocalDate by option("--test-date", envvar = "TEST_DATE")
+        .convert { LocalDate.parse(it) }
+        .default(CliConfig.defaultTestDate)
+        .help("Date stamped on the cover/footer (format: YYYY-MM-DD). If not specified, it is read from the TEST_DATE environment variable, falling back to 'test-date' in bible-bowl.properties (default: ${CliConfig.defaultTestDate})")
 }
 
 abstract class BaseCommand(name: String, private val helpText: String) : CliktCommand(name = name) {
@@ -111,6 +116,7 @@ abstract class BaseCommand(name: String, private val helpText: String) : CliktCo
     protected val dataDir: Path get() = globalOptions.dataDir
     protected val rawDataDir: Path get() = globalOptions.rawDataDir
     protected val productsDir: Path get() = globalOptions.productsDir
+    protected val testDate: LocalDate get() = globalOptions.testDate
 
     final override fun run() {
         print(BANNER)
@@ -214,86 +220,26 @@ abstract class SelectingCommand(
     }
 }
 
-/** `text` — generate the annotated Bible text, with full preset + per-option override control. */
-class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text") {
+/** `text` — parent command namespace for text formats. */
+class TextCommand : CliktCommand(name = "text") {
+    override fun help(context: Context): String = "Generate the annotated Bible text"
+    override fun run() = Unit
+}
 
-    private val textFormats: List<OutputFormat> by option("--format", "-f")
-        .choice(OutputFormat.all.associateBy { it.subdir }, ignoreCase = true)
-        .multipleOption()
-        .help("Text format(s) to generate; repeatable. One of: ${OutputFormat.all.joinToString { it.subdir }} " +
-            "(default: ${Typst.subdir})")
+abstract class TextCommandBase(name: String, private val helpText: String, protected val format: OutputFormat) : GeneratingCommand(name, helpText) {
 
-    // A base preset plus tri-state per-option overrides. Naming a preset or setting any override switches
-    // text generation from the curated "pack" (all variants) to a single resolved document per format.
-
-    private val preset: String? by option("--preset")
+    protected val preset: String? by option("--preset")
         .choice(*Presets.all.map { it.name }.toTypedArray(), ignoreCase = true)
         .help("Base text preset to start from: ${Presets.all.joinToString { it.name }} " +
             "(omit for the full variant pack)")
 
-    private val listPresets: Boolean by option("--list-presets")
+    protected val listPresets: Boolean by option("--list-presets")
         .flag(default = false)
         .help("List all available text presets and their configurations, then exit")
 
-    private val mainFontOverride: String? by option("--main-font")
-        .help("Override main body text font family (supported by Typst and DOCX [restricted to Times New Roman, Quattrocento Sans, Liberation Mono, Liberation Sans]; ignored by LaTeX)")
+    protected abstract fun buildOverrides(): TextOverrides
 
-    private val headingFontOverride: String? by option("--heading-font")
-        .help("Override chapter and section headings font family (supported by Typst and DOCX [restricted to Times New Roman, Quattrocento Sans, Liberation Mono, Liberation Sans]; ignored by LaTeX)")
-
-    private val verseNumFontOverride: String? by option("--verse-num-font")
-        .help("Override verse numbers font family (supported by Typst and DOCX [restricted to Times New Roman, Quattrocento Sans, Liberation Mono, Liberation Sans]; ignored by LaTeX)")
-
-    private val chapterFontSizeOverride: Int? by option("--chapter-font-size").int()
-        .help("Override chapter heading font size in points (supported by Typst and DOCX; ignored by LaTeX)")
-
-    private val headingFontSizeOverride: Int? by option("--heading-font-size").int()
-        .help("Override section heading font size in points (supported by Typst and DOCX; ignored by LaTeX)")
-
-    private val footnoteFontSizeOverride: Int? by option("--footnote-font-size").int()
-        .help("Override footnote font size in points (supported by Typst and DOCX; ignored by LaTeX)")
-
-    private val justifiedOverride: Boolean? by option().switch(
-        "--justified" to true, "--no-justified" to false,
-    ).help("Override body text justification (supported by Typst and DOCX; ignored by LaTeX)")
-
-    private val fontSizeOverride: Int? by option("--font-size").int()
-        .help("Override body font size in points (supported by Typst, DOCX, and LaTeX)")
-
-    private val twoColumnsOverride: Boolean? by option().switch(
-        "--two-columns" to true, "--no-two-columns" to false,
-    ).help("Override two-column layout (supported by Typst and DOCX; LaTeX always requires two-column)")
-
-    private val inlineChapterLabelsOverride: Boolean? by option().switch(
-        "--inline-chapter-labels" to true, "--no-inline-chapter-labels" to false,
-    ).help("Override inline chapter labels vs. heading-style chapter titles (supported by Typst and DOCX; ignored/not honored by LaTeX)")
-
-    private val pageBreakChaptersOverride: Boolean? by option().switch(
-        "--page-break-chapters" to true, "--no-page-break-chapters" to false,
-    ).help("Override forcing a page break between chapters (supported by Typst and LaTeX; ignored by DOCX)")
-
-    private val underlineUniqueOverride: Boolean? by option().switch(
-        "--underline-unique" to true, "--no-underline-unique" to false,
-    ).help("Override underlining of one-time words (supported by Typst, DOCX, and LaTeX)")
-
-    private val highlightOverride: Boolean? by option().switch(
-        "--highlight" to true, "--no-highlight" to false,
-    ).help("Override the full category highlight palette (supported by Typst, DOCX, and LaTeX)")
-
-    private val versePerLineOverride: Boolean? by option().switch(
-        "--verse-per-line" to true, "--no-verse-per-line" to false,
-    ).help("Override starting each verse on a new line (Typst only; other formats skip/fail)")
-
-    private val chapterEndLinesOverride: Boolean? by option().switch(
-        "--chapter-end-lines" to true, "--no-chapter-end-lines" to false,
-    ).help("Center the chapter label and draw bold, black horizontal lines extending across the column with a break in the middle (Typst only)")
-
-    private val testDate: LocalDate by option("--test-date", envvar = "TEST_DATE")
-        .convert { LocalDate.parse(it) }
-        .default(CliConfig.defaultTestDate)
-        .help("Date stamped on the cover/footer (default: ${CliConfig.defaultTestDate}, format: YYYY-MM-DD)")
-
-    override fun execute() {
+    final override fun execute() {
         if (listPresets) {
             echo("Available text presets:")
             for (p in Presets.all) {
@@ -316,7 +262,71 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
             }
             return
         }
-        val formats = if (textFormats.isEmpty()) setOf(Typst) else textFormats.toSet()
+        if (format == Docx || format == Latex) {
+            echo("WARNING: The ${format.subdir} output format is deprecated and will be removed in a future version.")
+        }
+        val overrides = buildOverrides()
+        val registry = studyResources(setOf(format), testDate, rawDataDir, forceDownload, preset, overrides)
+        runResources(registry.filter { it.category == ResourceCategory.TEXT })
+    }
+}
+
+class TypstTextCommand : TextCommandBase("typst", "Generate the annotated Bible text in Typst format", Typst) {
+
+    private val mainFontOverride: String? by option("--main-font")
+        .help("Override main body text font family")
+
+    private val headingFontOverride: String? by option("--heading-font")
+        .help("Override chapter and section headings font family")
+
+    private val verseNumFontOverride: String? by option("--verse-num-font")
+        .help("Override verse numbers font family")
+
+    private val chapterFontSizeOverride: Int? by option("--chapter-font-size").int()
+        .help("Override chapter heading font size in points")
+
+    private val headingFontSizeOverride: Int? by option("--heading-font-size").int()
+        .help("Override section heading font size in points")
+
+    private val footnoteFontSizeOverride: Int? by option("--footnote-font-size").int()
+        .help("Override footnote font size in points")
+
+    private val justifiedOverride: Boolean? by option().switch(
+        "--justified" to true, "--no-justified" to false,
+    ).help("Override body text justification")
+
+    private val fontSizeOverride: Int? by option("--font-size").int()
+        .help("Override body font size in points")
+
+    private val twoColumnsOverride: Boolean? by option().switch(
+        "--two-columns" to true, "--no-two-columns" to false,
+    ).help("Override two-column layout")
+
+    private val inlineChapterLabelsOverride: Boolean? by option().switch(
+        "--inline-chapter-labels" to true, "--no-inline-chapter-labels" to false,
+    ).help("Override inline chapter labels vs. heading-style chapter titles")
+
+    private val pageBreakChaptersOverride: Boolean? by option().switch(
+        "--page-break-chapters" to true, "--no-page-break-chapters" to false,
+    ).help("Override forcing a page break between chapters")
+
+    private val underlineUniqueOverride: Boolean? by option().switch(
+        "--underline-unique" to true, "--no-underline-unique" to false,
+    ).help("Override underlining of one-time words")
+
+    private val highlightOverride: Boolean? by option().switch(
+        "--highlight" to true, "--no-highlight" to false,
+    ).help("Override the full category highlight palette")
+
+    private val versePerLineOverride: Boolean? by option().switch(
+        "--verse-per-line" to true, "--no-verse-per-line" to false,
+    ).help("Override starting each verse on a new line")
+
+    private val chapterEndLinesOverride: Boolean? by option().switch(
+        "--chapter-end-lines" to true, "--no-chapter-end-lines" to false,
+    ).help("Center the chapter label and draw bold, black horizontal lines extending across the column with a break in the middle")
+
+    override fun buildOverrides(): TextOverrides {
         val resolvedInlineChapters = when {
             inlineChapterLabelsOverride != null -> inlineChapterLabelsOverride
             chapterEndLinesOverride == true -> false
@@ -327,11 +337,10 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
             inlineChapterLabelsOverride == true -> false
             else -> null
         }
-        val overrides = TextOverrides(
+        return TextOverrides(
             fontSize = fontSizeOverride,
             twoColumns = twoColumnsOverride,
             chapterBreaksPage = pageBreakChaptersOverride,
-            // CLI speaks in terms of inline labels; the model field is the inverse (use headings?).
             useHeadingsForChapters = resolvedInlineChapters?.let { !it },
             underlineUniqueWords = underlineUniqueOverride,
             highlight = highlightOverride,
@@ -345,8 +354,95 @@ class TextCommand : GeneratingCommand("text", "Generate the annotated Bible text
             footnoteFontSize = footnoteFontSizeOverride,
             justified = justifiedOverride,
         )
-        val registry = studyResources(formats, testDate, rawDataDir, forceDownload, preset, overrides)
-        runResources(registry.filter { it.category == ResourceCategory.TEXT })
+    }
+}
+
+class DocxTextCommand : TextCommandBase("docx", "Generate the annotated Bible text in DOCX format (DEPRECATED)", Docx) {
+
+    private val mainFontOverride: String? by option("--main-font")
+        .help("Override main body text font family (restricted to Times New Roman, Quattrocento Sans, Liberation Mono, Liberation Sans)")
+
+    private val headingFontOverride: String? by option("--heading-font")
+        .help("Override chapter and section headings font family")
+
+    private val verseNumFontOverride: String? by option("--verse-num-font")
+        .help("Override verse numbers font family")
+
+    private val chapterFontSizeOverride: Int? by option("--chapter-font-size").int()
+        .help("Override chapter heading font size in points")
+
+    private val headingFontSizeOverride: Int? by option("--heading-font-size").int()
+        .help("Override section heading font size in points")
+
+    private val footnoteFontSizeOverride: Int? by option("--footnote-font-size").int()
+        .help("Override footnote font size in points")
+
+    private val justifiedOverride: Boolean? by option().switch(
+        "--justified" to true, "--no-justified" to false,
+    ).help("Override body text justification")
+
+    private val fontSizeOverride: Int? by option("--font-size").int()
+        .help("Override body font size in points")
+
+    private val twoColumnsOverride: Boolean? by option().switch(
+        "--two-columns" to true, "--no-two-columns" to false,
+    ).help("Override two-column layout")
+
+    private val inlineChapterLabelsOverride: Boolean? by option().switch(
+        "--inline-chapter-labels" to true, "--no-inline-chapter-labels" to false,
+    ).help("Override inline chapter labels vs. heading-style chapter titles")
+
+    private val underlineUniqueOverride: Boolean? by option().switch(
+        "--underline-unique" to true, "--no-underline-unique" to false,
+    ).help("Override underlining of one-time words")
+
+    private val highlightOverride: Boolean? by option().switch(
+        "--highlight" to true, "--no-highlight" to false,
+    ).help("Override the full category highlight palette")
+
+    override fun buildOverrides(): TextOverrides {
+        return TextOverrides(
+            fontSize = fontSizeOverride,
+            twoColumns = twoColumnsOverride,
+            useHeadingsForChapters = inlineChapterLabelsOverride?.let { !it },
+            underlineUniqueWords = underlineUniqueOverride,
+            highlight = highlightOverride,
+            mainFont = mainFontOverride,
+            verseNumFont = verseNumFontOverride,
+            headingFont = headingFontOverride,
+            chapterFontSize = chapterFontSizeOverride,
+            headingFontSize = headingFontSizeOverride,
+            footnoteFontSize = footnoteFontSizeOverride,
+            justified = justifiedOverride,
+        )
+    }
+}
+
+class LatexTextCommand : TextCommandBase("latex", "Generate the annotated Bible text in LaTeX format (DEPRECATED)", Latex) {
+
+    private val fontSizeOverride: Int? by option("--font-size").int()
+        .help("Override body font size in points")
+
+    private val pageBreakChaptersOverride: Boolean? by option().switch(
+        "--page-break-chapters" to true, "--no-page-break-chapters" to false,
+    ).help("Override forcing a page break between chapters")
+
+    private val underlineUniqueOverride: Boolean? by option().switch(
+        "--underline-unique" to true, "--no-underline-unique" to false,
+    ).help("Override underlining of one-time words")
+
+    private val highlightOverride: Boolean? by option().switch(
+        "--highlight" to true, "--no-highlight" to false,
+    ).help("Override the full category highlight palette")
+
+    override fun buildOverrides(): TextOverrides {
+        return TextOverrides(
+            fontSize = fontSizeOverride,
+            twoColumns = true, // LaTeX requires twoColumns = true
+            chapterBreaksPage = pageBreakChaptersOverride,
+            underlineUniqueWords = underlineUniqueOverride,
+            highlight = highlightOverride,
+        )
     }
 }
 
@@ -399,7 +495,11 @@ class AllCommand : GeneratingCommand("all", "Generate every resource with defaul
 
 fun main(args: Array<String>) = BibleBowlCli()
     .subcommands(
-        TextCommand(),
+        TextCommand().subcommands(
+            TypstTextCommand(),
+            DocxTextCommand(),
+            LatexTextCommand(),
+        ),
         AnnotateCommand(),
         IndicesCommand(),
         FlashcardsCommand(),
