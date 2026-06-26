@@ -4,8 +4,6 @@ import io.kotest.core.spec.style.StringSpec
 import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.generate.text.docx.DocxBibleTextWriter
-import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
-import net.markdrew.biblebowl.generate.text.typst.MarksTypstStyle
 import net.markdrew.biblebowl.generate.text.typst.TypstBibleTextWriter
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
@@ -42,6 +40,13 @@ class TextWriterFidelityTest : StringSpec({
         useHeadingsForChapters = true,
         underlineUniqueWords = true,
         customHighlights = fullHighlightPalette(),
+        mainFont = "Times New Roman",
+        verseNumFont = "Liberation Sans",
+        headingFont = "Liberation Sans",
+        chapterFontSize = 14,
+        headingFontSize = 12,
+        footnoteFontSize = 9,
+        justified = true,
     )
 
     fun loadStudyData(): StudyData = StudyData.readData(StandardStudySet.JOSHUA_JUDGES_RUTH.set)
@@ -50,7 +55,7 @@ class TextWriterFidelityTest : StringSpec({
     "DOCX writer source matches committed snapshot".config(enabled = dataAvailable) {
         val outDir = freshOutputDir()
         val docxPath = BibleTextPipeline.generate(
-            loadStudyData(), options, Presets.marks, DocxBibleTextWriter(MarksDocxStyle), outDir
+            loadStudyData(), options, Presets.marks, DocxBibleTextWriter(), outDir
         )
         val actual = normalizedDocumentXml(docxPath)
         compareWithBaseline("docx-marks-full.xml", actual, regenerate)
@@ -59,7 +64,7 @@ class TextWriterFidelityTest : StringSpec({
     "Typst writer source matches committed snapshot".config(enabled = dataAvailable) {
         val outDir = freshOutputDir()
         val typPath = BibleTextPipeline.generate(
-            loadStudyData(), options, Presets.marks, TypstBibleTextWriter(MarksTypstStyle), outDir
+            loadStudyData(), options, Presets.marks, TypstBibleTextWriter(), outDir
         )
         val actual = Files.readString(typPath)
         compareWithBaseline("typst-marks-full.typ", actual, regenerate)

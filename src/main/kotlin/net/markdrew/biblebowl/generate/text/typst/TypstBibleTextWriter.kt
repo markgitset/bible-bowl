@@ -28,7 +28,7 @@ private val asteriskBracketedWordRegex = Regex("""\*([^*]+)\*""")
  * Supports every layout option — Typst handles 1/2-column layout, page breaks, heading-style
  * chapters, and all feature highlights natively.
  */
-class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
+class TypstBibleTextWriter : BibleTextWriter {
 
     override val format: OutputFormat = Typst
 
@@ -43,7 +43,7 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
     ) {
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, options, TypstHandler(out, style, options, copyrightDisclaimer))
+            BibleTextWalker.walk(doc, studyData, options, TypstHandler(out, options, copyrightDisclaimer))
         }
         println("Wrote $outputFile")
         if (System.getProperty("skip-pdf-generation") != "true") {
@@ -54,7 +54,6 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
 
 private class TypstHandler(
     private val out: Appendable,
-    private val style: TypstStyle,
     private val options: TextOptions,
     private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
@@ -71,20 +70,24 @@ private class TypstHandler(
      *  to skip the leading line break on a paragraph's opening verse. */
     private var firstVerseInParagraph = false
 
+    private fun resolveTypstFont(fontName: String): String = when (fontName) {
+        "Quattrocento Sans", "Times New Roman", "Times New Roman:liga", "Liberation Sans" -> "Libertinus Serif"
+        else -> fontName
+    }
+
     override fun documentBegin(studyData: StudyData, options: TextOptions) {
         val columns = if (options.twoColumns) 2 else 1
-        val isJustified = options.justified ?: style.justified
-        val justify = if (isJustified) "true" else "false"
+        val justify = if (options.justified) "true" else "false"
         val date = options.testDate.format(dateFormatter)
         val title = studyData.studySet.name
 
-        val mainFont = options.mainFont ?: style.mainFont
-        val headingFont = options.headingFont ?: style.headingFont
-        val verseNumFont = options.verseNumFont ?: style.verseNumFont
+        val mainFont = resolveTypstFont(options.mainFont)
+        val headingFont = resolveTypstFont(options.headingFont)
+        val verseNumFont = resolveTypstFont(options.verseNumFont)
 
-        val chapterFontSize = options.chapterFontSize ?: style.chapterFontSize
-        val headingFontSize = options.headingFontSize ?: style.headingFontSize
-        val footnoteFontSize = options.footnoteFontSize ?: style.footnoteFontSize
+        val chapterFontSize = options.chapterFontSize
+        val headingFontSize = options.headingFontSize
+        val footnoteFontSize = options.footnoteFontSize
 
         out.appendLine("""
             #set page(

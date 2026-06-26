@@ -1,42 +1,6 @@
 package net.markdrew.biblebowl.generate.text
 
 import net.markdrew.biblebowl.cli.CliConfig
-import net.markdrew.biblebowl.generate.text.docx.DocxStyle
-import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
-import net.markdrew.biblebowl.generate.text.docx.TbbDocxStyle
-import net.markdrew.biblebowl.generate.text.typst.MarksTypstStyle
-import net.markdrew.biblebowl.generate.text.typst.TbbTypstStyle
-import net.markdrew.biblebowl.generate.text.typst.TypstStyle
-
-/**
- * Format-neutral identifier for a typographic style family.
- *
- * Styles are inherently format-specific (DOCX uses [DocxStyle], Typst uses [TypstStyle]), but a caller
- * shouldn't have to pick the right concrete object per format. A [StyleId] names the family once; each
- * writer resolves its own concrete style via [typst]/[docx]. This keeps the TBB/Mark's distinction in a
- * single place instead of hand-paired style objects scattered across the render matrix.
- */
-enum class StyleId(val token: String) {
-    TBB("tbb"),
-    MARKS("marks");
-
-    /** Concrete Typst style for this family. */
-    fun typst(): TypstStyle = when (this) {
-        TBB -> TbbTypstStyle
-        MARKS -> MarksTypstStyle
-    }
-
-    /** Concrete DOCX style for this family. */
-    fun docx(): DocxStyle = when (this) {
-        TBB -> TbbDocxStyle
-        MARKS -> MarksDocxStyle
-    }
-
-    companion object {
-        /** Case-insensitive lookup by [token]; null if unrecognized. */
-        fun byToken(token: String): StyleId? = entries.firstOrNull { it.token.equals(token, ignoreCase = true) }
-    }
-}
 
 /**
  * A named, coherent bundle of style + layout + feature defaults for one Bible-text document.
@@ -122,21 +86,32 @@ object Presets {
     val tbb = TextPreset(
         name = "tbb",
         description = "Texas Bible Bowl official format — single-column, 12pt, inline chapter labels, no emphasis",
-        options = TextOptions(style = StyleId.TBB, fontSize = 12, useHeadingsForChapters = false),
+        options = TextOptions(fontSize = 12, useHeadingsForChapters = false),
     )
 
     /** Mark's format — two-column, 10pt, heading-style chapters, no emphasis. */
     val marks = TextPreset(
         name = "marks",
         description = "Mark's format — two-column, 10pt, heading-style chapters, no emphasis",
-        options = TextOptions(style = StyleId.MARKS, fontSize = 10, twoColumns = true, useHeadingsForChapters = true),
+        options = TextOptions(
+            fontSize = 10,
+            twoColumns = true,
+            useHeadingsForChapters = true,
+            mainFont = "Times New Roman",
+            verseNumFont = "Liberation Sans",
+            headingFont = "Liberation Sans",
+            chapterFontSize = 14,
+            headingFontSize = 12,
+            footnoteFontSize = 9,
+            justified = true,
+        ),
     )
 
     /** Minimal single-column base, intended as a starting point for fully-custom configurations. */
     val plain = TextPreset(
         name = "plain",
         description = "Minimal single-column base, intended as a starting point for fully-custom configurations",
-        options = TextOptions(style = StyleId.TBB, fontSize = 10, useHeadingsForChapters = false),
+        options = TextOptions(fontSize = 10, useHeadingsForChapters = false),
     )
 
     private val customPresets: List<TextPreset> by lazy {
@@ -154,31 +129,44 @@ object Presets {
         }
         loaded.map { (presetName, config) ->
             val desc = config["description"] ?: "User-defined custom preset '$presetName'"
-            val style = config["style"]?.let {
-                StyleId.byToken(it) ?: error("Unknown style family '$it' in custom preset '$presetName'")
-            } ?: StyleId.TBB
+            val styleName = config["style"]?.lowercase() ?: "tbb"
+            val baseOptions = if (styleName == "marks") {
+                TextOptions(
+                    fontSize = 10,
+                    twoColumns = true,
+                    useHeadingsForChapters = true,
+                    mainFont = "Times New Roman",
+                    verseNumFont = "Liberation Sans",
+                    headingFont = "Liberation Sans",
+                    chapterFontSize = 14,
+                    headingFontSize = 12,
+                    footnoteFontSize = 9,
+                    justified = true,
+                )
+            } else {
+                TextOptions()
+            }
 
-            val baseOptions = TextOptions(style = style)
             val customOptions = baseOptions.copy(
                 fontSize = config["fontSize"]?.toInt() ?: baseOptions.fontSize,
                 twoColumns = config["twoColumns"]?.toBoolean() ?: baseOptions.twoColumns,
                 chapterBreaksPage = config["chapterBreaksPage"]?.toBoolean() ?: baseOptions.chapterBreaksPage,
                 useHeadingsForChapters = config["useHeadingsForChapters"]?.toBoolean() ?: baseOptions.useHeadingsForChapters,
                 chapterEndLines = config["chapterEndLines"]?.toBoolean() ?: baseOptions.chapterEndLines,
-                mainFont = config["mainFont"],
-                verseNumFont = config["verseNumFont"],
-                headingFont = config["headingFont"],
-                chapterFontSize = config["chapterFontSize"]?.toInt(),
-                headingFontSize = config["headingFontSize"]?.toInt(),
-                footnoteFontSize = config["footnoteFontSize"]?.toInt(),
-                justified = config["justified"]?.toBoolean(),
+                mainFont = config["mainFont"] ?: baseOptions.mainFont,
+                verseNumFont = config["verseNumFont"] ?: baseOptions.verseNumFont,
+                headingFont = config["headingFont"] ?: baseOptions.headingFont,
+                chapterFontSize = config["chapterFontSize"]?.toInt() ?: baseOptions.chapterFontSize,
+                headingFontSize = config["headingFontSize"]?.toInt() ?: baseOptions.headingFontSize,
+                footnoteFontSize = config["footnoteFontSize"]?.toInt() ?: baseOptions.footnoteFontSize,
+                justified = config["justified"]?.toBoolean() ?: baseOptions.justified,
                 underlineUniqueWords = config["underlineUniqueWords"]?.toBoolean() ?: baseOptions.underlineUniqueWords,
                 verseOnNewLine = config["verseOnNewLine"]?.toBoolean() ?: baseOptions.verseOnNewLine
             )
             TextPreset(
                 name = presetName,
                 description = desc,
-                options = customOptions
+                options = customOptions,
             )
         }
     }

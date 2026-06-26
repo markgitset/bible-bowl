@@ -29,7 +29,6 @@ import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.generate.text.Presets
-import net.markdrew.biblebowl.generate.text.StyleId
 import net.markdrew.biblebowl.generate.text.TextOverrides
 import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.Typst
@@ -329,7 +328,6 @@ abstract class TextCommandBase(name: String, private val helpText: String, prote
         if (listPresets) {
             echo("Global Default Options Baseline:")
             val defaultOpts = TextOptions()
-            echo("    Style family:            ${defaultOpts.style.token}")
             echo("    Font size:               ${defaultOpts.fontSize}pt")
             echo("    Columns:                 ${if (defaultOpts.twoColumns) "2" else "1"}")
             echo("    Chapter titles:          ${if (defaultOpts.useHeadingsForChapters) "headings" else "inline"}")
@@ -337,20 +335,19 @@ abstract class TextCommandBase(name: String, private val helpText: String, prote
             echo("    Underline unique words:  ${defaultOpts.underlineUniqueWords}")
             echo("    Verse per line:          ${defaultOpts.verseOnNewLine}")
             echo("    Chapter end lines:       ${defaultOpts.chapterEndLines}")
-            if (defaultOpts.mainFont != null) echo("    Main font:               ${defaultOpts.mainFont}")
-            if (defaultOpts.verseNumFont != null) echo("    Verse num font:          ${defaultOpts.verseNumFont}")
-            if (defaultOpts.headingFont != null) echo("    Heading font:            ${defaultOpts.headingFont}")
-            if (defaultOpts.chapterFontSize != null) echo("    Chapter font size:       ${defaultOpts.chapterFontSize}pt")
-            if (defaultOpts.headingFontSize != null) echo("    Heading font size:       ${defaultOpts.headingFontSize}pt")
-            if (defaultOpts.footnoteFontSize != null) echo("    Footnote font size:      ${defaultOpts.footnoteFontSize}pt")
-            if (defaultOpts.justified != null) echo("    Justified:               ${defaultOpts.justified}")
+            echo("    Main font:               ${defaultOpts.mainFont}")
+            echo("    Verse num font:          ${defaultOpts.verseNumFont}")
+            echo("    Heading font:            ${defaultOpts.headingFont}")
+            echo("    Chapter font size:       ${defaultOpts.chapterFontSize}pt")
+            echo("    Heading font size:       ${defaultOpts.headingFontSize}pt")
+            echo("    Footnote font size:      ${defaultOpts.footnoteFontSize}pt")
+            echo("    Justified:               ${defaultOpts.justified}")
             echo("")
             echo("Available text presets:")
             for (p in Presets.all) {
                 echo("- ${p.name}: ${p.description}")
                 val opts = p.options
                 val diffs = mutableListOf<String>()
-                if (opts.style != defaultOpts.style) diffs.add("Style family: ${opts.style.token}")
                 if (opts.fontSize != defaultOpts.fontSize) diffs.add("Font size: ${opts.fontSize}pt")
                 if (opts.twoColumns != defaultOpts.twoColumns) diffs.add("Columns: ${if (opts.twoColumns) "2" else "1"}")
                 if (opts.useHeadingsForChapters != defaultOpts.useHeadingsForChapters) diffs.add("Chapter titles: ${if (opts.useHeadingsForChapters) "headings" else "inline"}")

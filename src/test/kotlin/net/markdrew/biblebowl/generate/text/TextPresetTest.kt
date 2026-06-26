@@ -24,7 +24,8 @@ class TextPresetTest : StringSpec({
 
     "resolve with no overrides keeps preset values and stamps the testDate" {
         val config = Presets.marks.resolve(TextOverrides(), testDate)
-        config.style shouldBe StyleId.MARKS
+        config.mainFont shouldBe "Times New Roman"
+        config.justified shouldBe true
         config.fontSize shouldBe 10
         config.twoColumns shouldBe true
         config.useHeadingsForChapters shouldBe true
@@ -67,10 +68,8 @@ class TextPresetTest : StringSpec({
         inherited.customHighlights shouldBe Presets.plain.options.customHighlights
     }
 
-    "preset and style lookups are case-insensitive and return null for unknown tokens" {
+    "preset lookups are case-insensitive and return null for unknown tokens" {
         Presets.byName("MARKS") shouldBe Presets.marks
         Presets.byName("nope") shouldBe null
-        StyleId.byToken("Tbb") shouldBe StyleId.TBB
-        StyleId.byToken("nope") shouldBe null
     }
 })

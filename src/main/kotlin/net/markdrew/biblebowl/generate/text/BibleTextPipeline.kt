@@ -122,29 +122,29 @@ object BibleTextPipeline {
             slugs.add(if (options.verseOnNewLine) "verseline" else "noverseline")
         }
         if (options.justified != baseOptions.justified) {
-            options.justified?.let { slugs.add(if (it) "justified" else "unjustified") }
+            slugs.add(if (options.justified) "justified" else "unjustified")
         }
 
         // Font overrides
         if (options.mainFont != baseOptions.mainFont) {
-            options.mainFont?.let { slugs.add(it.lowercase().replace(" ", "").replace("-", "")) }
+            slugs.add(options.mainFont.lowercase().replace(" ", "").replace("-", ""))
         }
         if (options.verseNumFont != baseOptions.verseNumFont) {
-            options.verseNumFont?.let { slugs.add(it.lowercase().replace(" ", "").replace("-", "")) }
+            slugs.add(options.verseNumFont.lowercase().replace(" ", "").replace("-", ""))
         }
         if (options.headingFont != baseOptions.headingFont) {
-            options.headingFont?.let { slugs.add(it.lowercase().replace(" ", "").replace("-", "")) }
+            slugs.add(options.headingFont.lowercase().replace(" ", "").replace("-", ""))
         }
 
         // Font sizes
         if (options.chapterFontSize != baseOptions.chapterFontSize) {
-            options.chapterFontSize?.let { slugs.add("chapsize${it}pt") }
+            slugs.add("chapsize${options.chapterFontSize}pt")
         }
         if (options.headingFontSize != baseOptions.headingFontSize) {
-            options.headingFontSize?.let { slugs.add("headsize${it}pt") }
+            slugs.add("headsize${options.headingFontSize}pt")
         }
         if (options.footnoteFontSize != baseOptions.footnoteFontSize) {
-            options.footnoteFontSize?.let { slugs.add("footsize${it}pt") }
+            slugs.add("footsize${options.footnoteFontSize}pt")
         }
 
         // Custom highlights
@@ -225,7 +225,7 @@ private fun generateTextPack(
     val packPresets = listOf(Presets.tbb, Presets.marks)
     for (format in formats) {
         for (base in packPresets) {
-            val writer = writerFor(format, base.options.style)
+            val writer = writerFor(format)
             val baseOptions = base.options.copy(testDate = testDate)
 
             val variants = listOf(
@@ -254,15 +254,15 @@ private fun generateSingleText(
 ) {
     val doc = BibleAnnotationPipeline.build(studyData, options, store)
     for (format in formats) {
-        val writer = writerFor(format, options.style)
+        val writer = writerFor(format)
         renderGuarded(studyData, doc, options, preset, writer, productsPath, copyrightDisclaimer)
     }
 }
 
 /** Builds the writer for [format], resolving the concrete style for [styleId] (LaTeX ignores style). */
-private fun writerFor(format: OutputFormat, styleId: StyleId): BibleTextWriter = when (format) {
-    Docx -> DocxBibleTextWriter(styleId.docx())
-    Typst -> TypstBibleTextWriter(styleId.typst())
+private fun writerFor(format: OutputFormat): BibleTextWriter = when (format) {
+    Docx -> DocxBibleTextWriter()
+    Typst -> TypstBibleTextWriter()
 }
 
 /** Renders one document, skipping with a message if the writer can't honor the options. */

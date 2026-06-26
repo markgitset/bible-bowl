@@ -78,14 +78,14 @@ private val logger: KLogger = KotlinLogging.logger {}
  * lives in [DocxHandler], driven by [BibleTextWalker]. The handler holds the docx4j package and
  * the AST stack across the walk; the writer calls `save()` on it after the walk completes.
  */
-class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
+class DocxBibleTextWriter : BibleTextWriter {
 
     override val format: OutputFormat = Docx
 
     override fun supports(options: TextOptions): Boolean {
-        options.mainFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following main fonts: ${WmlFont.entries.joinToString { it.value }}" } }
-        options.verseNumFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following verse number fonts: ${WmlFont.entries.joinToString { it.value }}" } }
-        options.headingFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following heading fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        require(WmlFont.byValueOrToken(options.mainFont) != null) { "DOCX only supports the following main fonts: ${WmlFont.entries.joinToString { it.value }}" }
+        require(WmlFont.byValueOrToken(options.verseNumFont) != null) { "DOCX only supports the following verse number fonts: ${WmlFont.entries.joinToString { it.value }}" }
+        require(WmlFont.byValueOrToken(options.headingFont) != null) { "DOCX only supports the following heading fonts: ${WmlFont.entries.joinToString { it.value }}" }
         return true
     }
 
@@ -97,7 +97,7 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
         copyrightDisclaimer: String,
     ) {
         Files.createDirectories(outputFile.parent)
-        val handler = DocxHandler(style, options, copyrightDisclaimer)
+        val handler = DocxHandler(options, copyrightDisclaimer)
         BibleTextWalker.walk(doc, studyData, options, handler)
         handler.save(outputFile.toFile())
         if (System.getProperty("skip-pdf-generation") != "true") {
@@ -107,7 +107,6 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
 }
 
 private class DocxHandler(
-    private val style: DocxStyle,
     private val options: TextOptions,
     private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
@@ -115,19 +114,29 @@ private class DocxHandler(
     private val layout = options
     private val features = options
 
-    private val resolvedTypography = style.typography.copy(
-        mainFont = options.mainFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.mainFont,
-        verseNumFont = options.verseNumFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.verseNumFont,
-        headingFont = options.headingFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.headingFont,
-        chapterFontSizeHalfPt = options.chapterFontSize?.let { it * 2 } ?: style.typography.chapterFontSizeHalfPt,
-        headingFontSizeHalfPt = options.headingFontSize?.let { it * 2 } ?: style.typography.headingFontSizeHalfPt,
-        footnoteFontSizeHalfPt = options.footnoteFontSize?.let { it * 2 } ?: style.typography.footnoteFontSizeHalfPt,
-        justified = when (options.justified) {
-            true -> "both"
-            false -> "left"
-            null -> style.typography.justified
-        }
-    )
+    private val resourcePath = if (options.twoColumns) "marks-doc-format" else "tbb-doc-format"
+
+    private fun getTemplateBindings(options: TextOptions): Map<String, String> {
+        val mainFont = WmlFont.byValueOrToken(options.mainFont) ?: WmlFont.QUATTROCENTO_SANS
+        val verseNumFont = WmlFont.byValueOrToken(options.verseNumFont) ?: WmlFont.QUATTROCENTO_SANS
+        val headingFont = WmlFont.byValueOrToken(options.headingFont) ?: WmlFont.QUATTROCENTO_SANS
+        val chapterFontSizeHalfPt = options.chapterFontSize * 2
+        val headingFontSizeHalfPt = options.headingFontSize * 2
+        val footnoteFontSizeHalfPt = options.footnoteFontSize * 2
+        val justified = if (options.justified) "both" else "left"
+        val mainFontSizeHalfPt = options.fontSize * 2
+
+        return mapOf(
+            "mainFont" to mainFont.value,
+            "verseNumFont" to verseNumFont.value,
+            "headingFont" to headingFont.value,
+            "headingFontSize" to headingFontSizeHalfPt.toString(),
+            "chapterFontSize" to chapterFontSizeHalfPt.toString(),
+            "footnoteFontSize" to footnoteFontSizeHalfPt.toString(),
+            "justified" to justified,
+            "mainFontSize" to mainFontSizeHalfPt.toString(),
+        )
+    }
 
     private val factory = ObjectFactory()
     private val wordPackage: WordprocessingMLPackage = WordprocessingMLPackage.createPackage()
@@ -156,8 +165,8 @@ private class DocxHandler(
      * both `file:` and `jar:` URLs.
      */
     private fun template(child: String): URI =
-        javaClass.getResource("/${style.resourcePath}/$child")?.toURI()
-            ?: throw IllegalStateException("Couldn't find template resource in classpath: /${style.resourcePath}/$child")
+        javaClass.getResource("/$resourcePath/$child")?.toURI()
+            ?: throw IllegalStateException("Couldn't find template resource in classpath: /$resourcePath/$child")
 
     private var footerRel: Relationship? = null
 
@@ -168,7 +177,7 @@ private class DocxHandler(
     override fun documentBegin(studyData: StudyData, options: TextOptions) {
         mainPart.addTargetPart(stylesPartFromTemplate(
             template("styles.xml"),
-            resolvedTypography.toTemplateBindings(options.fontSize),
+            getTemplateBindings(options),
         ))
         footerRel = mainPart.addTargetPart(
             footerFromTemplate(
@@ -425,7 +434,7 @@ private class DocxHandler(
     }
 
     private fun addEndMatter() {
-        val fontSize = if (style.resourcePath.contains("tbb")) "18" else "16"
+        val fontSize = if (resourcePath.contains("tbb")) "18" else "16"
         val paragraphsXml = copyrightDisclaimer.split("\n\n")
             .map { it.trim() }
             .filter { it.isNotEmpty() }
@@ -596,6 +605,24 @@ private class DocxHandler(
         ): P = apply {
             @Suppress("UNCHECKED_CAST")
             jaxbElement = XmlUtils.unmarshallFromTemplate(template.readText(), mappings) as E
+        }
+    }
+}
+
+/** Font names as accepted by docx4j's `<w:rFonts w:ascii="…">` attribute. */
+enum class WmlFont(val value: String) {
+    TIMES_NEW_ROMAN("Times New Roman:liga"),
+    QUATTROCENTO_SANS("Quattrocento Sans"),
+    MONOSPACE("Liberation Mono"),
+    SANS_SERIF("Liberation Sans");
+
+    companion object {
+        fun byValueOrToken(name: String): WmlFont? {
+            val normalized = name.lowercase().replace("-", "").replace("_", "").replace(" ", "")
+            return entries.firstOrNull {
+                it.name.lowercase().replace("_", "") == normalized ||
+                it.value.lowercase().replace(" ", "").split(":")[0] == normalized
+            }
         }
     }
 }
