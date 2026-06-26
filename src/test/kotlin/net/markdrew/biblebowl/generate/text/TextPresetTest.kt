@@ -25,13 +25,13 @@ class TextPresetTest : StringSpec({
     "resolve with no overrides keeps preset values and stamps the testDate" {
         val config = Presets.marks.resolve(TextOverrides(), testDate)
         config.style shouldBe StyleId.MARKS
-        config.layout.fontSize shouldBe 10
-        config.layout.twoColumns shouldBe true
-        config.layout.useHeadingsForChapters shouldBe true
-        config.layout.chapterEndLines shouldBe false
-        config.layout.testDate shouldBe testDate
-        config.features.underlineUniqueWords shouldBe false
-        config.features.verseOnNewLine shouldBe false
+        config.fontSize shouldBe 10
+        config.twoColumns shouldBe true
+        config.useHeadingsForChapters shouldBe true
+        config.chapterEndLines shouldBe false
+        config.testDate shouldBe testDate
+        config.underlineUniqueWords shouldBe false
+        config.verseOnNewLine shouldBe false
     }
 
     "a null override field inherits the preset value; a non-null replaces it" {
@@ -39,11 +39,11 @@ class TextPresetTest : StringSpec({
             TextOverrides(fontSize = 14, twoColumns = false, verseOnNewLine = true, chapterEndLines = true),
             testDate,
         )
-        config.layout.fontSize shouldBe 14          // replaced
-        config.layout.twoColumns shouldBe false     // replaced (with false)
-        config.layout.useHeadingsForChapters shouldBe true   // inherited from marks
-        config.features.verseOnNewLine shouldBe true
-        config.layout.chapterEndLines shouldBe true
+        config.fontSize shouldBe 14          // replaced
+        config.twoColumns shouldBe false     // replaced (with false)
+        config.useHeadingsForChapters shouldBe true   // inherited from marks
+        config.verseOnNewLine shouldBe true
+        config.chapterEndLines shouldBe true
     }
 
     "typographic overrides are resolved correctly" {
@@ -51,20 +51,20 @@ class TextPresetTest : StringSpec({
             TextOverrides(mainFont = "Liberation Sans", chapterFontSize = 18, justified = true),
             testDate
         )
-        config.layout.mainFont shouldBe "Liberation Sans"
-        config.layout.chapterFontSize shouldBe 18
-        config.layout.justified shouldBe true
+        config.mainFont shouldBe "Liberation Sans"
+        config.chapterFontSize shouldBe 18
+        config.justified shouldBe true
     }
 
     "highlight is tri-state: true applies the full palette, false clears it, null inherits" {
         val on = Presets.plain.resolve(TextOverrides(highlight = true), testDate)
-        on.features.customHighlights.entries.isNotEmpty().shouldBeTrue()
+        on.customHighlights.entries.isNotEmpty().shouldBeTrue()
 
         val off = Presets.plain.resolve(TextOverrides(highlight = false), testDate)
-        off.features.customHighlights.entries.isEmpty().shouldBeTrue()
+        off.customHighlights.entries.isEmpty().shouldBeTrue()
 
         val inherited = Presets.plain.resolve(TextOverrides(), testDate)
-        inherited.features.customHighlights shouldBe Presets.plain.features.customHighlights
+        inherited.customHighlights shouldBe Presets.plain.options.customHighlights
     }
 
     "preset and style lookups are case-insensitive and return null for unknown tokens" {

@@ -56,7 +56,7 @@ sealed interface HighlightContext {
 interface BibleTextHandler {
 
     /** Called once before any transitions are processed. Implementations typically emit a preamble. */
-    fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions)
+    fun documentBegin(studyData: StudyData, options: TextOptions)
 
     /** Called once after every transition has been processed. Implementations typically emit a postamble. */
     fun documentEnd()

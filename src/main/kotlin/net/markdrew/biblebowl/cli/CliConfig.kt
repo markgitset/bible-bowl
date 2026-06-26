@@ -16,7 +16,7 @@ object CliConfig {
     private const val FALLBACK_STUDY_SET = "acts"
     private val FALLBACK_TEST_DATE = LocalDate.of(2026, 3, 28)
 
-    private val props: java.util.Properties by lazy {
+    val props: java.util.Properties by lazy {
         val props = java.util.Properties()
         // 1. User config: ~/.tbb/bible-bowl.properties
         val userConfig = defaultTbbPath.resolve("bible-bowl.properties")

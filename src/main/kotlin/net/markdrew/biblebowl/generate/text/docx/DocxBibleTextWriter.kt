@@ -8,9 +8,8 @@ import net.markdrew.biblebowl.generate.text.BibleTextHandler
 import net.markdrew.biblebowl.generate.text.BibleTextWalker
 import net.markdrew.biblebowl.generate.text.BibleTextWriter
 import net.markdrew.biblebowl.generate.text.Docx
-import net.markdrew.biblebowl.generate.text.FeatureOptions
+import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.HighlightContext
-import net.markdrew.biblebowl.generate.text.LayoutOptions
 import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.Book
@@ -83,10 +82,10 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
 
     override val format: OutputFormat = Docx
 
-    override fun supports(layout: LayoutOptions): Boolean {
-        layout.mainFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following main fonts: ${WmlFont.entries.joinToString { it.value }}" } }
-        layout.verseNumFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following verse number fonts: ${WmlFont.entries.joinToString { it.value }}" } }
-        layout.headingFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following heading fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+    override fun supports(options: TextOptions): Boolean {
+        options.mainFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following main fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        options.verseNumFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following verse number fonts: ${WmlFont.entries.joinToString { it.value }}" } }
+        options.headingFont?.let { require(WmlFont.byValueOrToken(it) != null) { "DOCX only supports the following heading fonts: ${WmlFont.entries.joinToString { it.value }}" } }
         return true
     }
 
@@ -94,13 +93,12 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
         outputFile: Path,
         doc: AnnotatedDoc<AnalysisUnit>,
         studyData: StudyData,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
         copyrightDisclaimer: String,
     ) {
         Files.createDirectories(outputFile.parent)
-        val handler = DocxHandler(style, layout, features, copyrightDisclaimer)
-        BibleTextWalker.walk(doc, studyData, layout, features, handler)
+        val handler = DocxHandler(style, options, copyrightDisclaimer)
+        BibleTextWalker.walk(doc, studyData, options, handler)
         handler.save(outputFile.toFile())
         if (System.getProperty("skip-pdf-generation") != "true") {
             outputFile.docxToPdf()
@@ -110,19 +108,21 @@ class DocxBibleTextWriter(private val style: DocxStyle) : BibleTextWriter {
 
 private class DocxHandler(
     private val style: DocxStyle,
-    private val layout: LayoutOptions,
-    private val features: FeatureOptions,
+    private val options: TextOptions,
     private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
 
+    private val layout = options
+    private val features = options
+
     private val resolvedTypography = style.typography.copy(
-        mainFont = layout.mainFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.mainFont,
-        verseNumFont = layout.verseNumFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.verseNumFont,
-        headingFont = layout.headingFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.headingFont,
-        chapterFontSizeHalfPt = layout.chapterFontSize?.let { it * 2 } ?: style.typography.chapterFontSizeHalfPt,
-        headingFontSizeHalfPt = layout.headingFontSize?.let { it * 2 } ?: style.typography.headingFontSizeHalfPt,
-        footnoteFontSizeHalfPt = layout.footnoteFontSize?.let { it * 2 } ?: style.typography.footnoteFontSizeHalfPt,
-        justified = when (layout.justified) {
+        mainFont = options.mainFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.mainFont,
+        verseNumFont = options.verseNumFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.verseNumFont,
+        headingFont = options.headingFont?.let { WmlFont.byValueOrToken(it) } ?: style.typography.headingFont,
+        chapterFontSizeHalfPt = options.chapterFontSize?.let { it * 2 } ?: style.typography.chapterFontSizeHalfPt,
+        headingFontSizeHalfPt = options.headingFontSize?.let { it * 2 } ?: style.typography.headingFontSizeHalfPt,
+        footnoteFontSizeHalfPt = options.footnoteFontSize?.let { it * 2 } ?: style.typography.footnoteFontSizeHalfPt,
+        justified = when (options.justified) {
             true -> "both"
             false -> "left"
             null -> style.typography.justified
@@ -165,16 +165,16 @@ private class DocxHandler(
         mainPart.addTargetPart(fontTableFromTemplate(template("fontTable.xml")))
     }
 
-    override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
+    override fun documentBegin(studyData: StudyData, options: TextOptions) {
         mainPart.addTargetPart(stylesPartFromTemplate(
             template("styles.xml"),
-            resolvedTypography.toTemplateBindings(layout.fontSize),
+            resolvedTypography.toTemplateBindings(options.fontSize),
         ))
         footerRel = mainPart.addTargetPart(
             footerFromTemplate(
                 template("footer.xml"), mapOf(
                     "title" to studyData.studySet.name,
-                    "date" to layout.testDate.format(dateFormatter),
+                    "date" to options.testDate.format(dateFormatter),
                 )
             )
         )

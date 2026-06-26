@@ -1,5 +1,6 @@
 package net.markdrew.biblebowl.generate.text
 
+import net.markdrew.biblebowl.cli.CliConfig
 import net.markdrew.biblebowl.generate.text.docx.DocxStyle
 import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
 import net.markdrew.biblebowl.generate.text.docx.TbbDocxStyle
@@ -41,14 +42,12 @@ enum class StyleId(val token: String) {
  * A named, coherent bundle of style + layout + feature defaults for one Bible-text document.
  *
  * Presets are the "predefined formats" a caller can select by [name]; individual options can then be
- * overridden via [TextOverrides]. [LayoutOptions.testDate] is intentionally a placeholder here — it's a
- * per-run value injected during resolution, not a property of the preset.
+ * overridden via [TextOverrides].
  */
 data class TextPreset(
     val name: String,
-    val style: StyleId,
-    val layout: LayoutOptions,
-    val features: FeatureOptions,
+    val description: String,
+    val options: TextOptions,
 )
 
 /**
@@ -58,7 +57,7 @@ data class TextPreset(
  * everything for a fully-custom document.
  *
  * @param highlight tri-state toggle for the full highlight palette: true applies [fullHighlightPalette],
- *   false clears highlights, null inherits the preset's [FeatureOptions.customHighlights].
+ *   false clears highlights, null inherits the preset's [TextOptions.customHighlights].
  */
 data class TextOverrides(
     val fontSize: Int? = null,
@@ -86,45 +85,35 @@ data class TextOverrides(
     ).any { it != null }
 }
 
-/** A fully-resolved single-document configuration: which style family plus concrete option groups. */
-data class ResolvedTextConfig(
-    val style: StyleId,
-    val layout: LayoutOptions,
-    val features: FeatureOptions,
-)
-
 /**
- * Resolves this preset against [overrides], stamping the per-run [testDate], into a concrete config.
+ * Resolves this preset against [overrides], stamping the per-run [testDate], into a concrete [TextOptions].
  *
  * Each option falls back to the preset's value when the corresponding override is null. The [testDate] is
- * always taken from the argument (presets carry only a placeholder date).
+ * always taken from the argument.
  */
-fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate): ResolvedTextConfig {
-    val resolvedLayout = layout.copy(
+fun TextPreset.resolve(overrides: TextOverrides, testDate: java.time.LocalDate): TextOptions {
+    return options.copy(
         testDate = testDate,
-        fontSize = overrides.fontSize ?: layout.fontSize,
-        twoColumns = overrides.twoColumns ?: layout.twoColumns,
-        chapterBreaksPage = overrides.chapterBreaksPage ?: layout.chapterBreaksPage,
-        useHeadingsForChapters = overrides.useHeadingsForChapters ?: layout.useHeadingsForChapters,
-        chapterEndLines = overrides.chapterEndLines ?: layout.chapterEndLines,
-        mainFont = overrides.mainFont ?: layout.mainFont,
-        verseNumFont = overrides.verseNumFont ?: layout.verseNumFont,
-        headingFont = overrides.headingFont ?: layout.headingFont,
-        chapterFontSize = overrides.chapterFontSize ?: layout.chapterFontSize,
-        headingFontSize = overrides.headingFontSize ?: layout.headingFontSize,
-        footnoteFontSize = overrides.footnoteFontSize ?: layout.footnoteFontSize,
-        justified = overrides.justified ?: layout.justified,
-    )
-    val resolvedFeatures = features.copy(
-        underlineUniqueWords = overrides.underlineUniqueWords ?: features.underlineUniqueWords,
+        fontSize = overrides.fontSize ?: options.fontSize,
+        twoColumns = overrides.twoColumns ?: options.twoColumns,
+        chapterBreaksPage = overrides.chapterBreaksPage ?: options.chapterBreaksPage,
+        useHeadingsForChapters = overrides.useHeadingsForChapters ?: options.useHeadingsForChapters,
+        chapterEndLines = overrides.chapterEndLines ?: options.chapterEndLines,
+        mainFont = overrides.mainFont ?: options.mainFont,
+        verseNumFont = overrides.verseNumFont ?: options.verseNumFont,
+        headingFont = overrides.headingFont ?: options.headingFont,
+        chapterFontSize = overrides.chapterFontSize ?: options.chapterFontSize,
+        headingFontSize = overrides.headingFontSize ?: options.headingFontSize,
+        footnoteFontSize = overrides.footnoteFontSize ?: options.footnoteFontSize,
+        justified = overrides.justified ?: options.justified,
+        underlineUniqueWords = overrides.underlineUniqueWords ?: options.underlineUniqueWords,
         customHighlights = when (overrides.highlight) {
             true -> fullHighlightPalette()
             false -> HighlightPalette.empty()
-            null -> features.customHighlights
+            null -> options.customHighlights
         },
-        verseOnNewLine = overrides.verseOnNewLine ?: features.verseOnNewLine,
+        verseOnNewLine = overrides.verseOnNewLine ?: options.verseOnNewLine,
     )
-    return ResolvedTextConfig(style, resolvedLayout, resolvedFeatures)
 }
 
 /** The registry of predefined text presets. */
@@ -132,29 +121,70 @@ object Presets {
     /** Texas Bible Bowl official format — single-column, 12pt, inline chapter labels, no emphasis. */
     val tbb = TextPreset(
         name = "tbb",
-        style = StyleId.TBB,
-        layout = LayoutOptions(fontSize = 12),
-        features = FeatureOptions(),
+        description = "Texas Bible Bowl official format — single-column, 12pt, inline chapter labels, no emphasis",
+        options = TextOptions(style = StyleId.TBB, fontSize = 12, useHeadingsForChapters = false),
     )
 
     /** Mark's format — two-column, 10pt, heading-style chapters, no emphasis. */
     val marks = TextPreset(
         name = "marks",
-        style = StyleId.MARKS,
-        layout = LayoutOptions(fontSize = 10, twoColumns = true, useHeadingsForChapters = true),
-        features = FeatureOptions(),
+        description = "Mark's format — two-column, 10pt, heading-style chapters, no emphasis",
+        options = TextOptions(style = StyleId.MARKS, fontSize = 10, twoColumns = true, useHeadingsForChapters = true),
     )
 
     /** Minimal single-column base, intended as a starting point for fully-custom configurations. */
     val plain = TextPreset(
         name = "plain",
-        style = StyleId.TBB,
-        layout = LayoutOptions(),
-        features = FeatureOptions(),
+        description = "Minimal single-column base, intended as a starting point for fully-custom configurations",
+        options = TextOptions(style = StyleId.TBB, fontSize = 10, useHeadingsForChapters = false),
     )
 
+    private val customPresets: List<TextPreset> by lazy {
+        val loaded = mutableMapOf<String, MutableMap<String, String>>()
+        for (propName in CliConfig.props.stringPropertyNames()) {
+            if (propName.startsWith("preset.")) {
+                val parts = propName.split(".")
+                if (parts.size == 3) {
+                    val presetName = parts[1]
+                    val property = parts[2]
+                    val value = CliConfig.props.getProperty(propName)
+                    loaded.getOrPut(presetName) { mutableMapOf() }[property] = value
+                }
+            }
+        }
+        loaded.map { (presetName, config) ->
+            val desc = config["description"] ?: "User-defined custom preset '$presetName'"
+            val style = config["style"]?.let {
+                StyleId.byToken(it) ?: error("Unknown style family '$it' in custom preset '$presetName'")
+            } ?: StyleId.TBB
+
+            val baseOptions = TextOptions(style = style)
+            val customOptions = baseOptions.copy(
+                fontSize = config["fontSize"]?.toInt() ?: baseOptions.fontSize,
+                twoColumns = config["twoColumns"]?.toBoolean() ?: baseOptions.twoColumns,
+                chapterBreaksPage = config["chapterBreaksPage"]?.toBoolean() ?: baseOptions.chapterBreaksPage,
+                useHeadingsForChapters = config["useHeadingsForChapters"]?.toBoolean() ?: baseOptions.useHeadingsForChapters,
+                chapterEndLines = config["chapterEndLines"]?.toBoolean() ?: baseOptions.chapterEndLines,
+                mainFont = config["mainFont"],
+                verseNumFont = config["verseNumFont"],
+                headingFont = config["headingFont"],
+                chapterFontSize = config["chapterFontSize"]?.toInt(),
+                headingFontSize = config["headingFontSize"]?.toInt(),
+                footnoteFontSize = config["footnoteFontSize"]?.toInt(),
+                justified = config["justified"]?.toBoolean(),
+                underlineUniqueWords = config["underlineUniqueWords"]?.toBoolean() ?: baseOptions.underlineUniqueWords,
+                verseOnNewLine = config["verseOnNewLine"]?.toBoolean() ?: baseOptions.verseOnNewLine
+            )
+            TextPreset(
+                name = presetName,
+                description = desc,
+                options = customOptions
+            )
+        }
+    }
+
     /** All presets, in selection order. */
-    val all: List<TextPreset> = listOf(tbb, marks, plain)
+    val all: List<TextPreset> by lazy { listOf(tbb, marks, plain) + customPresets }
 
     /** Case-insensitive lookup by [TextPreset.name]; null if unrecognized. */
     fun byName(name: String): TextPreset? = all.firstOrNull { it.name.equals(name, ignoreCase = true) }

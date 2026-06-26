@@ -1,6 +1,7 @@
 package net.markdrew.biblebowl.generate.text
 
 import io.kotest.core.spec.style.StringSpec
+import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.generate.text.docx.DocxBibleTextWriter
 import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
@@ -15,8 +16,8 @@ import java.time.LocalDate
 import java.util.zip.ZipFile
 
 /**
- * Source-level fidelity check: each writer's output for `josh-judg-ruth` (Mark's two-column,
- * full-highlight) must match a committed snapshot under `src/test/resources/text-baselines/`.
+ * Snapshot fidelity tests. Generates documents under `/tmp/` and compares the output markup against
+ * baseline snapshots checked into the repository (`src/test/resources/text-baselines/`).
  *
  * The .docx is compared via its normalized `word/document.xml` (the docx4j-serialized namespace
  * declarations on the root element vary between runs and are stripped). The .tex and .typ are
@@ -35,13 +36,11 @@ class TextWriterFidelityTest : StringSpec({
     val studySetDir = defaultDataPath.resolve("josh-judg-ruth")
     val dataAvailable = Files.isDirectory(studySetDir)
 
-    val layout = LayoutOptions(
+    val options = TextOptions(
         testDate = LocalDate.of(2026, 3, 28),
         fontSize = 10,
         twoColumns = true,
         useHeadingsForChapters = true,
-    )
-    val features = FeatureOptions(
         underlineUniqueWords = true,
         customHighlights = fullHighlightPalette(),
     )
@@ -52,7 +51,7 @@ class TextWriterFidelityTest : StringSpec({
     "DOCX writer source matches committed snapshot".config(enabled = dataAvailable) {
         val outDir = freshOutputDir()
         val docxPath = BibleTextPipeline.generate(
-            loadStudyData(), layout, features, DocxBibleTextWriter(MarksDocxStyle), outDir
+            loadStudyData(), options, Presets.marks, DocxBibleTextWriter(MarksDocxStyle), outDir
         )
         val actual = normalizedDocumentXml(docxPath)
         compareWithBaseline("docx-marks-full.xml", actual, regenerate)
@@ -61,7 +60,7 @@ class TextWriterFidelityTest : StringSpec({
     "LaTeX writer source matches committed snapshot".config(enabled = dataAvailable) {
         val outDir = freshOutputDir()
         val texPath = BibleTextPipeline.generate(
-            loadStudyData(), layout, features, LatexBibleTextWriter(), outDir
+            loadStudyData(), options, Presets.marks, LatexBibleTextWriter(), outDir
         )
         val actual = Files.readString(texPath)
         compareWithBaseline("latex-marks-full.tex", actual, regenerate)
@@ -70,7 +69,7 @@ class TextWriterFidelityTest : StringSpec({
     "Typst writer source matches committed snapshot".config(enabled = dataAvailable) {
         val outDir = freshOutputDir()
         val typPath = BibleTextPipeline.generate(
-            loadStudyData(), layout, features, TypstBibleTextWriter(MarksTypstStyle), outDir
+            loadStudyData(), options, Presets.marks, TypstBibleTextWriter(MarksTypstStyle), outDir
         )
         val actual = Files.readString(typPath)
         compareWithBaseline("typst-marks-full.typ", actual, regenerate)

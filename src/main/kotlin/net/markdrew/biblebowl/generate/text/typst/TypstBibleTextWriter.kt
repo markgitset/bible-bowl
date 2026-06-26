@@ -4,11 +4,10 @@ import net.markdrew.biblebowl.generate.text.AnnotatedDoc
 import net.markdrew.biblebowl.generate.text.BibleTextHandler
 import net.markdrew.biblebowl.generate.text.BibleTextWalker
 import net.markdrew.biblebowl.generate.text.BibleTextWriter
-import net.markdrew.biblebowl.generate.text.FeatureOptions
+import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.HighlightContext
-import net.markdrew.biblebowl.generate.text.LayoutOptions
-import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.generate.text.Typst
+import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.Book
 import net.markdrew.biblebowl.model.ChapterRef
@@ -33,19 +32,18 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
 
     override val format: OutputFormat = Typst
 
-    override fun supports(layout: LayoutOptions): Boolean = true
+    override fun supports(options: TextOptions): Boolean = true
 
     override fun write(
         outputFile: Path,
         doc: AnnotatedDoc<AnalysisUnit>,
         studyData: StudyData,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
         copyrightDisclaimer: String,
     ) {
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, layout, features, TypstHandler(out, style, copyrightDisclaimer, features.verseOnNewLine))
+            BibleTextWalker.walk(doc, studyData, options, TypstHandler(out, style, options, copyrightDisclaimer))
         }
         println("Wrote $outputFile")
         if (System.getProperty("skip-pdf-generation") != "true") {
@@ -57,9 +55,13 @@ class TypstBibleTextWriter(private val style: TypstStyle) : BibleTextWriter {
 private class TypstHandler(
     private val out: Appendable,
     private val style: TypstStyle,
+    private val options: TextOptions,
     private val copyrightDisclaimer: String,
-    private val verseOnNewLine: Boolean = false,
 ) : BibleTextHandler {
+
+    private val layout = options
+    private val features = options
+    private val verseOnNewLine = options.verseOnNewLine
 
     /** Indent level of the poetry line currently being emitted; passed from [paragraphBegin] to
      *  [verseBegin] so the hanging verse number knows how far back to reach. 0 outside poetry. */
@@ -69,20 +71,20 @@ private class TypstHandler(
      *  to skip the leading line break on a paragraph's opening verse. */
     private var firstVerseInParagraph = false
 
-    override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
-        val columns = if (layout.twoColumns) 2 else 1
-        val isJustified = layout.justified ?: style.justified
+    override fun documentBegin(studyData: StudyData, options: TextOptions) {
+        val columns = if (options.twoColumns) 2 else 1
+        val isJustified = options.justified ?: style.justified
         val justify = if (isJustified) "true" else "false"
-        val date = layout.testDate.format(dateFormatter)
+        val date = options.testDate.format(dateFormatter)
         val title = studyData.studySet.name
 
-        val mainFont = layout.mainFont ?: style.mainFont
-        val headingFont = layout.headingFont ?: style.headingFont
-        val verseNumFont = layout.verseNumFont ?: style.verseNumFont
+        val mainFont = options.mainFont ?: style.mainFont
+        val headingFont = options.headingFont ?: style.headingFont
+        val verseNumFont = options.verseNumFont ?: style.verseNumFont
 
-        val chapterFontSize = layout.chapterFontSize ?: style.chapterFontSize
-        val headingFontSize = layout.headingFontSize ?: style.headingFontSize
-        val footnoteFontSize = layout.footnoteFontSize ?: style.footnoteFontSize
+        val chapterFontSize = options.chapterFontSize ?: style.chapterFontSize
+        val headingFontSize = options.headingFontSize ?: style.headingFontSize
+        val footnoteFontSize = options.footnoteFontSize ?: style.footnoteFontSize
 
         out.appendLine("""
             #set page(
@@ -131,7 +133,7 @@ private class TypstHandler(
                 }
               },
             )
-            #set text(font: "$mainFont", size: ${layout.fontSize}pt)
+            #set text(font: "$mainFont", size: ${options.fontSize}pt)
             #set par(justify: $justify)
             #show footnote.entry: set text(size: ${footnoteFontSize}pt)
 

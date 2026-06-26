@@ -5,12 +5,11 @@ import net.markdrew.biblebowl.generate.text.AnnotatedDoc
 import net.markdrew.biblebowl.generate.text.BibleTextHandler
 import net.markdrew.biblebowl.generate.text.BibleTextWalker
 import net.markdrew.biblebowl.generate.text.BibleTextWriter
-import net.markdrew.biblebowl.generate.text.FeatureOptions
+import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.HighlightColor
 import net.markdrew.biblebowl.generate.text.HighlightContext
 import net.markdrew.biblebowl.generate.text.HighlightPalette
 import net.markdrew.biblebowl.generate.text.Latex
-import net.markdrew.biblebowl.generate.text.LayoutOptions
 import net.markdrew.biblebowl.generate.text.OutputFormat
 import net.markdrew.biblebowl.latex.latexToPdf
 import net.markdrew.biblebowl.model.AnalysisUnit
@@ -39,22 +38,21 @@ class LatexBibleTextWriter : BibleTextWriter {
 
     override val format: OutputFormat = Latex
 
-    override fun supports(layout: LayoutOptions): Boolean = layout.twoColumns
+    override fun supports(options: TextOptions): Boolean = options.twoColumns
 
     override fun write(
         outputFile: Path,
         doc: AnnotatedDoc<AnalysisUnit>,
         studyData: StudyData,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
         copyrightDisclaimer: String,
     ) {
-        require(supports(layout)) {
+        require(supports(options)) {
             "LatexBibleTextWriter requires layout.twoColumns = true (preamble hardcodes \\begin{multicols}{2})"
         }
         Files.createDirectories(outputFile.parent)
         outputFile.toFile().writer().use { out ->
-            BibleTextWalker.walk(doc, studyData, layout, features, LatexHandler(out, copyrightDisclaimer))
+            BibleTextWalker.walk(doc, studyData, options, LatexHandler(out, copyrightDisclaimer))
         }
         println("Wrote $outputFile")
         if (System.getProperty("skip-pdf-generation") != "true") {
@@ -79,8 +77,8 @@ fun formatLatexCopyright(disclaimer: String): String {
 
 private class LatexHandler(private val out: Appendable, private val copyrightDisclaimer: String) : BibleTextHandler {
 
-    override fun documentBegin(studyData: StudyData, layout: LayoutOptions, features: FeatureOptions) {
-        preamble(out, studyData.studySet.name, layout.testDate.format(dateFormatter), layout, features)
+    override fun documentBegin(studyData: StudyData, options: TextOptions) {
+        preamble(out, studyData.studySet.name, options.testDate.format(dateFormatter), options)
     }
 
     override fun documentEnd() {
@@ -203,12 +201,11 @@ private class LatexHandler(private val out: Appendable, private val copyrightDis
         out: Appendable,
         bookName: String,
         date: String,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
     ) {
         out.appendLine(
             """
-                \documentclass[${layout.fontSize}pt, letter paper, twoside]{article}
+                \documentclass[${options.fontSize}pt, letter paper, twoside]{article}
                 \usepackage[utf8]{inputenc}
                 \usepackage[margin=0.6in, bindingoffset=0.5in, foot=0.25in]{geometry}
                 \usepackage{multicol}
@@ -247,7 +244,7 @@ private class LatexHandler(private val out: Appendable, private val copyrightDis
                 \usepackage{soul}
             """.trimIndent()
         )
-        emitColorDefinitions(out, features.customHighlights)
+        emitColorDefinitions(out, options.customHighlights)
         out.appendLine(
             """
 

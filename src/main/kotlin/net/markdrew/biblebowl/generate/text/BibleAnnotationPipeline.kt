@@ -41,28 +41,28 @@ object BibleAnnotationPipeline {
 
     /**
      * Builds an [AnnotatedDoc] for [studyData] with all structural layers plus the feature layers enabled
-     * by [features], pulling each feature layer from [store].
+     * by [options], pulling each feature layer from [store].
      */
     fun build(
         studyData: StudyData,
-        features: FeatureOptions,
+        options: TextOptions,
         store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     ): AnnotatedDoc<AnalysisUnit> {
         // One unified resolution over every category (word-lists incl. `other`/`numbers`, + overrides).
         // Each range is tagged with its category id; the palette categories (which now include `other`
         // and `numbers`) become the colored REGEX highlights, each resolved to its color by the writers.
-        val paletteCategories: Set<String> = features.customHighlights.rules.map { it.first }.toSet()
+        val paletteCategories: Set<String> = options.customHighlights.rules.map { it.first }.toSet()
         val resolved = store.categoryResolution(studyData.studySet)
         val regexRanges = DisjointRangeMap<String>().apply {
             resolved.forEach { (range, category) -> if (category in paletteCategories) put(range, category) }
         }
-        val smallCaps = RegexSetSource("small-caps", features.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
+        val smallCaps = RegexSetSource("small-caps", options.smallCaps.keys.map { Regex.fromLiteral(it) }.toSet())
         return studyData.toAnnotatedDoc(
             BOOK, CHAPTER, HEADING, VERSE, POETRY, PARAGRAPH, LEADING_FOOTNOTE, FOOTNOTE, REGEX, SMALL_CAPS
         ).apply {
             setAnnotations(REGEX, regexRanges)
             setAnnotations(SMALL_CAPS, store.ranges(smallCaps))
-            if (features.underlineUniqueWords) setAnnotations(UNIQUE_WORD, store.ranges(OneTimeWordsSource))
+            if (options.underlineUniqueWords) setAnnotations(UNIQUE_WORD, store.ranges(OneTimeWordsSource))
         }
     }
 }

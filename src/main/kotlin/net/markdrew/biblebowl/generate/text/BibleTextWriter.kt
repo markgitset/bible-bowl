@@ -62,13 +62,13 @@ interface BibleTextWriter {
     val format: OutputFormat
 
     /**
-     * True if this writer can honor [layout] without silently dropping any option. Default: true.
+     * True if this writer can honor [options] without silently dropping any option. Default: true.
      * Override to reject layouts the writer cannot render correctly.
      */
-    fun supports(layout: LayoutOptions): Boolean = true
+    fun supports(options: TextOptions): Boolean = true
 
     /**
-     * Renders [doc] to [outputFile] under the given [layout] and [features].
+     * Renders [doc] to [outputFile] under the given [options].
      *
      * Implementations may also produce derived artifacts next to [outputFile] (e.g., a PDF compiled
      * from the source file). Parent directories are created as needed.
@@ -77,8 +77,7 @@ interface BibleTextWriter {
         outputFile: Path,
         doc: AnnotatedDoc<AnalysisUnit>,
         studyData: StudyData,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
         copyrightDisclaimer: String = DEFAULT_COPYRIGHT_DISCLAIMER,
     )
 }

@@ -18,28 +18,23 @@ import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.VerseRef
 
 /**
- * Shared traversal of an annotated Bible document. Iterates [AnnotatedDoc.stateTransitions] and
- * dispatches to [BibleTextHandler] methods in a fixed order (see [BibleTextHandler] for the
- * contract).
+ * Walks an [AnnotatedDoc]'s state transitions and translates them into [BibleTextHandler] events.
  *
- * Responsibilities centralized here so handlers don't reimplement them:
- * - Verse-ref lookup for footnote anchor positions (with `±1` fallback at verse boundaries).
- * - Packaging a continuing REGEX annotation as a [HighlightContext] for [BibleTextHandler.trailingFootnote].
- * - Reading the PARAGRAPH annotation value as the poetry indent level.
- * - Computing `isFirstVerseOfChapter`.
+ * Encapsulates the AST state traversal rules:
+ * - Closing/opening inline highlights in correct nest order (longest first when opening, shortest
+ *   first when closing).
  * - Skipping iterations that fall outside any paragraph (matches the previous per-writer guard).
- * - Honoring the [FeatureOptions.underlineUniqueWords] guard on unique-word events.
+ * - Honoring the [TextOptions.underlineUniqueWords] guard on unique-word events.
  */
 object BibleTextWalker {
 
     fun walk(
         doc: AnnotatedDoc<AnalysisUnit>,
         studyData: StudyData,
-        layout: LayoutOptions,
-        features: FeatureOptions,
+        options: TextOptions,
         handler: BibleTextHandler,
     ) {
-        handler.documentBegin(studyData, layout, features)
+        handler.documentBegin(studyData, options)
 
         for ((excerpt, transition) in doc.stateTransitions()) {
 
@@ -48,7 +43,7 @@ object BibleTextWalker {
             //    shorter underline/small-caps span.
             transition.ended.filter { it.key in INLINE_HIGHLIGHTS }
                 .sortedWith(compareBy<RangeAnnotation<AnalysisUnit>> { it.range.last }.thenByDescending { it.range.first })
-                .forEach { closeInline(it.key, handler, features) }
+                .forEach { closeInline(it.key, handler, options) }
 
             // 8. Trailing footnote. The continuing-highlight context lets LaTeX handlers do their
             //    close-emit-reopen dance; other writers ignore it.
@@ -62,7 +57,7 @@ object BibleTextWalker {
             // 2. Structural endings
             if (transition.isEnded(PARAGRAPH)) handler.paragraphEnd(transition.isPresent(POETRY))
             if (transition.isEnded(POETRY)) handler.poetryEnd()
-            if (transition.isEnded(CHAPTER)) handler.chapterEnd(layout.chapterBreaksPage)
+            if (transition.isEnded(CHAPTER)) handler.chapterEnd(options.chapterBreaksPage)
 
             // 3. Structural beginnings — book, chapter, heading. These (and steps 5-8) fire even
             //    when no PARAGRAPH is active in the new run, mirroring the historical LaTeX/Typst
@@ -72,7 +67,7 @@ object BibleTextWalker {
             val inParagraph: Boolean = transition.isPresent(PARAGRAPH)
             transition.beginning(BOOK)?.apply { handler.bookBegin(value as Book) }
             transition.beginning(CHAPTER)?.apply {
-                handler.chapterBegin(value as ChapterRef, studyData.isMultiBook, layout.useHeadingsForChapters, inParagraph)
+                handler.chapterBegin(value as ChapterRef, studyData.isMultiBook, options.useHeadingsForChapters, inParagraph)
             }
             transition.beginning(HEADING)?.apply { handler.headingBegin(value as String, inParagraph) }
 
@@ -95,7 +90,7 @@ object BibleTextWalker {
                     chapter = chapterRef,
                     multiBook = studyData.isMultiBook,
                     isFirstVerseOfChapter = verseRef.verse == 1,
-                    useHeadingsForChapters = layout.useHeadingsForChapters,
+                    useHeadingsForChapters = options.useHeadingsForChapters,
                     inPoetry = inPoetry,
                 )
             }
@@ -126,7 +121,7 @@ object BibleTextWalker {
                     compareByDescending<RangeAnnotation<AnalysisUnit>> { it.range.last }
                         .thenBy { it.range.first }.thenBy { nestRank(it.key) }
                 )
-                .forEach { openInline(it, handler, features) }
+                .forEach { openInline(it, handler, options) }
 
             // 7. Text
             handler.text(excerpt.excerptText, inPoetry, inParagraph)
@@ -143,18 +138,18 @@ object BibleTextWalker {
         UNIQUE_WORD -> 0; REGEX -> 1; SMALL_CAPS -> 2; else -> 3
     }
 
-    private fun openInline(ann: RangeAnnotation<AnalysisUnit>, handler: BibleTextHandler, features: FeatureOptions) {
+    private fun openInline(ann: RangeAnnotation<AnalysisUnit>, handler: BibleTextHandler, options: TextOptions) {
         when (ann.key) {
-            UNIQUE_WORD -> if (features.underlineUniqueWords) handler.uniqueWordBegin()
+            UNIQUE_WORD -> if (options.underlineUniqueWords) handler.uniqueWordBegin()
             REGEX -> handler.regexBegin(ann.value as String)
             SMALL_CAPS -> handler.smallCapsBegin()
             else -> {}
         }
     }
 
-    private fun closeInline(key: AnalysisUnit, handler: BibleTextHandler, features: FeatureOptions) {
+    private fun closeInline(key: AnalysisUnit, handler: BibleTextHandler, options: TextOptions) {
         when (key) {
-            UNIQUE_WORD -> if (features.underlineUniqueWords) handler.uniqueWordEnd()
+            UNIQUE_WORD -> if (options.underlineUniqueWords) handler.uniqueWordEnd()
             REGEX -> handler.regexEnd()
             SMALL_CAPS -> handler.smallCapsEnd()
             else -> {}

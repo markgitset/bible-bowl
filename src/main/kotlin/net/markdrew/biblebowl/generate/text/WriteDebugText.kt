@@ -24,14 +24,14 @@ fun main(args: Array<String>) {
  */
 fun writeBibleDocDebug(
     studyData: StudyData,
-    features: FeatureOptions = FeatureOptions(),
-    layout: LayoutOptions = LayoutOptions(),
+    options: TextOptions = TextOptions(),
+    preset: TextPreset = Presets.tbb,
 ) {
     val name = studyData.studySet.simpleName
-    val suffix = BibleTextPipeline.fileNameSuffix(layout, features)
+    val suffix = BibleTextPipeline.fileNameSuffix(options, preset)
     val outputFile = File("$name-debug-text-$suffix.txt")
     PrintWriter(outputFile).use { out ->
-        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleAnnotationPipeline.build(studyData, features)
+        val annotatedDoc: AnnotatedDoc<AnalysisUnit> = BibleAnnotationPipeline.build(studyData, options)
         annotatedDoc.textRuns().forEach { run ->
             val annotationsString = run.annotations.joinToString(", ") { it.toShortString() }
             val text = annotatedDoc.docText.substring(run.range).replace("\n", "\\n")
