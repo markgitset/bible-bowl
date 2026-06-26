@@ -105,7 +105,7 @@ object Presets {
 
     /** Mark's format — two-column, 10pt, heading-style chapters, no emphasis. */
     val marks = TextPreset(
-        name = "mark",
+        name = "marks",
         description = "Mark's format — two-column, 10pt, heading-style chapters, no emphasis",
         options = TextOptions(
             fontSize = 10,

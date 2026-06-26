@@ -29,7 +29,7 @@ class TextPresetTest : StringSpec({
         config.fontSize shouldBe 10
         config.twoColumns shouldBe true
         config.useHeadingsForChapters shouldBe true
-        config.chapterEndLines shouldBe false
+        config.chapterEndLines shouldBe true
         config.testDate shouldBe testDate
         config.underlineUniqueWords shouldBe false
         config.verseOnNewLine shouldBe false
