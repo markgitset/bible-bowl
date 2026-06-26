@@ -143,7 +143,7 @@ abstract class BaseCommand(name: String, private val helpText: String) : CliktCo
 
     private fun configureConsoleLogging(verbose: Boolean) {
         val root = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME) as? Logger ?: return
-        val consoleAppender = root.getAppender("STDOUT") ?: return
+        val consoleAppender = root.getAppender("STDERR") ?: return
         consoleAppender.clearAllFilters()
         val filter = ThresholdFilter()
         filter.setLevel(if (verbose) "INFO" else "WARN")
