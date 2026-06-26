@@ -86,12 +86,26 @@ object Presets {
     val tbb = TextPreset(
         name = "tbb",
         description = "Texas Bible Bowl official format — single-column, 12pt, inline chapter labels, no emphasis",
-        options = TextOptions(fontSize = 12, useHeadingsForChapters = false),
+        options = TextOptions(),
+    )
+
+    /** Daesha's preference */
+    val daesha = TextPreset(
+        name = "daesha",
+        description = "Texas Bible Bowl official format, except each verse starts on a new line",
+        options = TextOptions(verseOnNewLine = true),
+    )
+
+    /** Raymond's preference */
+    val raymond = TextPreset(
+        name = "raymond",
+        description = "Texas Bible Bowl official format, except each chapter is a header with a line",
+        options = TextOptions(chapterEndLines = true, useHeadingsForChapters = true),
     )
 
     /** Mark's format — two-column, 10pt, heading-style chapters, no emphasis. */
     val marks = TextPreset(
-        name = "marks",
+        name = "mark",
         description = "Mark's format — two-column, 10pt, heading-style chapters, no emphasis",
         options = TextOptions(
             fontSize = 10,
@@ -104,6 +118,7 @@ object Presets {
             headingFontSize = 12,
             footnoteFontSize = 9,
             justified = true,
+            chapterEndLines = true,
         ),
     )
 

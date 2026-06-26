@@ -222,7 +222,7 @@ private fun generateTextPack(
     store: AnnotationStore,
     copyrightDisclaimer: String,
 ) {
-    val packPresets = listOf(Presets.tbb, Presets.marks)
+    val packPresets = listOf(Presets.tbb, Presets.marks, Presets.raymond, Presets.daesha)
     for (format in formats) {
         for (base in packPresets) {
             val writer = writerFor(format)

@@ -58,8 +58,6 @@ private class TypstHandler(
     private val copyrightDisclaimer: String,
 ) : BibleTextHandler {
 
-    private val layout = options
-    private val features = options
     private val verseOnNewLine = options.verseOnNewLine
 
     /** Indent level of the poetry line currently being emitted; passed from [paragraphBegin] to
@@ -147,7 +145,7 @@ private class TypstHandler(
         // Palette-supplied colors (dedup against built-ins by name). Names (`other`) and numbers
         // (`numbers`) are ordinary palette entries now and emit their colors through this loop.
         val seen = mutableSetOf("divineColor")
-        for ((color, _) in features.customHighlights.entries) {
+        for ((color, _) in this.options.customHighlights.entries) {
             if (seen.add(color.name)) {
                 val (r, g, b) = color.rgb
                 out.appendLine("#let ${color.name} = rgb($r, $g, $b)")
@@ -164,7 +162,7 @@ private class TypstHandler(
             )
             #let chapter-heading(label) = heading(
                 level: 1, outlined: false,
-                ${if (layout.chapterEndLines) """
+                ${if (this.options.chapterEndLines) """
                 grid(
                     columns: (1fr, auto, 1fr),
                     align: horizon,
