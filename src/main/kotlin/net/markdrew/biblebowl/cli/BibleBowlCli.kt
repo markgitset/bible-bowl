@@ -34,7 +34,6 @@ import net.markdrew.biblebowl.generate.text.TextOverrides
 import net.markdrew.biblebowl.generate.text.TextOptions
 import net.markdrew.biblebowl.generate.text.Typst
 import net.markdrew.biblebowl.generate.text.Docx
-import net.markdrew.biblebowl.generate.text.Latex
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
 import net.markdrew.biblebowl.model.StudySet
@@ -377,7 +376,7 @@ abstract class TextCommandBase(name: String, private val helpText: String, prote
             }
             return
         }
-        if (format == Docx || format == Latex) {
+        if (format == Docx) {
             echo("WARNING: The ${format.subdir} output format is deprecated and will be removed in a future version.")
         }
         val overrides = buildOverrides()
@@ -394,11 +393,6 @@ class DocxTextCommand : TextCommandBase("docx", "Generate the Bible text in DOCX
     override fun buildOverrides(): TextOverrides = textOptions.toOverrides()
 }
 
-class LatexTextCommand : TextCommandBase("latex", "Generate the Bible text in LaTeX format (DEPRECATED)", Latex) {
-    override fun buildOverrides(): TextOverrides {
-        return textOptions.toOverrides().copy(twoColumns = true)
-    }
-}
 
 /** `annotate` — launch the interactive annotation validator (formerly `--validate`). */
 class AnnotateCommand : BaseCommand("annotate", "Interactively review/correct study-set annotations") {
@@ -452,7 +446,6 @@ fun main(args: Array<String>) = BibleBowlCli()
         TextCommand().subcommands(
             TypstTextCommand(),
             DocxTextCommand(),
-            LatexTextCommand(),
         ),
         AnnotateCommand(),
         IndicesCommand(),

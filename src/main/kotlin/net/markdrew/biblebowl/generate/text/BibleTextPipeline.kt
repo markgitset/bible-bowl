@@ -7,7 +7,6 @@ import net.markdrew.biblebowl.defaultProductsPath
 import net.markdrew.biblebowl.defaultRawDataPath
 import net.markdrew.biblebowl.generate.text.BibleTextPipeline.computeOutputPath
 import net.markdrew.biblebowl.generate.text.docx.DocxBibleTextWriter
-import net.markdrew.biblebowl.generate.text.latex.LatexBibleTextWriter
 import net.markdrew.biblebowl.generate.text.typst.TypstBibleTextWriter
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -190,7 +189,7 @@ fun generateBibleTexts(
     studyData: StudyData,
     testDate: LocalDate,
     productsPath: Path,
-    formats: Set<OutputFormat> = setOf(Docx, Latex, Typst),
+    formats: Set<OutputFormat> = setOf(Docx, Typst),
     store: AnnotationStore = AnnotationStore(studyData, cacheDir = null),
     rawDataDir: Path = defaultRawDataPath,
     forceDownload: Boolean = false,
@@ -263,7 +262,6 @@ private fun generateSingleText(
 /** Builds the writer for [format], resolving the concrete style for [styleId] (LaTeX ignores style). */
 private fun writerFor(format: OutputFormat, styleId: StyleId): BibleTextWriter = when (format) {
     Docx -> DocxBibleTextWriter(styleId.docx())
-    Latex -> LatexBibleTextWriter()
     Typst -> TypstBibleTextWriter(styleId.typst())
 }
 

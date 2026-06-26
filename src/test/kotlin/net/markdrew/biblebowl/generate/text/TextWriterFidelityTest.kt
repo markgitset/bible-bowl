@@ -5,7 +5,6 @@ import net.markdrew.biblebowl.analysis.AnnotationStore
 import net.markdrew.biblebowl.defaultDataPath
 import net.markdrew.biblebowl.generate.text.docx.DocxBibleTextWriter
 import net.markdrew.biblebowl.generate.text.docx.MarksDocxStyle
-import net.markdrew.biblebowl.generate.text.latex.LatexBibleTextWriter
 import net.markdrew.biblebowl.generate.text.typst.MarksTypstStyle
 import net.markdrew.biblebowl.generate.text.typst.TypstBibleTextWriter
 import net.markdrew.biblebowl.model.StandardStudySet
@@ -55,15 +54,6 @@ class TextWriterFidelityTest : StringSpec({
         )
         val actual = normalizedDocumentXml(docxPath)
         compareWithBaseline("docx-marks-full.xml", actual, regenerate)
-    }
-
-    "LaTeX writer source matches committed snapshot".config(enabled = dataAvailable) {
-        val outDir = freshOutputDir()
-        val texPath = BibleTextPipeline.generate(
-            loadStudyData(), options, Presets.marks, LatexBibleTextWriter(), outDir
-        )
-        val actual = Files.readString(texPath)
-        compareWithBaseline("latex-marks-full.tex", actual, regenerate)
     }
 
     "Typst writer source matches committed snapshot".config(enabled = dataAvailable) {

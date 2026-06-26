@@ -24,7 +24,7 @@ sealed interface OutputFormat {
          * Every output format, in CLI/menu order; [subdir] doubles as the format's lowercase token.
          * Keep this in sync when adding a new [OutputFormat] subtype.
          */
-        val all: List<OutputFormat> = listOf(Docx, Latex, Typst)
+        val all: List<OutputFormat> = listOf(Docx, Typst)
     }
 }
 
@@ -32,12 +32,6 @@ sealed interface OutputFormat {
 data object Docx : OutputFormat {
     override val subdir: String = "docx"
     override val extension: String = "docx"
-}
-
-/** LaTeX output. The writer's source file is a `.tex`; PDF is produced by `pdflatex` (twice, for cross-refs). */
-data object Latex : OutputFormat {
-    override val subdir: String = "latex"
-    override val extension: String = "tex"
 }
 
 /** Typst output. The writer's source file is a `.typ`; PDF is produced by the `typst compile` CLI. */

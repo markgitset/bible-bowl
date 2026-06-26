@@ -100,7 +100,7 @@ fun Iterable<VerseRef>.format(bookFormat: BookFormat): String {
 /**
  * Like [Iterable.format] but appends a frequency count to each verse, suitable for word-index entries.
  *
- * Uses LaTeX-friendly `\linebreak[0]` separators between collapsed verses to allow line wrapping at commas.
+ * Uses standard wrapping-friendly comma separators between collapsed verses.
  *
  * @throws IllegalArgumentException if [bookFormat] is [NO_BOOK_FORMAT] and the list spans multiple books
  */
@@ -118,7 +118,7 @@ fun Iterable<WithCount<VerseRef>>.formatWithCounts(bookFormat: BookFormat): Stri
                 if (accumulator == null) {
                     StringBuilder(formatWithCount(verseRef.item.format(NO_BOOK_FORMAT), verseRef.count))
                 } else {
-                    accumulator.append(",\\linebreak[0]")
+                    accumulator.append(", ")
                         .append(formatWithCount(verseRef.item.verse.toString(), verseRef.count))
                 }
             }

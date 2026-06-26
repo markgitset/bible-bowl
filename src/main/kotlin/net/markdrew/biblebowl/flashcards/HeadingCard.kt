@@ -24,10 +24,6 @@ data class HeadingCard(
     val chapterRanges = verseRanges.map { it.toChapterRange() }
 
     companion object {
-        /** Sentinel used by the LaTeX renderer to pad short final pages; not needed under Typst. */
-        @Deprecated("Shouldn't need this with Typst")
-        val EMPTY: HeadingCard = HeadingCard("", emptyList(), emptyList(), emptyList())
-
         /** Builds one card per distinct heading title in [studyData], merging duplicate titles. */
         fun fromStudyData(studyData: StudyData): List<HeadingCard> =
             studyData.headings.groupBy { it.title }.map { (headingTitle, headingList) ->
