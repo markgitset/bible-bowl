@@ -29,13 +29,7 @@ dependencies {
     implementation("com.github.crosswire:jsword:2.1")
     implementation("ch.qos.logback:logback-classic:1.5.36")
     implementation("io.github.oshai:kotlin-logging:8.0.4")
-    // chupacabra transitively drags in the old com.github.ajalt:clikt:2.6.0 (different groupId, so
-    // Gradle won't dedupe it against our clikt 5.x). Its packages shadow clikt 5's and break option
-    // resolution, so exclude it. (v0.2.0 would let us drop this, but it isn't buildable on JitPack
-    // yet — its Gradle needs JVM 17+ while JitPack's default builder runs JVM 8; needs a jitpack.yml.)
-    implementation("com.github.markgitset:chupacabra:v0.1.0") {
-        exclude(group = "com.github.ajalt", module = "clikt")
-    }
+    implementation("com.github.markgitset:chupacabra:v0.2.1")
     implementation("org.apache.poi:poi-ooxml:5.5.1")
     implementation("com.cognitect:transit-java:1.1.403")
     implementation("org.apache.commons:commons-csv:1.14.1") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
