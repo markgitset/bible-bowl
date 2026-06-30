@@ -8,7 +8,7 @@ BibleBowl is a Kotlin/JVM CLI + library that prepares study materials for the Te
 
 ## Build, run, test
 
-JDK 23 toolchain is configured in `gradle.properties` (`jvmVersion = 23`, `kotlinVersion = 2.3.10`). Use the wrapper.
+JDK 25 toolchain is configured in `gradle.properties` (`jvmVersion = 25`, `kotlinVersion = 2.4.0`). Use the wrapper.
 
 - Build: `./gradlew build`
 - Build distribution: `./gradlew installDist`

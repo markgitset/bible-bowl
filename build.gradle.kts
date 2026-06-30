@@ -54,6 +54,9 @@ dependencies {
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+    // Mirror the application's native-access grant so JNA (pulled in transitively) doesn't emit the
+    // restricted-method warning under JDK 25 — and won't hard-fail when that becomes an error.
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
     // Forward the snapshot-regeneration flag so TextWriterFidelityTest can overwrite committed
     // baselines when invoked as `./gradlew test -Dregenerate-baseline-texts=true`.
     System.getProperty("regenerate-baseline-texts")?.let { systemProperty("regenerate-baseline-texts", it) }
