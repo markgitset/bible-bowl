@@ -17,8 +17,8 @@ import java.util.zip.ZipFile
  * baseline snapshots checked into the repository (`src/test/resources/text-baselines/`).
  *
  * The .docx is compared via its normalized `word/document.xml` (the docx4j-serialized namespace
- * declarations on the root element vary between runs and are stripped). The .tex and .typ are
- * compared as-is.
+ * declarations on the root element vary between runs and are stripped, as is docx4j's "Created by"
+ * comment that records the building JDK version and OS). The .typ is compared as-is.
  *
  * Skipped if `~/.tbb/data/josh-judg-ruth/` isn't indexed locally — this is a developer-local check.
  *
