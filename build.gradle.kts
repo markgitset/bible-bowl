@@ -39,7 +39,7 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:5.5.1")
     implementation("com.cognitect:transit-java:1.1.403")
     implementation("org.apache.commons:commons-csv:1.14.1") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
-    implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
+    implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:17.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("com.github.ajalt.clikt:clikt:5.1.0")
     implementation("com.googlecode.lanterna:lanterna:3.1.2") // full-screen TUI for the annotation validator

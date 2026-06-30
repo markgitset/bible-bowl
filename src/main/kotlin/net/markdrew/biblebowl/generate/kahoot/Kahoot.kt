@@ -112,7 +112,7 @@ fun kahoot(file: File, sheetFun: KahootContext.() -> Unit) {
         KahootContext(wb.createSheet()).sheetFun()
         file.parentFile.mkdirs()
         file.outputStream().buffered().use { wb.write(it) }
-        wb.dispose() // dispose of temporary files backing this workbook on disk
+        // closing the workbook (via use) disposes the temporary files backing it on disk
     }
 }
 
