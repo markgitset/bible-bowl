@@ -24,31 +24,29 @@ application {
 }
 
 dependencies {
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
     implementation("com.github.crosswire:jsword:2.1")
     implementation("ch.qos.logback:logback-classic:1.5.36")
     implementation("io.github.oshai:kotlin-logging:8.0.4")
-    implementation("org.apache.lucene:lucene-analyzers-common:8.11.3")
     // chupacabra transitively drags in the old com.github.ajalt:clikt:2.6.0 (different groupId, so
     // Gradle won't dedupe it against our clikt 5.x). Its packages shadow clikt 5's and break option
-    // resolution, so exclude it.
+    // resolution, so exclude it. (v0.2.0 would let us drop this, but it isn't buildable on JitPack
+    // yet — its Gradle needs JVM 17+ while JitPack's default builder runs JVM 8; needs a jitpack.yml.)
     implementation("com.github.markgitset:chupacabra:v0.1.0") {
         exclude(group = "com.github.ajalt", module = "clikt")
     }
-    implementation("org.apache.opennlp:opennlp-tools:1.9.4")
-    implementation("org.apache.lucene:lucene-core:9.10.0")
     implementation("org.apache.poi:poi-ooxml:5.5.1")
     implementation("com.cognitect:transit-java:1.1.389")
     implementation("org.apache.commons:commons-csv:1.10.0") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
-//    implementation("org.docx4j:docx4j-bundle:11.4.9")
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("com.github.ajalt.clikt:clikt:5.1.0")
     implementation("com.googlecode.lanterna:lanterna:3.1.2") // full-screen TUI for the annotation validator
-    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
-    testImplementation("io.kotest:kotest-assertions-core:5.9.1")
-    testImplementation("io.kotest:kotest-framework-datatest:5.9.1")
+    testImplementation("io.kotest:kotest-runner-junit5:6.2.1")
+    testImplementation("io.kotest:kotest-assertions-core:6.2.1")
+    // Kotest 6 folded the standalone datatest module into kotest-framework-engine (pulled in
+    // transitively by the runner), so `io.kotest.datatest.withData` no longer needs its own dep.
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
