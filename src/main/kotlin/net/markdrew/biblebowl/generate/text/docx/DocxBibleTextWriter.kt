@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.text.docx
 
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.markdrew.biblebowl.docx.docxToPdf
 import net.markdrew.biblebowl.generate.text.AnnotatedDoc
 import net.markdrew.biblebowl.generate.text.BibleTextHandler

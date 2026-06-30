@@ -1,7 +1,7 @@
 package net.markdrew.biblebowl.generate.text
 
-import mu.KLogger
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KLogger
+import io.github.oshai.kotlinlogging.KotlinLogging
 import net.markdrew.biblebowl.model.AnalysisUnit
 import net.markdrew.biblebowl.model.StandardStudySet
 import net.markdrew.biblebowl.model.StudyData
