@@ -1,10 +1,10 @@
 plugins {
-    id("com.palantir.git-version") version "3.0.0"
+    id("com.palantir.git-version") version "5.0.0"
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
     application
-    id("org.jetbrains.dokka") version "2.0.0"
+    id("org.jetbrains.dokka") version "2.2.0"
 }
 
 // set the project version from tags and commits in Git repository
@@ -37,8 +37,8 @@ dependencies {
         exclude(group = "com.github.ajalt", module = "clikt")
     }
     implementation("org.apache.poi:poi-ooxml:5.5.1")
-    implementation("com.cognitect:transit-java:1.1.389")
-    implementation("org.apache.commons:commons-csv:1.10.0") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
+    implementation("com.cognitect:transit-java:1.1.403")
+    implementation("org.apache.commons:commons-csv:1.14.1") // https://mvnrepository.com/artifact/org.apache.commons/commons-csv
     implementation("org.docx4j:docx4j-JAXB-ReferenceImpl:11.4.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
     implementation("com.github.ajalt.clikt:clikt:5.1.0")
