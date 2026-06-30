@@ -105,9 +105,17 @@ private fun compareWithBaseline(name: String, actual: String, regenerate: Boolea
 }
 
 /**
+ * docx4j stamps a provenance comment (e.g. `<!-- Created by docx4j 11.4.11 … using REFERENCE JAXB in
+ * Azul Systems, Inc. Java 23.0.1 on Linux -->`) into the body. The JDK vendor/version and OS vary by
+ * build machine, so it's stripped to keep the snapshot deterministic across environments.
+ */
+private val DOCX4J_PROVENANCE_COMMENT = Regex("<!-- Created by docx4j.*?-->")
+
+/**
  * Reads `word/document.xml` from [docxPath] and drops its first two lines (the XML declaration and
  * the root `<w:document …>` element whose namespace-declaration order is non-deterministic between
- * docx4j runs). What remains is the document body — semantically deterministic.
+ * docx4j runs), then strips the env-dependent docx4j provenance comment. What remains is the
+ * document body — semantically deterministic.
  */
 private fun normalizedDocumentXml(docxPath: Path): String {
     ZipFile(docxPath.toFile()).use { zip ->
@@ -115,6 +123,6 @@ private fun normalizedDocumentXml(docxPath: Path): String {
             ?: error("word/document.xml not found in $docxPath")
         return zip.getInputStream(entry).bufferedReader(Charsets.UTF_8).use { reader ->
             reader.readLines().drop(2).joinToString("\n")
-        }
+        }.replace(DOCX4J_PROVENANCE_COMMENT, "")
     }
 }
